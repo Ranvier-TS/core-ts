@@ -177,7 +177,22 @@ class Area extends GameEntity {
       this.addRoom(room);
       state.RoomManager.addRoom(room);
       room.hydrate(state);
+      /**
+       * Fires after the room is hydrated and added to its area
+       * @event Room#ready
+       */
+      room.emit('ready');
     }
+  }
+
+  /**
+   * Get all possible broadcast targets within an area. This includes all npcs,
+   * players, rooms, and the area itself
+   * @return {Array<Broadcastable>}
+   */
+  getBroadcastTargets() {
+    const roomTargets = [...this.rooms].reduce((acc, [, room]) => acc.concat(room.getBroadcastTargets()), []);
+    return [this, ...roomTargets];
   }
 }
 
