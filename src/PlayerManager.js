@@ -179,7 +179,7 @@ class PlayerManager extends EventEmitter {
    * @return {Array<Character>}
    */
   getBroadcastTargets() {
-    return this.players;
+    return this.getPlayersAsArray();
   }
 }
 
