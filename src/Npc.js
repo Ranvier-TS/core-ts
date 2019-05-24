@@ -104,7 +104,7 @@ class Npc extends Scriptable(Character) {
       /**
        * @event Item#spawn
        */
-      newItem.emit('spawn');
+      newItem.emit('spawn', {type: Npc});
     }
   }
 

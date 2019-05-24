@@ -200,7 +200,7 @@ class Player extends Character {
           /**
            * @event Item#spawn
            */
-          newItem.emit('spawn');
+          newItem.emit('spawn', {type: Player});
         } catch (e) {
           Logger.error(e.message);
         }

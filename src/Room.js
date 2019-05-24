@@ -315,7 +315,7 @@ class Room extends GameEntity {
     /**
      * @event Item#spawn
      */
-    newItem.emit('spawn');
+    newItem.emit('spawn', {type: Room});
     return newItem;
   }
 

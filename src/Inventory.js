@@ -108,7 +108,7 @@ class Inventory extends Map {
       /**
        * @event Item#spawn
        */
-      newItem.emit('spawn');
+      newItem.emit('spawn', {type: Inventory});
     }
   }
 }
