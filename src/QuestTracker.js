@@ -56,7 +56,7 @@ class QuestTracker {
    */
   complete(qid) {
     if (!this.isActive(qid)) {
-      throw new Error('Quest not started');
+      throw new Error(`Quest ${qid} not started, cannot complete.`);
     }
 
     this.completedQuests.set(qid, {
@@ -73,7 +73,7 @@ class QuestTracker {
   start(quest) {
     const qid = quest.entityReference;
     if (this.activeQuests.has(qid)) {
-      throw new Error('Quest already started');
+      throw new Error(`Quest ${qid} already started.`);
     }
 
     quest.started = (new Date()).toJSON();
