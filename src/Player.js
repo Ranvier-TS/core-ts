@@ -1,11 +1,8 @@
 'use strict';
 
-const Attributes = require('./Attributes');
 const Character = require('./Character');
 const CommandQueue = require('./CommandQueue');
 const Config = require('./Config');
-const Data = require('./Data');
-const Metadatable = require('./Metadatable');
 const QuestTracker = require('./QuestTracker');
 const Room = require('./Room');
 const Logger = require('./Logger');
@@ -167,7 +164,6 @@ class Player extends Character {
     if (!this.__hydrated) {
       return;
     }
-    console.log(this);
     this.emit('save', callback);
   }
 
@@ -248,4 +244,4 @@ class Player extends Character {
   }
 }
 
-module.exports = Metadatable(Player);
+module.exports = Player;

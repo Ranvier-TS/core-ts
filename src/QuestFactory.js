@@ -97,20 +97,21 @@ class QuestFactory {
       player.emit('questComplete', instance);
       player.questTracker.complete(instance.entityReference);
 
-      if (quest.config.rewards) {
-        for (const reward of quest.config.rewards) {
-          try {
-            const rewardClass = GameState.QuestRewardManager.get(reward.type);
-  
-            if (!rewardClass) {
-              throw new Error(`Quest [${qid}] has invalid reward type ${reward.type}`);
-            }
-  
-            rewardClass.reward(GameState, instance, reward.config, player);
-            player.emit('questReward', reward);
-          } catch (e) {
-            Logger.error(e.message);
+      if (!quest.config.rewards) {
+        player.save();
+        return;
+      }
+
+      for (const reward of quest.config.rewards) {
+        try {
+          const rewardClass = GameState.QuestRewardManager.get(reward.type);
+
+          if (!rewardClass) {
+            throw new Error(`Quest [${qid}] has invalid reward type ${reward.type}`);
           }
+        } catch(e) {
+          Logger.warn(`Error in quest ${qid} happened to ${player.name}.`);
+          Logger.warn(e);
         }
       }
 
