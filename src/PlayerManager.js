@@ -4,6 +4,7 @@ const EventEmitter = require('events');
 const Data = require('./Data');
 const Player = require('./Player');
 const EventManager = require('./EventManager');
+const util = require('util');
 
 /**
  * Keeps track of all active players in game
@@ -145,6 +146,8 @@ class PlayerManager extends EventEmitter {
       throw new Error('No entity loader configured for players');
     }
 
+    const serialized = player.serialize();
+    console.log('=>', util.inspect({serialized}, false, 10), '<=');
     await this.loader.update(player.name, player.serialize());
 
     /**
@@ -154,7 +157,7 @@ class PlayerManager extends EventEmitter {
   }
 
   /**
-   * @fires Player#saved
+   * @fires Player#save
    */
   async saveAll() {
     for (const [ name, player ] of this.players.entries()) {
