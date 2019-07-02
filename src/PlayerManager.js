@@ -4,6 +4,7 @@ const EventEmitter = require('events');
 const Data = require('./Data');
 const Player = require('./Player');
 const EventManager = require('./EventManager');
+const Logger = require('./Logger');
 const util = require('util');
 
 /**
@@ -145,10 +146,9 @@ class PlayerManager extends EventEmitter {
     if (!this.loader) {
       throw new Error('No entity loader configured for players');
     }
-
+    Logger.warn('Serializing...');
     const serialized = player.serialize();
-    console.log('=>', util.inspect({serialized}, false, 10), '<=');
-    await this.loader.update(player.name, player.serialize());
+    await this.loader.update(player.name, serialized);
 
     /**
      * @event Player#saved

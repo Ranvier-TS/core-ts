@@ -180,7 +180,7 @@ class Player extends Character {
 
     // Hydrate inventory
     this.inventory.hydrate(state, this);
-
+    console.log('Equipment is ', this.equipment, ' after super hydrate...');
     // Hydrate equipment
     // maybe refactor Equipment to be an object like Inventory?
     if (this.equipment && !(this.equipment instanceof Map)) {
@@ -189,6 +189,8 @@ class Player extends Character {
       for (const slot in eqDefs) {
         const itemDef = eqDefs[slot];
         try {
+          const entityRef = typeof itemDef === 'string' ? itemDef : itemDef.entityReference;
+          const itemState = typeof itemDef === 'string' ? {} : itemDef;
           let newItem = state.ItemFactory.create(state.AreaManager.getArea(itemDef.area), itemDef.entityReference);
           newItem.initializeInventory(itemDef.inventory);
           newItem.hydrate(state, itemDef);
@@ -219,15 +221,23 @@ class Player extends Character {
   }
 
   serialize() {
+    const account = this.account.name;
+    const experience = this.experience;
+    const inventory = this.inventory && this.inventory.serialize();
+    const metadata = this.metadata;
+    const password = this.password;
+    const prompt = this.prompt;
+    const quests = this.questTracker.serialize();
+    const role = this.role;
     let data = Object.assign(super.serialize(), {
-      account: this.account.name,
-      experience: this.experience,
-      inventory: this.inventory && this.inventory.serialize(),
-      metadata: this.metadata,
-      password: this.password,
-      prompt: this.prompt,
-      quests: this.questTracker.serialize(),
-      role: this.role,
+      account,
+      experience,
+      inventory,
+      metadata,
+      password,
+      prompt,
+      quests,
+      role,
     });
 
     if (this.equipment instanceof Map) {
@@ -239,9 +249,11 @@ class Player extends Character {
     } else {
       data.equipment = null;
     }
-
+    const inspect = (require('util')).inspect;
+    console.log(inspect({data}, false, 10, true));
+    console.log("Serializing:", data);
     return data;
   }
-}
+}pBroadcast
 
 module.exports = Player;
