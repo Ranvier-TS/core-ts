@@ -254,6 +254,6 @@ class Player extends Character {
     console.log("Serializing:", data);
     return data;
   }
-}pBroadcast
+}
 
 module.exports = Player;
