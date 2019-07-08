@@ -1,7 +1,10 @@
 'use strict';
+
+const EventEmitter = require('events');
+
 const bcrypt = require('bcryptjs');
 const Data   = require('./Data');
-
+const Metadatable = require('./Metadatable');
 /**
  * Representation of a player's account
  *
@@ -10,12 +13,13 @@ const Data   = require('./Data');
  * @property {string} password Hashed password
  * @property {boolean} banned Whether this account is banned or not
  */
-class Account {
+class Account extends Metadatable(EventEmitter) {
 
   /**
    * @param {Object} data Account save data
    */
   constructor(data) {
+    super();
     this.username   = data.username;
     this.characters = data.characters || [];
     this.password   = data.password;
