@@ -180,7 +180,6 @@ class Player extends Character {
 
     // Hydrate inventory
     this.inventory.hydrate(state, this);
-    console.log('Equipment is ', this.equipment, ' after super hydrate...');
     // Hydrate equipment
     // maybe refactor Equipment to be an object like Inventory?
     if (this.equipment && !(this.equipment instanceof Map)) {
@@ -249,9 +248,6 @@ class Player extends Character {
     } else {
       data.equipment = null;
     }
-    const inspect = (require('util')).inspect;
-    console.log(inspect({data}, false, 10, true));
-    console.log("Serializing:", data);
     return data;
   }
 }
