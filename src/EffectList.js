@@ -156,7 +156,7 @@ class EffectList {
     /**
      * @event Character#effectRemoved
      */
-    this.target.emit('effectRemoved');
+    this.target.emit('effectRemoved', effect);
   }
 
   /**

@@ -208,9 +208,11 @@ class Item extends GameEntity {
       Logger.warn('Attempted to hydrate already hydrated item.');
       return false;
     }
+    this.__manager = state.ItemManager;
 
-    // perform deep copy if behaviors is set to prevent sharing of the object between
-    // item instances
+    state.ItemManager.add(this);
+
+    // deep copy behaviors to prevent sharing of the object between item instances
     if (serialized.behaviors) {
       const behaviors = JSON.parse(JSON.stringify(serialized.behaviors));
       this.behaviors = new Map(Object.entries(behaviors));
@@ -241,6 +243,10 @@ class Item extends GameEntity {
         newItem.hydrate(state);
         state.ItemManager.add(newItem);
         this.addItem(newItem);
+        /**
+         * @event Item#spawn
+         */
+        newItem.emit('spawn');
       });
     }
 
