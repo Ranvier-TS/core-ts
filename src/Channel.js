@@ -70,7 +70,7 @@ class Channel {
     const targets = this.audience.getBroadcastTargets();
 
     if (this.audience instanceof PartyAudience && !targets.length) {
-      throw new NoPartyError();
+      return Broadcast.sayAt(sender, "You're not in a group.");
     }
 
     // Allow audience to change message e.g., strip target name.

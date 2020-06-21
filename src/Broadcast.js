@@ -177,6 +177,20 @@ class Broadcast {
   }
 
   /**
+   * Capitalize a message
+   * @param {string}  message
+   * @return {string}
+   */
+  static capitalize(message) {
+    if (typeof message === 'string') {
+      const [first, ...rest] = message;
+      return `${first.toUpperCase()}${rest.join('')}`;
+    } else {
+      return message;
+    }
+  }
+
+  /**
    * Center a string in the middle of a given width
    * @param {number} width
    * @param {string} message
