@@ -191,6 +191,20 @@ class Broadcast {
   }
 
   /**
+   * Return a simple channel reporter implementing Broadcastable
+   * @param {string}  name
+   * @return {string}
+   */
+  static getSystemReporter(name = 'SYSTEM') {
+    return {
+      name,
+      getBroadcastTargets () {
+        return []
+      }
+    }
+  }
+
+  /**
    * Center a string in the middle of a given width
    * @param {number} width
    * @param {string} message
