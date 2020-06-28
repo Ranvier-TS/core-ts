@@ -475,6 +475,8 @@ class BundleManager {
           records[helpName]
         );
 
+        hfile.aliases = this.state.CommandManager.get(hfile.command).aliases || []
+
         this.state.HelpManager.add(hfile);
       } catch (e) {
         Logger.warn(`\t\t${e.message}`);

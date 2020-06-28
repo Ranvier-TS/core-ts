@@ -33,6 +33,9 @@ class HelpManager {
         results.set(name, help);
         continue;
       }
+      if (help.aliases.some(alias => alias.includes(search))) {
+        results.set(name, help);
+      }
       if (help.keywords.some(keyword => keyword.includes(search))) {
         results.set(name, help);
       }
