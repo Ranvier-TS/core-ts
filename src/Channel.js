@@ -4,7 +4,6 @@ const Broadcast = require('./Broadcast');
 const WorldAudience = require('./WorldAudience');
 const PrivateAudience = require('./PrivateAudience');
 const PartyAudience = require('./PartyAudience');
-const RoleAudience = require('./RoleAudience');
 
 /**
  * @property {ChannelAudience} audience People who receive messages from this channel
@@ -51,15 +50,10 @@ class Channel {
    * @fires GameEntity#channelReceive
    */
   send(state, sender, message) {
-    // if they don't include a message, explain how to use the channel
-    if (!message.length) {
-      this.describeSelf(sender);
-    }
 
-    // check if character has a sufficient role for the channel
-    if (this.audience instanceof RoleAudience && (sender.role < this.audience.minRole)) {
-      // hide the channel's command if they lack the minimum role for the channel
-      return Broadcast.sayAt(sender, "Huh?");
+    // If they don't include a message, explain how to use the channel.
+    if (!message.length) {
+      throw new NoMessageError();
     }
 
     if (!this.audience) {
@@ -109,18 +103,19 @@ class Channel {
   }
 
   describeSelf(sender) {
-    Broadcast.sayAt(sender, `Syntax: <b>${this.getUsage()}</b>`);
+    Broadcast.sayAt(sender, `\r\nChannel: ${this.name}`);
+    Broadcast.sayAt(sender, 'Syntax: ' + this.getUsage());
     if (this.description) {
-      Broadcast.sayAt(sender, `<cyan>${this.description}</cyan>`);
+      Broadcast.sayAt(sender, this.description);
     }
   }
 
   getUsage() {
     if (this.audience instanceof PrivateAudience) {
-      return `${this.name} <target> <message>`;
+      return `${this.name} <target> [message]`;
     }
 
-    return `${this.name} <message>`;
+    return `${this.name} [message]`;
   }
 
   /**
