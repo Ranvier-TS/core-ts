@@ -109,6 +109,9 @@ class QuestFactory {
           if (!rewardClass) {
             throw new Error(`Quest [${qid}] has invalid reward type ${reward.type}`);
           }
+
+          rewardClass.reward(GameState, instance, reward.config, player);
+          player.emit('questReward', reward);
         } catch(e) {
           Logger.warn(`Error in quest ${qid} happened to ${player.name}.`);
           Logger.warn(e);
