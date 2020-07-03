@@ -20,7 +20,7 @@ class Helpfile {
     this.bundle = bundle;
     this.name = name;
 
-    if (!options) {
+    if (!options || !options.body) {
       throw new Error(`Help file [${name}] has no content.`);
     }
 
@@ -28,7 +28,7 @@ class Helpfile {
     this.command = options.command;
     this.channel = options.channel;
     this.related = options.related || [];
-    this.body = options.body || '';
+    this.body = options.body;
   }
 }
 
