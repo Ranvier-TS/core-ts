@@ -475,7 +475,8 @@ class BundleManager {
           records[helpName]
         );
 
-        hfile.aliases = this.state.CommandManager.get(hfile.command).aliases || []
+        const command = this.state.CommandManager.get(hfile.command)
+        hfile.aliases = command ? command.aliases || [] : []
 
         this.state.HelpManager.add(hfile);
       } catch (e) {

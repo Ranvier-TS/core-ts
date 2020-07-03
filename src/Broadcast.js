@@ -251,10 +251,12 @@ class Broadcast {
    * Wrap a message to a given width. Note: Evaluates color tags
    * @param {string}  message
    * @param {?number} width   Defaults to 80
+   * @param {?number} indent left padding for wrapping lines
    * @return {string}
    */
-  static wrap(message, width = 80) {
-    return Broadcast._fixNewlines(wrap(ansi.parse(message), width));
+  static wrap(message, width = 80, indent = 0) {
+    const padding = Broadcast.line(indent, ' ');
+    return Broadcast._fixNewlines(wrap(ansi.parse(message), width), padding);
   }
 
   /**
@@ -272,13 +274,14 @@ class Broadcast {
   /**
    * Fix LF unpaired with CR for windows output
    * @param {string} message
+   * @param {?string} indent
    * @return {string}
    * @private
    */
-  static _fixNewlines(message) {
+  static _fixNewlines(message, indent = '') {
     // Fix \n not in a \r\n pair to prevent bad rendering on windows
     message = message.replace(/\r\n/g, '<NEWLINE>').split('\n');
-    message = message.join('\r\n').replace(/<NEWLINE>/g, '\r\n');
+    message = message.join(`\r\n${indent}`).replace(/<NEWLINE>/g, `\r\n${indent}`);
     // fix sty's incredibly stupid default of always appending ^[[0m
     return message.replace(/\x1B\[0m$/, '');
   }
