@@ -78,6 +78,10 @@ class Channel {
       if (!message.length) {
         throw new NoMessageError();
       }
+      // stop player trying to talk to self on a private audience
+      if (targets[0] === '_self') {
+        throw new TargetSelfError();
+      }
       Broadcast.sayAt(sender, this.formatter.sender(sender, targets[0], message, this.colorify.bind(this)));
     } else {
       Broadcast.sayAt(sender, this.formatter.sender(sender, null, message, this.colorify.bind(this)));
@@ -163,10 +167,12 @@ class Channel {
 class NoPartyError extends Error {}
 class NoRecipientError extends Error {}
 class NoMessageError extends Error {}
+class TargetSelfError extends Error {}
 
 module.exports = {
   Channel,
   NoPartyError,
   NoRecipientError,
   NoMessageError,
+  TargetSelfError
 };
