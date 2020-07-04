@@ -75,6 +75,9 @@ class Channel {
       if (!targets.length) {
         throw new NoRecipientError();
       }
+      if (!message.length) {
+        throw new NoMessageError();
+      }
       Broadcast.sayAt(sender, this.formatter.sender(sender, targets[0], message, this.colorify.bind(this)));
     } else {
       Broadcast.sayAt(sender, this.formatter.sender(sender, null, message, this.colorify.bind(this)));
