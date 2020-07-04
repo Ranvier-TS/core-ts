@@ -63,6 +63,10 @@ class Channel {
     this.audience.configure({ state, sender, message });
     const targets = this.audience.getBroadcastTargets();
 
+    if (this.audience instanceof PartyAudience && sender.party && !targets.length) {
+      throw new PartyEmptyError();
+    }
+
     if (this.audience instanceof PartyAudience && !targets.length) {
       throw new NoPartyError();
     }
@@ -165,6 +169,7 @@ class Channel {
 }
 
 class NoPartyError extends Error {}
+class PartyEmptyError extends Error {}
 class NoRecipientError extends Error {}
 class NoMessageError extends Error {}
 class TargetSelfError extends Error {}
@@ -174,5 +179,6 @@ module.exports = {
   NoPartyError,
   NoRecipientError,
   NoMessageError,
-  TargetSelfError
+  TargetSelfError,
+  PartyEmptyError
 };
