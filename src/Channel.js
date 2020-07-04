@@ -63,8 +63,12 @@ class Channel {
     this.audience.configure({ state, sender, message });
     const targets = this.audience.getBroadcastTargets();
 
-    if (this.audience instanceof PartyAudience && !targets.length) {
+    if (this.audience instanceof PartyAudience && !sender.party) {
       throw new NoPartyError();
+    }
+
+    if (this.audience.hasCommunicatorItem && !this.audience.hasCommunicatorItem(sender)) {
+      throw new NoCommunicatorItemError();
     }
 
     // Allow audience to change message e.g., strip target name.
@@ -168,11 +172,13 @@ class NoPartyError extends Error {}
 class NoRecipientError extends Error {}
 class NoMessageError extends Error {}
 class TargetSelfError extends Error {}
+class NoCommunicatorItemError extends Error {}
 
 module.exports = {
   Channel,
   NoPartyError,
   NoRecipientError,
   NoMessageError,
-  TargetSelfError
+  TargetSelfError,
+  NoCommunicatorItemError
 };
