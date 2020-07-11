@@ -20,7 +20,7 @@ class Broadcast {
    * @param {?function(target, message): string} formatter=null Function to call to format the
    *   message to each target
    */
-  static at(source, message = '', wrapWidth = false, useColor = true, formatter = null) {
+  static at(source, message = '', wrapWidth = false, useColor = true, formatter = null, indent = 0) {
     if (!Broadcast.isBroadcastable(source)) {
       throw new Error(`Tried to broadcast message to non-broadcastable object: MESSAGE [${message}]`);
     }
@@ -41,7 +41,7 @@ class Broadcast {
       }
 
       let targetMessage = formatter(target, message);
-      targetMessage = wrapWidth ? Broadcast.wrap(targetMessage, wrapWidth) : ansi.parse(targetMessage);
+      targetMessage = wrapWidth ? Broadcast.indent(Broadcast.wrap(targetMessage, wrapWidth), indent) : ansi.parse(targetMessage);
       target.socket.write(targetMessage);
     }
   }
@@ -56,7 +56,7 @@ class Broadcast {
    * @param {boolean} useColor
    * @param {function} formatter
    */
-  static atExcept(source, message, excludes, wrapWidth, useColor, formatter) {
+  static atExcept(source, message, excludes, wrapWidth = 80, useColor, formatter) {
     if (!Broadcast.isBroadcastable(source)) {
       throw new Error(`Tried to broadcast message to non-broadcastable object: MESSAGE [${message}]`);
     }
@@ -83,7 +83,7 @@ class Broadcast {
    * @param {number|boolean} wrapWidth
    * @param {boolean} useColor
    */
-  static atFormatted(source, message, formatter, wrapWidth, useColor) {
+  static atFormatted(source, message, formatter, wrapWidth = 80, useColor) {
     Broadcast.at(source, message, wrapWidth, useColor, formatter);
   }
 
@@ -91,17 +91,18 @@ class Broadcast {
    * `Broadcast.at` with a newline
    * @see {@link Broadcast#at}
    */
-  static sayAt(source, message, wrapWidth, useColor, formatter) {
+  static sayAt(source, message, wrapWidth = 80, useColor, formatter, indent) {
+    if (indent > 0) wrapWidth = wrapWidth ? wrapWidth : 80
     Broadcast.at(source, message, wrapWidth, useColor, (target, message) => {
       return (formatter ? formatter(target, message) : message ) + '\r\n';
-    });
+    }, indent);
   }
 
   /**
    * `Broadcast.atExcept` with a newline
    * @see {@link Broadcast#atExcept}
    */
-  static sayAtExcept(source, message, excludes, wrapWidth, useColor, formatter) {
+  static sayAtExcept(source, message, excludes, wrapWidth = 80, useColor, formatter) {
     Broadcast.atExcept(source, message, excludes, wrapWidth, useColor, (target, message) => {
       return (formatter ? formatter(target, message) : message ) + '\r\n';
     });
@@ -111,7 +112,7 @@ class Broadcast {
    * `Broadcast.atFormatted` with a newline
    * @see {@link Broadcast#atFormatted}
    */
-  static sayAtFormatted(source, message, formatter, wrapWidth, useColor) {
+  static sayAtFormatted(source, message, formatter, wrapWidth = 80, useColor) {
     Broadcast.sayAt(source, message, wrapWidth, useColor, formatter);
   }
 
@@ -268,7 +269,8 @@ class Broadcast {
   static indent(message, indent) {
     message = Broadcast._fixNewlines(message);
     const padding = Broadcast.line(indent, ' ');
-    return padding + message.replace(/\r\n/g, '\r\n' + padding);
+    const msg = message.replace(/\r\n(?!$)/g, '\r\n' + padding)
+    return padding + msg;
   }
 
   /**
