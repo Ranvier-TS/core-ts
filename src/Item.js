@@ -104,6 +104,7 @@ class Item extends GameEntity {
    * @param {Item} item
    */
   addItem(item) {
+    this._setupInventory();
     this.inventory.addItem(item);
     item.carriedBy = this;
   }
@@ -121,6 +122,7 @@ class Item extends GameEntity {
    * @return {boolean}
    */
   isInventoryFull() {
+    this._setupInventory();
     return this.inventory.isFull;
   }
 
