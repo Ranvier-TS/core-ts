@@ -36,7 +36,7 @@ const { Inventory, InventoryFullError } = require('./Inventory');
 class Item extends GameEntity {
   constructor (area, item) {
     super();
-    const validate = ['keywords', 'name', 'id'];
+    const validate = ['name', 'id'];
 
     for (const prop of validate) {
       if (!(prop in item)) {
@@ -56,7 +56,6 @@ class Item extends GameEntity {
     this.initializeInventory(item.inventory, this.maxItems);
 
     this.isEquipped  = item.isEquipped || false;
-    this.keywords    = item.keywords;
     this.name        = item.name;
     this.room        = item.room || null;
     this.roomDesc    = item.roomDesc || '';
@@ -76,6 +75,9 @@ class Item extends GameEntity {
 
     this.carriedBy = null;
     this.equippedBy = null;
+
+    this.keywords = item.keywords || [];
+    this.keywords = [...new Set([...this.keywords, this.name.split(' ')])]
 
     this._setupInventory();
   }
