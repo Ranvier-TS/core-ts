@@ -78,8 +78,6 @@ class Item extends GameEntity {
 
     this.keywords = item.keywords || [];
     this.keywords = [...new Set([...this.keywords, this.name.split(' ')])]
-
-    this._setupInventory();
   }
 
   /**
