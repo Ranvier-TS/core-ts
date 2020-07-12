@@ -77,7 +77,6 @@ class Item extends GameEntity {
     this.equippedBy = null;
 
     this.keywords = item.keywords || [];
-    this.keywords = [...new Set([...this.keywords, this.name.split(' ')])]
   }
 
   /**
