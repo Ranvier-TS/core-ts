@@ -45,10 +45,10 @@ class Item extends GameEntity {
     }
 
     this.area = area;
-    this.metadata  = item.metadata || {};
+    this.metadata  = Object.assign({}, item.metadata) || {};
     this.behaviors = new Map(Object.entries(item.behaviors || {}));
     this.defaultItems = item.items || [];
-    this.description = item.description || 'Nothing special.';
+    this.description = item.description || '';
     this.entityReference = item.entityReference; // EntityFactory key
     this.id          = item.id;
 
@@ -76,7 +76,13 @@ class Item extends GameEntity {
     this.carriedBy = null;
     this.equippedBy = null;
 
-    this.keywords = item.keywords || [];
+    if (item.keywords && item.keywords.value) {
+      this.keywordsInherited = true;
+      this.keywords = [...new Set([...(item.keywords.value || []), ...this.name.split(' ')])];
+    } else {
+      this.keywords = [...new Set([...(item.keywords || []), ...this.name.split(' ')])];
+    }
+    this.prototype = item.prototype || null;
   }
 
   /**
@@ -196,6 +202,11 @@ class Item extends GameEntity {
     this.locked = false;
   }
 
+  /**
+   * Initialize the Item from storage
+   * 
+   * @param {GameState} state
+   */
   hydrate(state, serialized = {}) {
     if (this.__hydrated) {
       Logger.warn('Attempted to hydrate already hydrated item.');
@@ -229,23 +240,84 @@ class Item extends GameEntity {
     if (this.inventory) {
       this.inventory.hydrate(state, this);
     } else {
-    // otherwise load its default inv
-      this.defaultItems.forEach(defaultItemId => {
-        Logger.verbose(`\tDIST: Adding item [${defaultItemId}] to item [${this.name}]`);
-        const newItem = state.ItemFactory.create(this.area, defaultItemId);
-        newItem.hydrate(state);
-        state.ItemManager.add(newItem);
-        this.addItem(newItem);
-        /**
-         * @event Item#spawn
-         */
-        newItem.emit('spawn');
-      });
+      // LOAD ITEM'S DEFAULT INVENTORY (ARRAY)
+      if (Array.isArray(this.defaultItems)) {
+        for (let defaultItemId of this.defaultItems) {
+          Logger.verbose(`\tDIST: Adding item [${defaultItemId}] to item [${this.name}]`);
+          const newItem = state.ItemFactory.create(this.area, defaultItemId);
+
+          state.ItemManager.add(newItem);
+          this.addItem(newItem);
+          newItem.hydrate(state);
+          /**
+           * @event Item#spawn
+           */
+          newItem.emit('spawn');
+        }
+      // SUPPORT COMPOSING ITEMS WITHIN ITEM IN ITEMS.YML (OBJECT)
+      } else {
+        Object.keys(this.defaultItems).forEach(defaultItemId => {
+          if (this.defaultItems[defaultItemId] === false) return;
+          Logger.verbose(`\tDIST: Adding item [${defaultItemId.replace(/%.*$/g, '')}] to item [${this.name}]`);
+          const newItem = state.ItemFactory.create(this.area, defaultItemId.replace(/%.*$/g, ''));
+
+          state.ItemFactory.modifyDefinition(newItem, false, this.defaultItems[defaultItemId]);
+          state.ItemManager.add(newItem);
+          this.addItem(newItem);
+          newItem.hydrate(state);
+          /**
+           * @event Item#spawn
+           */
+          newItem.emit('spawn');
+        })
+      }
     }
 
     this.__hydrated = true;
   }
 
+  /**
+   * Serialize the Item to be used as a prototype
+   * 
+   * @return {Object}
+   */
+  serializeIntoPrototype () {
+    const item = this.serialize();
+
+    delete item.inventory;
+    delete item.entityReference;
+    delete item.description;
+    delete item.keywords;
+
+    if (this.description.length > 0) {
+      item.description = this.description;
+    }
+
+    let keywords;
+    if (this.keywordsInherited) {
+      keywords = {
+        '...': true,
+        value: this.keywords
+      };
+    } else {
+      keywords = this.keywords;
+    }
+
+    return Object.assign(item, {
+      script: this.script || undefined,
+      keywords,
+      behaviors: new Map(this.behaviors || {}),
+      defaultEquipment: this.defaultEquipment || {},
+      defaultItems: this.defaultItems || [],
+      metadata: this.metadata
+    });
+  }
+
+  /**
+   * Gather data to be persisted
+   * 
+   * @return {Object}
+   */
   serialize() {
     let behaviors = {};
     for (const [key, val] of this.behaviors) {

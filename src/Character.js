@@ -35,7 +35,7 @@ class Character extends Metadatable(EventEmitter) {
     this.combatData = {};
     this.level = data.level || 1;
     this.room = data.room || null;
-    this.attributes = data.attributes || new Attributes();
+    this.attributes = Object.assign({}, data.attributes) || new Attributes();
 
     this.followers = new Set();
     this.following = null;
@@ -555,6 +555,7 @@ class Character extends Metadatable(EventEmitter) {
 
   /**
    * Initialize the character from storage
+   * 
    * @param {GameState} state
    */
   hydrate(state) {
@@ -594,16 +595,25 @@ class Character extends Metadatable(EventEmitter) {
 
   /**
    * Gather data to be persisted
+   * 
    * @return {Object}
    */
   serialize() {
-    return {
-      attributes: this.attributes.serialize(),
+    const toReturn = {
       level: this.level,
       name: this.name,
-      room: this.room.entityReference,
-      effects: this.effects.serialize(),
     };
+    if (this.__hydrated) {
+      return Object.assign(toReturn, {
+        attributes: this.attributes.serialize(),
+        level: this.level,
+        name: this.name,
+        room: this.room.entityReference,
+        effects: this.effects.serialize(),
+      });
+    } else {
+      return toReturn;
+    }
   }
 
   /**

@@ -323,13 +323,26 @@ class Room extends GameEntity {
   }
 
   /**
+   * Spawn an Item in the Room
+   * 
    * @param {GameState} state
    * @param {string} entityRef
-   * @return {Item} The newly created item
+   * @return {Item}
+   * 
+   * @fires Item#spawn
    */
   spawnItem(state, entityRef) {
     Logger.verbose(`\tSPAWN: Adding item [${entityRef}] to room [${this.title}]`);
-    const newItem = state.ItemFactory.create(this.area, entityRef);
+    let newItem = state.ItemFactory.create(this.area, entityRef);
+    
+    // HANDLE PROTOTYPING
+    if (newItem.prototype) {
+      const protoItem = state.ItemFactory.create(this.area, newItem.prototype);
+      const toSpawn = newItem.serializeIntoPrototype();
+      state.ItemFactory.modifyDefinition(protoItem, false, toSpawn);
+      newItem = protoItem;
+    }
+
     newItem.hydrate(state);
     newItem.sourceRoom = this;
     state.ItemManager.add(newItem);
@@ -342,14 +355,26 @@ class Room extends GameEntity {
   }
 
   /**
+   * Spawn an Npc in the Room
+   * 
    * @param {GameState} state
    * @param {string} entityRef
-   * @fires Npc#spawn
    * @return {Npc}
+   * 
+   * @fires Npc#spawn
    */
   spawnNpc(state, entityRef) {
     Logger.verbose(`\tSPAWN: Adding npc [${entityRef}] to room [${this.title}]`);
-    const newNpc = state.MobFactory.create(this.area, entityRef);
+    let newNpc = state.MobFactory.create(this.area, entityRef);
+
+    // HANDLE PROTOTYPING -> move to GameEntity?
+    if (newNpc.prototype) {
+      const protoNpc = state.MobFactory.create(this.area, newNpc.prototype);
+      const toSpawn = newNpc.serializeIntoPrototype();
+      state.MobFactory.modifyDefinition(protoNpc, false, toSpawn);
+      newNpc = protoNpc;
+    }
+
     newNpc.hydrate(state);
     newNpc.sourceRoom = this;
     this.area.addNpc(newNpc);
@@ -362,6 +387,11 @@ class Room extends GameEntity {
     return newNpc;
   }
 
+  /**
+   * Initialize the Room
+   * 
+   * @param {GameState} state
+   */
   hydrate(state) {
     this.setupBehaviors(state.RoomBehaviorManager);
 
@@ -378,25 +408,49 @@ class Room extends GameEntity {
     // persist through reboot unless they're stored on a player.
     // If you would like to change that functionality this is the place
 
-    this.defaultItems.forEach(defaultItem => {
-      if (typeof defaultItem === 'string') {
-        defaultItem = { id: defaultItem };
-      }
+    // LOAD ROOMS'S DEFAULT ITEMS (ARRAY)
+    if (Array.isArray(this.defaultItems)) {
+      this.defaultItems.forEach(defaultItem => {
+        if (typeof defaultItem === 'string') {
+          defaultItem = { id: defaultItem };
+        }
 
-      this.spawnItem(state, defaultItem.id);
-    });
+        this.spawnItem(state, defaultItem.id);
+      });
+    // SUPPORT COMPOSING ITEMS WITHIN ROOM IN ROOMS.YML (OBJECT)
+    } else {
+      Object.keys(this.defaultItems).forEach(defaultItem => {
+        if (this.defaultItems[defaultItem] === false) return;
+        const newItem = this.spawnItem(state, defaultItem.replace(/%.*$/g, ''));
 
-    this.defaultNpcs.forEach(defaultNpc => {
-      if (typeof defaultNpc === 'string') {
-        defaultNpc = { id: defaultNpc };
-      }
+        state.ItemFactory.modifyDefinition(newItem, false, this.defaultItems[defaultItem]);
+      });
+    }
 
-      try {
-        this.spawnNpc(state, defaultNpc.id);
-      } catch (err) {
-        Logger.error(err);
-      }
-    });
+    // LOAD ROOMS'S DEFAULT NPCS (ARRAY)
+    if (Array.isArray(this.defaultNpcs)) {
+      this.defaultNpcs.forEach(defaultNpc => {
+        if (typeof defaultNpc === 'string') {
+          defaultNpc = { id: defaultNpc };
+        }
+  
+        try {
+          this.spawnNpc(state, defaultNpc.id);
+        } catch (err) {
+          Logger.error(err);
+        }
+      });
+    // SUPPORT COMPOSING NPCS WITHIN ROOM IN ROOMS.YML (OBJECT)
+    } else {
+      Object.keys(this.defaultNpcs).forEach(defaultNpc => {
+        if (this.defaultNpcs[defaultNpc] === false) return;
+        const newNpc = this.spawnNpc(state, defaultNpc.replace(/%.*$/g, ''));
+
+        if (this.defaultNpcs[defaultNpc] !== true) {
+          state.MobFactory.modifyDefinition(newNpc, false, this.defaultNpcs[defaultNpc]);
+        }
+      });
+    }
   }
 
   /**

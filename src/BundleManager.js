@@ -267,7 +267,7 @@ class BundleManager {
       rooms: [],
     };
 
-    const scriptPath = this._getAreaScriptPath(bundle, areaName);
+    const scriptPath = this._getAreaScriptPath(bundle, 'area');
 
     if (manifest.script) {
       const areaScriptPath = `${scriptPath}/${manifest.script}.js`;
@@ -334,13 +334,27 @@ class BundleManager {
       return [];
     }
 
-    const scriptPath = this._getAreaScriptPath(bundle, areaName);
-
     return entities.map(entity => {
       const entityRef = factory.createEntityRef(areaName, entity.id);
       factory.setDefinition(entityRef, entity);
-      if (entity.script) {
-        const entityScript = `${scriptPath}/${type}/${entity.script}.js`;
+      if (entity.script !== undefined) {
+        let scriptPath = ''
+        switch (type) {
+          case 'npcs': {
+            scriptPath = this._getAreaScriptPath(bundle, 'npc');
+            break
+          }
+          case 'items': {
+            scriptPath = this._getAreaScriptPath(bundle, 'item');
+            break
+          }
+          case 'rooms': {
+            scriptPath = this._getAreaScriptPath(bundle, 'room');
+            break
+          }
+        }
+        console.log('scriptiy', scriptPath)
+        const entityScript = `${scriptPath}/${entity.script}.js`;
         if (!fs.existsSync(entityScript)) {
           Logger.warn(`\t\t\t[${entityRef}] has non-existent script "${entity.script}"`);
         } else {
@@ -472,7 +486,7 @@ class BundleManager {
         const hfile = new Helpfile(
           bundle,
           helpName,
-          records[helpName]
+          records[helpName].doc
         );
 
         const command = this.state.CommandManager.get(hfile.command)
@@ -662,11 +676,11 @@ class BundleManager {
   /**
    * @private
    * @param {string} bundle
-   * @param {string} areaName
+   * @param {string} type
    * @return {string}
    */
-  _getAreaScriptPath(bundle, areaName) {
-    return `${this.bundlesPath}/${bundle}/areas/${areaName}/scripts`;
+  _getAreaScriptPath(bundle, type) {
+    return `${this.bundlesPath}/${bundle}/scripts/${type}`;
   }
 }
 
