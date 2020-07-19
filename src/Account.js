@@ -1,6 +1,5 @@
 'use strict';
 const bcrypt = require('bcryptjs');
-const Data   = require('./Data');
 
 /**
  * Representation of a player's account
@@ -86,7 +85,8 @@ class Account {
    * @param {function} callback after-save callback
    */
   save(callback) {
-    Data.save('account', this.username, this.serialize(), callback);
+    this.__manager.loader.update(this.username, this.serialize())
+      .then(() => callback());
   }
 
   /**
