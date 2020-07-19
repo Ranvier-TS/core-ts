@@ -353,7 +353,6 @@ class BundleManager {
             break
           }
         }
-        console.log('scriptiy', scriptPath)
         const entityScript = `${scriptPath}/${entity.script}.js`;
         if (!fs.existsSync(entityScript)) {
           Logger.warn(`\t\t\t[${entityRef}] has non-existent script "${entity.script}"`);
