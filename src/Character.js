@@ -602,6 +602,7 @@ class Character extends Metadatable(EventEmitter) {
     const toReturn = {
       level: this.level,
       name: this.name,
+      attributes: this.attributes
     };
     if (this.__hydrated) {
       return Object.assign(toReturn, {

@@ -3,6 +3,7 @@
 const Npc = require('./Npc');
 const BehaviorManager = require('./BehaviorManager');
 const ItemType = require('./ItemType');
+const Attributes = require('./Attributes');
 
 /**
  * Stores definitions of entities to allow for easy creation/cloning
@@ -118,6 +119,18 @@ class EntityFactory {
             entity[toSet] = newProps;
             // console.log('__!', toSet, 'flat data is now:', newProps)
             return;
+          }
+        }
+      }
+
+      if (toSet === 'attributes') {
+        if (entity[toSet] instanceof Attributes) {
+          for (const attr in newProps) {
+            entity[toSet].get(attr).setBase(newProps[attr])
+          }
+        } else {
+          for (const attr in newProps) {
+            entity[toSet][attr] = newProps[attr]
           }
         }
       }
