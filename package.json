@@ -8,7 +8,7 @@
   "version": "3.0.6",
   "repository": "github:ranviermud/core",
   "engines": {
-    "node": ">= 10.12.0"
+    "node": ">= 12.18.2"
   },
   "scripts": {
     "test": "nyc --reporter=html --reporter=text --include=src --all mocha --recursive",
