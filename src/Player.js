@@ -223,6 +223,7 @@ class Player extends Character {
 
   serialize() {
     let data = Object.assign(super.serialize(), {
+      _id: this.name,
       account: this.account.name,
       experience: this.experience,
       inventory: this.inventory && this.inventory.serialize(),

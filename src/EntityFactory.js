@@ -63,11 +63,9 @@ class EntityFactory {
    * @return {type}
    */
   createByType(area, entityRef, Type) {
-    let definition = this.getDefinition(entityRef);
+    const definition = this.getDefinition(entityRef);
     if (!definition) {
-      // TODO: replace
-      definition = this.getDefinition('starting-temple:debug');
-      // throw new Error('No Entity definition found for ' + entityRef)
+      throw new Error('No Entity definition found for ' + entityRef)
     }
     const entity = new Type(area, definition);
 

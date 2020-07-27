@@ -86,7 +86,9 @@ class Account {
    */
   save(callback) {
     this.__manager.loader.update(this.username, this.serialize())
-      .then(() => callback());
+      .then((data) => {if (typeof callback === 'function') {
+        callback()
+      } console.log(data)});
   }
 
   /**
@@ -134,6 +136,7 @@ class Account {
     } = this;
 
     return {
+      _id: username,
       username,
       characters,
       password,
