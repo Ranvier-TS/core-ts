@@ -20,7 +20,7 @@ class Broadcast {
    * @param {?function(target, message): string} formatter=null Function to call to format the
    *   message to each target
    */
-  static at(source, message = '', wrapWidth = false, useColor = true, formatter = null) {
+  static at(source, message = '', wrapWidth = false, useColor = true, formatter = null, indent = 0) {
     if (!Broadcast.isBroadcastable(source)) {
       throw new Error(`Tried to broadcast message to non-broadcastable object: MESSAGE [${message}]`);
     }
@@ -41,7 +41,7 @@ class Broadcast {
       }
 
       let targetMessage = formatter(target, message);
-      targetMessage = wrapWidth ? Broadcast.wrap(targetMessage, wrapWidth) : ansi.parse(targetMessage);
+      targetMessage = wrapWidth ? Broadcast.indent(Broadcast.wrap(targetMessage, wrapWidth), indent) : ansi.parse(targetMessage);
       target.socket.write(targetMessage);
     }
   }
@@ -56,7 +56,7 @@ class Broadcast {
    * @param {boolean} useColor
    * @param {function} formatter
    */
-  static atExcept(source, message, excludes, wrapWidth, useColor, formatter) {
+  static atExcept(source, message, excludes, wrapWidth = 80, useColor, formatter) {
     if (!Broadcast.isBroadcastable(source)) {
       throw new Error(`Tried to broadcast message to non-broadcastable object: MESSAGE [${message}]`);
     }
@@ -83,7 +83,7 @@ class Broadcast {
    * @param {number|boolean} wrapWidth
    * @param {boolean} useColor
    */
-  static atFormatted(source, message, formatter, wrapWidth, useColor) {
+  static atFormatted(source, message, formatter, wrapWidth = 80, useColor) {
     Broadcast.at(source, message, wrapWidth, useColor, formatter);
   }
 
@@ -91,17 +91,18 @@ class Broadcast {
    * `Broadcast.at` with a newline
    * @see {@link Broadcast#at}
    */
-  static sayAt(source, message, wrapWidth, useColor, formatter) {
+  static sayAt(source, message, wrapWidth = 80, useColor, formatter, indent) {
+    if (indent > 0) wrapWidth = wrapWidth ? wrapWidth : 80
     Broadcast.at(source, message, wrapWidth, useColor, (target, message) => {
       return (formatter ? formatter(target, message) : message ) + '\r\n';
-    });
+    }, indent);
   }
 
   /**
    * `Broadcast.atExcept` with a newline
    * @see {@link Broadcast#atExcept}
    */
-  static sayAtExcept(source, message, excludes, wrapWidth, useColor, formatter) {
+  static sayAtExcept(source, message, excludes, wrapWidth = 80, useColor, formatter) {
     Broadcast.atExcept(source, message, excludes, wrapWidth, useColor, (target, message) => {
       return (formatter ? formatter(target, message) : message ) + '\r\n';
     });
@@ -111,7 +112,7 @@ class Broadcast {
    * `Broadcast.atFormatted` with a newline
    * @see {@link Broadcast#atFormatted}
    */
-  static sayAtFormatted(source, message, formatter, wrapWidth, useColor) {
+  static sayAtFormatted(source, message, formatter, wrapWidth = 80, useColor) {
     Broadcast.sayAt(source, message, wrapWidth, useColor, formatter);
   }
 
@@ -177,6 +178,34 @@ class Broadcast {
   }
 
   /**
+   * Capitalize a message
+   * @param {string}  message
+   * @return {string}
+   */
+  static capitalize(message) {
+    if (typeof message === 'string') {
+      const [first, ...rest] = message;
+      return `${first.toUpperCase()}${rest.join('')}`;
+    } else {
+      return message;
+    }
+  }
+
+  /**
+   * Return a simple channel reporter implementing Broadcastable
+   * @param {string}  name
+   * @return {string}
+   */
+  static getSystemReporter(name = 'SYSTEM') {
+    return {
+      name,
+      getBroadcastTargets () {
+        return []
+      }
+    }
+  }
+
+  /**
    * Center a string in the middle of a given width
    * @param {number} width
    * @param {string} message
@@ -223,10 +252,12 @@ class Broadcast {
    * Wrap a message to a given width. Note: Evaluates color tags
    * @param {string}  message
    * @param {?number} width   Defaults to 80
+   * @param {?number} indent left padding for wrapping lines
    * @return {string}
    */
-  static wrap(message, width = 80) {
-    return Broadcast._fixNewlines(wrap(ansi.parse(message), width));
+  static wrap(message, width = 80, indent = 0) {
+    const padding = Broadcast.line(indent, ' ');
+    return Broadcast._fixNewlines(wrap(ansi.parse(message), width), padding);
   }
 
   /**
@@ -238,19 +269,21 @@ class Broadcast {
   static indent(message, indent) {
     message = Broadcast._fixNewlines(message);
     const padding = Broadcast.line(indent, ' ');
-    return padding + message.replace(/\r\n/g, '\r\n' + padding);
+    const msg = message.replace(/\r\n(?!$)/g, '\r\n' + padding)
+    return padding + msg;
   }
 
   /**
    * Fix LF unpaired with CR for windows output
    * @param {string} message
+   * @param {?string} indent
    * @return {string}
    * @private
    */
-  static _fixNewlines(message) {
+  static _fixNewlines(message, indent = '') {
     // Fix \n not in a \r\n pair to prevent bad rendering on windows
     message = message.replace(/\r\n/g, '<NEWLINE>').split('\n');
-    message = message.join('\r\n').replace(/<NEWLINE>/g, '\r\n');
+    message = message.join(`\r\n${indent}`).replace(/<NEWLINE>/g, `\r\n${indent}`);
     // fix sty's incredibly stupid default of always appending ^[[0m
     return message.replace(/\x1B\[0m$/, '');
   }

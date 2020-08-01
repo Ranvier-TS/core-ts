@@ -25,6 +25,7 @@ class AccountManager {
    * @param {Account} acc
    */
   addAccount(acc) {
+    acc.__manager = this;
     this.accounts.set(acc.username, acc);
   }
 

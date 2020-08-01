@@ -3,8 +3,8 @@
 const EventEmitter = require('events');
 
 const bcrypt = require('bcryptjs');
-const Data   = require('./Data');
 const Metadatable = require('./Metadatable');
+
 /**
  * Representation of a player's account
  *
@@ -90,7 +90,8 @@ class Account extends Metadatable(EventEmitter) {
    * @param {function} callback after-save callback
    */
   save(callback) {
-    Data.save('account', this.username, this.serialize(), callback);
+    this.__manager.loader.update(this.username, this.serialize())
+      .then(() => callback());
   }
 
   /**

@@ -18,7 +18,7 @@ const CommandQueue = require('./CommandQueue');
 class Npc extends Scriptable(Character) {
   constructor(area, data) {
     super(data);
-    const validate = ['keywords', 'name', 'id'];
+    const validate = ['name', 'id'];
 
     for (const prop of validate) {
       if (!(prop in data)) {
@@ -35,10 +35,25 @@ class Npc extends Scriptable(Character) {
     this.description = data.description;
     this.entityReference = data.entityReference;
     this.id = data.id;
-    this.keywords = data.keywords;
-    this.quests = data.quests || [];
+
+    if (data.keywords && data.keywords.value) {
+      this.keywordsInherited = true;
+      this.keywords = [...new Set([...(data.keywords.value || []), ...this.name.split(' ')])];
+    } else {
+      this.keywords = [...new Set([...(data.keywords || []), ...this.name.split(' ')])];
+    }
+
+    this.quests = data.quests;
+    if (data.quests && data.quests.value) {
+      this.questsInherited = true;
+      this.quests = [...new Set((data.quests.value || []))];
+    } else {
+      this.quests = [...new Set((data.quests || []))];
+    }
+
     this.uuid = data.uuid || uuid();
     this.commandQueue = new CommandQueue();
+    this.prototype = data.prototype || null;
   }
 
   /**
@@ -79,22 +94,46 @@ class Npc extends Scriptable(Character) {
     this.emit('enterRoom', nextRoom);
   }
 
+  /**
+   * Initialize the NPC from storage
+   * 
+   * @param {GameState} state
+   */
   hydrate(state) {
     super.hydrate(state);
     state.MobManager.addMob(this);
 
     this.setupBehaviors(state.MobBehaviorManager);
 
-    for (let defaultItemId of this.defaultItems) {
-      Logger.verbose(`\tDIST: Adding item [${defaultItemId}] to npc [${this.name}]`);
-      const newItem = state.ItemFactory.create(this.area, defaultItemId);
-      newItem.hydrate(state);
-      state.ItemManager.add(newItem);
-      this.addItem(newItem);
-      /**
-       * @event Item#spawn
-       */
-      newItem.emit('spawn');
+    // Load Npc's default inventory (Array of entityReferences):
+    if (Array.isArray(this.defaultItems)) {
+      for (let defaultItemId of this.defaultItems) {
+        Logger.verbose(`\tDIST: Adding item [${defaultItemId}] to npc [${this.name}]`);
+        const newItem = state.ItemFactory.create(this.area, defaultItemId);
+
+        state.ItemManager.add(newItem);
+        this.addItem(newItem);
+        newItem.hydrate(state);
+        /**
+         * @event Item#spawn
+         */
+        newItem.emit('spawn');
+      }
+    // Support composing items within Npc definition (object):
+    } else {
+      Object.keys(this.defaultItems).forEach(defaultItemId => {
+        if (this.defaultItems[defaultItemId] === false) return;
+        Logger.verbose(`\tDIST: Adding item [${defaultItemId.replace(/%.*$/g, '')}] to npc [${this.name}]`);
+        const newItem = state.ItemFactory.create(this.area, defaultItemId.replace(/%.*$/g, ''));
+        state.ItemFactory.modifyDefinition(newItem, false, this.defaultItems[defaultItemId]);
+        state.ItemManager.add(newItem);
+        this.addItem(newItem);
+        newItem.hydrate(state);
+        /**
+         * @event Item#spawn
+         */
+        newItem.emit('spawn');
+      })
     }
 
     for (let [slot, defaultEqId] of Object.entries(this.defaultEquipment)) {
@@ -108,6 +147,37 @@ class Npc extends Scriptable(Character) {
        */
       newItem.emit('spawn', {type: Npc});
     }
+
+    // adjust quests for inheritance
+    let quests;
+    if (this.questsInherited) {
+      quests = {
+        '...': true,
+        value: this.quests
+      };
+    } else {
+      quests = this.quests;
+    }
+
+    // check description for inheritance
+    if (this.description.length > 0) {
+       char.description = this.description;
+    }
+
+    // delete hydration props
+    delete char.inventory;
+    delete char.attributes;
+    delete char.effects;
+
+    return Object.assign(char, {
+      script: this.script,
+      behaviors: new Map(this.behaviors || {}),
+      defaultEquipment: this.defaultEquipment || {},
+      defaultItems: this.defaultItems || [],
+      keywords,
+      quests,
+      metadata: this.metadata
+    });
   }
 
   get isNpc() {

@@ -35,8 +35,13 @@ const { Inventory, InventoryFullError } = require('./Inventory');
  */
 class Item extends GameEntity {
   constructor (area, item) {
+<<<<<<< HEAD
     super(item);
     const validate = ['keywords', 'name', 'id'];
+=======
+    super();
+    const validate = ['name', 'id'];
+>>>>>>> d4dbbd568b9337f705b22b9d56116b023d5d85e4
 
     for (const prop of validate) {
       if (!(prop in item)) {
@@ -45,10 +50,10 @@ class Item extends GameEntity {
     }
 
     this.area = area;
-    this.metadata  = item.metadata || {};
+    this.metadata  = Object.assign({}, item.metadata) || {};
     this.behaviors = new Map(Object.entries(item.behaviors || {}));
     this.defaultItems = item.items || [];
-    this.description = item.description || 'Nothing special.';
+    this.description = item.description || '';
     this.entityReference = item.entityReference; // EntityFactory key
     this.id          = item.id;
 
@@ -56,7 +61,6 @@ class Item extends GameEntity {
     this.initializeInventory(item.inventory, this.maxItems);
 
     this.isEquipped  = item.isEquipped || false;
-    this.keywords    = item.keywords;
     this.name        = item.name;
     this.room        = item.room || null;
     this.roomDesc    = item.roomDesc || '';
@@ -76,6 +80,14 @@ class Item extends GameEntity {
 
     this.carriedBy = null;
     this.equippedBy = null;
+
+    if (item.keywords && item.keywords.value) {
+      this.keywordsInherited = true;
+      this.keywords = [...new Set([...(item.keywords.value || []), ...this.name.split(' ')])];
+    } else {
+      this.keywords = [...new Set([...(item.keywords || []), ...this.name.split(' ')])];
+    }
+    this.prototype = item.prototype || null;
   }
 
   /**
@@ -111,14 +123,6 @@ class Item extends GameEntity {
    */
   removeItem(item) {
     this.inventory.removeItem(item);
-
-    // if we removed the last item unset the inventory
-    // This ensures that when it's reloaded it won't try to set
-    // its default inventory. Instead it will persist the fact
-    // that all the items were removed from it
-    if (!this.inventory.size) {
-      this.inventory = null;
-    }
     item.carriedBy = null;
   }
 
@@ -203,11 +207,22 @@ class Item extends GameEntity {
     this.locked = false;
   }
 
+  /**
+   * Initialize the Item from storage
+   * 
+   * @param {GameState} state
+   */
   hydrate(state, serialized = {}) {
-    super.hydrate(state);
+    if (this.__hydrated) {
+      Logger.warn('Attempted to hydrate already hydrated item.');
+      return false;
+    }
 
-    // perform deep copy if behaviors is set to prevent sharing of the object between
-    // item instances
+    this.__manager = state.ItemManager;
+
+    state.ItemManager.add(this);
+
+    // deep copy behaviors to prevent sharing of the object between item instances
     if (serialized.behaviors) {
       const behaviors = JSON.parse(JSON.stringify(serialized.behaviors));
       this.behaviors = new Map(Object.entries(behaviors));
@@ -231,21 +246,82 @@ class Item extends GameEntity {
     if (this.inventory) {
       this.inventory.hydrate(state, this);
     } else {
-    // otherwise load its default inv
-      this.defaultItems.forEach(defaultItemId => {
-        Logger.verbose(`\tDIST: Adding item [${defaultItemId}] to item [${this.name}]`);
-        const newItem = state.ItemFactory.create(this.area, defaultItemId);
-        newItem.hydrate(state);
-        state.ItemManager.add(newItem);
-        this.addItem(newItem);
-        /**
-         * @event Item#spawn
-         */
-        newItem.emit('spawn', {type: Item});
-      });
+      // Load item's default inventory (Array)
+      if (Array.isArray(this.defaultItems)) {
+        for (let defaultItemId of this.defaultItems) {
+          Logger.verbose(`\tDIST: Adding item [${defaultItemId}] to item [${this.name}]`);
+          const newItem = state.ItemFactory.create(this.area, defaultItemId);
+
+          state.ItemManager.add(newItem);
+          this.addItem(newItem);
+          newItem.hydrate(state);
+          /**
+           * @event Item#spawn
+           */
+          newItem.emit('spawn');
+        }
+      // Support composing item definitions in YAML (Object)
+      } else {
+        Object.keys(this.defaultItems).forEach(defaultItemId => {
+          if (this.defaultItems[defaultItemId] === false) return;
+          Logger.verbose(`\tDIST: Adding item [${defaultItemId.replace(/%.*$/g, '')}] to item [${this.name}]`);
+          const newItem = state.ItemFactory.create(this.area, defaultItemId.replace(/%.*$/g, ''));
+
+          state.ItemFactory.modifyDefinition(newItem, false, this.defaultItems[defaultItemId]);
+          state.ItemManager.add(newItem);
+          this.addItem(newItem);
+          newItem.hydrate(state);
+          /**
+           * @event Item#spawn
+           */
+          newItem.emit('spawn');
+        })
+      }
     }
   }
 
+  /**
+   * Serialize the Item to be used as a prototype
+   * 
+   * @return {Object}
+   */
+  serializeIntoPrototype () {
+    const item = this.serialize();
+
+    delete item.inventory;
+    delete item.entityReference;
+    delete item.description;
+    delete item.keywords;
+
+    if (this.description.length > 0) {
+      item.description = this.description;
+    }
+
+    let keywords;
+    if (this.keywordsInherited) {
+      keywords = {
+        '...': true,
+        value: this.keywords
+      };
+    } else {
+      keywords = this.keywords;
+    }
+
+    return Object.assign(item, {
+      script: this.script || undefined,
+      keywords,
+      behaviors: new Map(this.behaviors || {}),
+      defaultEquipment: this.defaultEquipment || {},
+      defaultItems: this.defaultItems || [],
+      metadata: this.metadata
+    });
+  }
+
+  /**
+   * Gather data to be persisted
+   * 
+   * @return {Object}
+   */
   serialize() {
     const data = super.serialize();
     let behaviors = {};

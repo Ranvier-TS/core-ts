@@ -65,6 +65,15 @@ class PlayerManager extends EventEmitter {
     if (player.room) {
       player.room.removePlayer(player);
     }
+
+    if (player.equipment && player.equipment.size) {
+      player.equipment.forEach((item, slot) => player.unequip(slot));
+    }
+  
+    if (player.inventory && player.inventory.size) {
+      player.inventory.forEach(item => item.__manager.remove(item));
+    }
+
     player.__pruned = true;
     this.players.delete(this.keyify(player));
   }
@@ -157,6 +166,7 @@ class PlayerManager extends EventEmitter {
   }
 
   /**
+   * Save all players
    * @fires Player#save
    */
   async saveAll() {

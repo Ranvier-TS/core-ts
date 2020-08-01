@@ -33,6 +33,10 @@ class Character extends Metadatable(EffectableEntity) {
     this.combatData = {};
     this.level = data.level || 1;
     this.room = data.room || null;
+<<<<<<< HEAD
+=======
+    this.attributes = Object.assign({}, data.attributes) || new Attributes();
+>>>>>>> d4dbbd568b9337f705b22b9d56116b023d5d85e4
 
     this.followers = new Set();
     this.following = null;
@@ -382,14 +386,6 @@ class Character extends Metadatable(EffectableEntity) {
    */
   removeItem(item) {
     this.inventory.removeItem(item);
-
-    // if we removed the last item unset the inventory
-    // This ensures that when it's reloaded it won't try to set
-    // its default inventory. Instead it will persist the fact
-    // that all the items were removed from it
-    if (!this.inventory.size) {
-      this.inventory = null;
-    }
     item.carriedBy = null;
   }
 
@@ -451,15 +447,17 @@ class Character extends Metadatable(EffectableEntity) {
    * @fires Character#unfollowed
    */
   unfollow() {
-    if (this.following) {
-      this.following.removeFollower(this);
-      /**
-       * @event Character#unfollowed
-       * @param {Character} following
-       */
-      this.emit('unfollowed', this.following);
-      this.following = null;
+    if (!this.following) {
+      return
     }
+
+    this.following.removeFollower(this);
+    /**
+     * @event Character#unfollowed
+     * @param {Character} following
+     */
+    this.emit('unfollowed', this.following);
+    this.following = null;
   }
 
   /**
@@ -507,15 +505,77 @@ class Character extends Metadatable(EffectableEntity) {
   }
 
   /**
+<<<<<<< HEAD
+=======
+   * Initialize the character from storage
+   * 
+   * @param {GameState} state
+   */
+  hydrate(state) {
+    if (this.__hydrated) {
+      Logger.warn('Attempted to hydrate already hydrated character.');
+      return false;
+    }
+
+    if (!(this.attributes instanceof Attributes)) {
+      const attributes = this.attributes;
+      this.attributes = new Attributes();
+
+      for (const attr in attributes) {
+        let attrConfig = attributes[attr];
+        if (typeof attrConfig === 'number') {
+          attrConfig = { base: attrConfig };
+        }
+
+        if (typeof attrConfig !== 'object' || !('base' in attrConfig)) {
+          throw new Error('Invalid base value given to attributes.\n' + JSON.stringify(attributes, null, 2));
+        }
+
+        if (!state.AttributeFactory.has(attr)) {
+          throw new Error(`Entity trying to hydrate with invalid attribute ${attr}`);
+        }
+
+        this.addAttribute(state.AttributeFactory.create(attr, attrConfig.base, attrConfig.delta || 0));
+      }
+    }
+
+    this.effects.hydrate(state);
+
+    // inventory is hydrated in the subclasses because npc and players hydrate their inventories differently
+
+    this.__hydrated = true;
+  }
+
+  /**
+>>>>>>> d4dbbd568b9337f705b22b9d56116b023d5d85e4
    * Gather data to be persisted
+   * 
    * @return {Object}
    */
   serialize() {
+<<<<<<< HEAD
     return Object.assign(super.serialize(), {
       level: this.level,
       name: this.name,
       room: this.room.entityReference,
     });
+=======
+    const toReturn = {
+      level: this.level,
+      name: this.name,
+    };
+    if (this.__hydrated) {
+      return Object.assign(toReturn, {
+        attributes: this.attributes.serialize(),
+        level: this.level,
+        name: this.name,
+        room: this.room.entityReference,
+        effects: this.effects.serialize(),
+      });
+    } else {
+      return toReturn;
+    }
+>>>>>>> d4dbbd568b9337f705b22b9d56116b023d5d85e4
   }
 
   /**

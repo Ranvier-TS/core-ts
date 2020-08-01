@@ -68,12 +68,12 @@ class Channel {
     this.audience.configure({ state, sender, message });
     const targets = this.audience.getBroadcastTargets();
 
-    if (this.audience instanceof PartyAudience && !targets.length) {
+    if (this.audience instanceof PartyAudience && !sender.party) {
       throw new NoPartyError();
     }
 
-    if (this.audience instanceof PrivateAudience && !targets.length) {
-      throw new NoRecipientError();
+    if (this.audience.hasCommunicatorItem && !this.audience.hasCommunicatorItem(sender)) {
+      throw new NoCommunicatorItemError();
     }
 
     // Allow audience to change message e.g., strip target name.
@@ -87,11 +87,18 @@ class Channel {
       } else {
         Broadcast.sayAt(sender, this.formatter.sender(sender, null, message, this.colorify.bind(this)));
       }
-  
-      // send to audience targets
-      Broadcast.sayAtFormatted(this.audience, message, (target, message) => {
-        return this.formatter.target(sender, target, message, this.colorify.bind(this));
-      });
+      if (!message.length) {
+        throw new NoMessageError();
+      }
+
+      const target = targets[0];
+      // stop player trying to talk to self on a private audience
+      if (target === '_self') {
+        throw new TargetSelfError();
+      }
+      Broadcast.sayAt(sender, this.formatter.sender(sender, target, message, this.colorify.bind(this)));
+    } else {
+      Broadcast.sayAt(sender, this.formatter.sender(sender, null, message, this.colorify.bind(this)));
     }
 
     // strip color tags
@@ -178,10 +185,14 @@ class Channel {
 class NoPartyError extends Error {}
 class NoRecipientError extends Error {}
 class NoMessageError extends Error {}
+class TargetSelfError extends Error {}
+class NoCommunicatorItemError extends Error {}
 
 module.exports = {
   Channel,
   NoPartyError,
   NoRecipientError,
   NoMessageError,
+  TargetSelfError,
+  NoCommunicatorItemError
 };
