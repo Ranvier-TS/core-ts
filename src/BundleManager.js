@@ -328,7 +328,7 @@ class BundleManager {
       Logger.warn(`\t\t\t${type} has an invalid value [${entities}]`);
       return [];
     }
-
+    console.log({loader, entities});
     return entities.map(entity => {
       const entityRef = factory.createEntityRef(areaName, entity.id);
       factory.setDefinition(entityRef, entity);
@@ -348,10 +348,7 @@ class BundleManager {
             break
           }
         }
-<<<<<<< HEAD
-=======
-        console.log('scriptiy', scriptPath)
->>>>>>> d4dbbd568b9337f705b22b9d56116b023d5d85e4
+
         const entityScript = `${scriptPath}/${entity.script}.js`;
         if (!fs.existsSync(entityScript)) {
           Logger.warn(`\t\t\t[${entityRef}] has non-existent script "${entity.script}"`);
