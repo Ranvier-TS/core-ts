@@ -35,13 +35,8 @@ const { Inventory, InventoryFullError } = require('./Inventory');
  */
 class Item extends GameEntity {
   constructor (area, item) {
-<<<<<<< HEAD
     super(item);
-    const validate = ['keywords', 'name', 'id'];
-=======
-    super();
     const validate = ['name', 'id'];
->>>>>>> d4dbbd568b9337f705b22b9d56116b023d5d85e4
 
     for (const prop of validate) {
       if (!(prop in item)) {

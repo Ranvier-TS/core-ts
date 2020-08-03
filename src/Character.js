@@ -502,49 +502,6 @@ class Character extends Metadatable(EffectableEntity) {
   }
 
   /**
-<<<<<<< HEAD
-=======
-   * Initialize the character from storage
-   * 
-   * @param {GameState} state
-   */
-  hydrate(state) {
-    if (this.__hydrated) {
-      Logger.warn('Attempted to hydrate already hydrated character.');
-      return false;
-    }
-
-    if (!(this.attributes instanceof Attributes)) {
-      const attributes = this.attributes;
-      this.attributes = new Attributes();
-
-      for (const attr in attributes) {
-        let attrConfig = attributes[attr];
-        if (typeof attrConfig === 'number') {
-          attrConfig = { base: attrConfig };
-        }
-
-        if (typeof attrConfig !== 'object' || !('base' in attrConfig)) {
-          throw new Error('Invalid base value given to attributes.\n' + JSON.stringify(attributes, null, 2));
-        }
-
-        if (!state.AttributeFactory.has(attr)) {
-          throw new Error(`Entity trying to hydrate with invalid attribute ${attr}`);
-        }
-
-        this.addAttribute(state.AttributeFactory.create(attr, attrConfig.base, attrConfig.delta || 0));
-      }
-    }
-
-    this.effects.hydrate(state);
-
-    // inventory is hydrated in the subclasses because npc and players hydrate their inventories differently
-
-    this.__hydrated = true;
-  }
-
-  /**
->>>>>>> d4dbbd568b9337f705b22b9d56116b023d5d85e4
    * Gather data to be persisted
    * 
    * @return {Object}
