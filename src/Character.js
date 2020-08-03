@@ -553,18 +553,12 @@ class Character extends Metadatable(EffectableEntity) {
    * @return {Object}
    */
   serialize() {
-<<<<<<< HEAD
-    return Object.assign(super.serialize(), {
-      level: this.level,
-      name: this.name,
-      room: this.room.entityReference,
-    });
-=======
     const toReturn = {
       level: this.level,
       name: this.name,
       attributes: this.attributes
     };
+
     if (this.__hydrated) {
       return Object.assign(toReturn, {
         attributes: this.attributes.serialize(),
@@ -576,7 +570,6 @@ class Character extends Metadatable(EffectableEntity) {
     } else {
       return toReturn;
     }
->>>>>>> d4dbbd568b9337f705b22b9d56116b023d5d85e4
   }
 
   /**
