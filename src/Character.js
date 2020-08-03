@@ -33,10 +33,7 @@ class Character extends Metadatable(EffectableEntity) {
     this.combatData = {};
     this.level = data.level || 1;
     this.room = data.room || null;
-<<<<<<< HEAD
-=======
     this.attributes = Object.assign({}, data.attributes) || new Attributes();
->>>>>>> d4dbbd568b9337f705b22b9d56116b023d5d85e4
 
     this.followers = new Set();
     this.following = null;
