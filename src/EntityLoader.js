@@ -56,6 +56,14 @@ class EntityLoader {
 
     return this.dataSource.update(this.config, id, data);
   }
+
+  delete(id) {
+    if (!('delete' in this.dataSource)) {
+      throw new Error(`delete not supported by ${this.dataSource.name}`);
+    }
+
+    return this.dataSource.delete(this.config, id);
+  }
 }
 
 module.exports = EntityLoader;

@@ -166,7 +166,6 @@ class Npc extends Scriptable(Character) {
 
     // delete hydration props
     delete char.inventory;
-    delete char.attributes;
     delete char.effects;
 
     return Object.assign(char, {
