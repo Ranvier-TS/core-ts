@@ -237,6 +237,7 @@ class Player extends Character {
       prompt,
       quests,
       role,
+      _id: this.name,
     });
 
     if (this.equipment instanceof Map) {
