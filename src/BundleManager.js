@@ -239,7 +239,7 @@ class BundleManager {
     areas = await areaLoader.fetchAll();
 
     for (const name in areas) {
-      const manifest = areas[name];
+      const manifest = areas[name].doc;
       this.areas.push(name);
       await this.loadArea(bundle, name, manifest);
     }
@@ -328,7 +328,6 @@ class BundleManager {
       Logger.warn(`\t\t\t${type} has an invalid value [${entities}]`);
       return [];
     }
-    console.log({loader, entities});
     return entities.map(entity => {
       const entityRef = factory.createEntityRef(areaName, entity.id);
       factory.setDefinition(entityRef, entity);
