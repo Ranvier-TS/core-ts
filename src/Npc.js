@@ -159,16 +159,7 @@ class Npc extends Scriptable(Character) {
       quests = this.quests;
     }
 
-    // check description for inheritance
-    if (this.description.length > 0) {
-       char.description = this.description;
-    }
-
-    // delete hydration props
-    delete char.inventory;
-    delete char.effects;
-
-    return Object.assign(char, {
+    return Object.assign({}, {
       script: this.script,
       behaviors: new Map(this.behaviors || {}),
       defaultEquipment: this.defaultEquipment || {},
