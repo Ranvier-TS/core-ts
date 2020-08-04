@@ -154,7 +154,7 @@ class Npc extends Scriptable(Character) {
       defaultEquipment: this.defaultEquipment || {},
       defaultItems: this.defaultItems || [],
       keywords: this.keywords,
-      quests,
+      quests: this.quests,
       metadata: this.metadata
     });
   }
