@@ -148,23 +148,12 @@ class Npc extends Scriptable(Character) {
       newItem.emit('spawn', {type: Npc});
     }
 
-    // adjust quests for inheritance
-    let quests;
-    if (this.questsInherited) {
-      quests = {
-        '...': true,
-        value: this.quests
-      };
-    } else {
-      quests = this.quests;
-    }
-
     return Object.assign({}, {
       script: this.script,
       behaviors: new Map(this.behaviors || {}),
       defaultEquipment: this.defaultEquipment || {},
       defaultItems: this.defaultItems || [],
-      keywords,
+      keywords: this.keywords,
       quests,
       metadata: this.metadata
     });
