@@ -56,6 +56,7 @@ export {
 } from './types/SkillErrors';
 export { SkillType } from './types/SkillType';
 
+export type CommandManager = any;
 export type DataSourceRegistry = any;
 export type EffectFactory = any;
 export type EntityLoaderRegistry = any;
