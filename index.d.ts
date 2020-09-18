@@ -56,7 +56,9 @@ export {
 } from './types/SkillErrors';
 export { SkillType } from './types/SkillType';
 
+export type DataSourceRegistry = any;
 export type EffectFactory = any;
+export type EntityLoaderRegistry = any;
 export type GameServer = any;
 export type HelpManager = any;
 export type ItemFactory = any;
