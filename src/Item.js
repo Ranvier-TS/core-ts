@@ -208,10 +208,7 @@ class Item extends GameEntity {
    * @param {GameState} state
    */
   hydrate(state, serialized = {}) {
-    if (this.__hydrated) {
-      Logger.warn('Attempted to hydrate already hydrated item.');
-      return false;
-    }
+    super.hydrate(state);
 
     this.__manager = state.ItemManager;
 

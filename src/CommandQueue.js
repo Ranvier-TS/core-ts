@@ -26,6 +26,7 @@ class CommandQueue {
   /**
    * @param {CommandExecutable} executable Thing to run with an execute and a queue label
    * @param {number} lag Amount of lag to apply to the queue after the command is run
+   * @returns {number}
    */
   enqueue(executable, lag) {
     let newIndex = this.commands.push(Object.assign(executable, { lag })) - 1;
