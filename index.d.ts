@@ -55,3 +55,19 @@ export {
   PassiveError,
 } from './types/SkillErrors';
 export { SkillType } from './types/SkillType';
+
+type EffectFactory = any;
+type GameServer = any;
+type HelpManager = any;
+type ItemFactory = any;
+type ItemManager = any;
+type MobFactory = any;
+type MobManager = any;
+type PartyManager = any;
+type PlayerManager = any;
+type QuestFactory = any;
+type QuestGoalManager = any;
+type QuestRewardManager = any;
+type RoomFactory = any;
+type RoomManager = any;
+type SkillManager = any;
