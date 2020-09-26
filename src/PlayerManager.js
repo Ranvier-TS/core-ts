@@ -94,11 +94,11 @@ class PlayerManager extends EventEmitter {
   }
 
   /**
-   * @param {Function} fn Filter function
-   * @return {array}
+   * @param {Function} predicate Filter function
+   * @return {array},
    */
-  filter(fn) {
-    return this.getPlayersAsArray().filter(fn);
+  filter(predicate) {
+    return this.getPlayersAsArray().filter(predicate);
   }
 
   /**
