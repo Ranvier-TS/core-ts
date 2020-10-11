@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Classes representing various channel audiences
  *
@@ -7,10 +5,25 @@
  * @namespace ChannelAudience
  */
 
+export interface AudienceOptions {
+  /** @param {GameState} state */
+  state: GameState;
+  /** @param {Player} sender */
+  sender: Player;
+  /** @param {string} message */
+  message: string;
+}
+
 /**
  * Base channel audience class
  */
-class ChannelAudience {
+export class ChannelAudience {
+  /** @param {GameState} state */
+  state: IGameState;
+  /** @param {Player} sender */
+  sender: Player;
+  /** @param {string} message */
+  message: string = "";
   /**
    * Configure the current state for the audience. Called by {@link Channel#send}
    * @param {object} options
@@ -18,7 +31,7 @@ class ChannelAudience {
    * @param {Player} options.sender
    * @param {string} options.message
    */
-  configure(options) {
+  configure(options: AudienceOptions) {
     this.state = options.state;
     this.sender = options.sender;
     this.message = options.message;
@@ -37,9 +50,7 @@ class ChannelAudience {
    * @param {string} message
    * @return {string}
    */
-  alterMessage(message) {
+  alterMessage(message: string) {
     return message;
   }
 }
-
-module.exports = ChannelAudience;

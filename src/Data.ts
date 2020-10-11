@@ -1,16 +1,14 @@
-'use strict';
+const fs = require("fs");
+const path = require("path");
+const yaml = require("js-yaml");
 
-const fs = require('fs');
-const path = require('path');
-const yaml = require('js-yaml');
-
-let dataPath = null;
+let dataPath: string | null = null;
 
 /**
  * Class for loading/parsing data files from disk
  */
-class Data {
-  static setDataPath(path) {
+export class Data {
+  static setDataPath(path: string) {
     dataPath = path;
   }
 
@@ -19,16 +17,18 @@ class Data {
    * @param {string} filepath
    * @return {*} parsed contents of file
    */
-  static parseFile(filepath) {
+  static parseFile(filepath: string) {
     if (!fs.existsSync(filepath)) {
       throw new Error(`File [${filepath}] does not exist!`);
     }
 
-    const contents = fs.readFileSync(fs.realpathSync(filepath)).toString('utf8');
+    const contents = fs
+      .readFileSync(fs.realpathSync(filepath))
+      .toString("utf8");
     const parsers = {
-      '.yml': yaml.load,
-      '.yaml': yaml.load,
-      '.json': JSON.parse,
+      ".yml": yaml.load,
+      ".yaml": yaml.load,
+      ".json": JSON.parse,
     };
 
     const ext = path.extname(filepath);
@@ -45,18 +45,22 @@ class Data {
    * @param {*} data
    * @param {function} callback
    */
-  static saveFile(filepath, data, callback) {
+  static saveFile(
+    filepath: string,
+    data: any,
+    callback?: Function | undefined
+  ) {
     if (!fs.existsSync(filepath)) {
       throw new Error(`File [${filepath}] does not exist!`);
     }
 
     const serializers = {
-      '.yml': yaml.safeDump,
-      '.yaml': yaml.safeDump,
-      '.json': function(data) {
+      ".yml": yaml.safeDump,
+      ".yaml": yaml.safeDump,
+      ".json": function (data: any) {
         //Make it prettttty
         return JSON.stringify(data, null, 2);
-      }
+      },
     };
 
     const ext = path.extname(filepath);
@@ -65,7 +69,7 @@ class Data {
     }
 
     const dataToWrite = serializers[ext](data);
-    fs.writeFileSync(filepath, dataToWrite, 'utf8');
+    fs.writeFileSync(filepath, dataToWrite, "utf8");
 
     if (callback) {
       callback();
@@ -78,7 +82,7 @@ class Data {
    * @param {string} id
    * @return {*}
    */
-  static load(type, id) {
+  static load(type: string, id: string) {
     return this.parseFile(this.getDataFilePath(type, id));
   }
 
@@ -89,8 +93,12 @@ class Data {
    * @param {*} data
    * @param {function} callback
    */
-  static save(type, id, data, callback) {
-    fs.writeFileSync(this.getDataFilePath(type, id), JSON.stringify(data, null, 2), 'utf8');
+  static save(type: string, id: string, data: any, callback?: Function) {
+    fs.writeFileSync(
+      this.getDataFilePath(type, id),
+      JSON.stringify(data, null, 2),
+      "utf8"
+    );
     if (callback) {
       callback();
     }
@@ -102,7 +110,7 @@ class Data {
    * @param {string} id
    * @return {boolean}
    */
-  static exists(type, id) {
+  static exists(type: string, id: string) {
     return fs.existsSync(this.getDataFilePath(type, id));
   }
 
@@ -112,12 +120,12 @@ class Data {
    * @param {string} id
    * @return {string}
    */
-  static getDataFilePath(type, id) {
+  static getDataFilePath(type: string, id: string) {
     switch (type) {
-      case 'player': {
+      case "player": {
         return dataPath + `player/${id}.json`;
       }
-      case 'account': {
+      case "account": {
         return dataPath + `account/${id}.json`;
       }
     }
@@ -129,7 +137,7 @@ class Data {
    * @param {string} [file]
    * @return {boolean}
    */
-  static isScriptFile(path, file) {
+  static isScriptFile(path: string, file: string) {
     file = file || path;
     return fs.statSync(path).isFile() && file.match(/js$/);
   }
@@ -139,9 +147,7 @@ class Data {
    * @return string
    */
   static loadMotd() {
-    const motd = fs.readFileSync(dataPath + 'motd').toString('utf8');
+    const motd = fs.readFileSync(dataPath + "motd").toString("utf8");
     return motd;
   }
 }
-
-module.exports = Data;

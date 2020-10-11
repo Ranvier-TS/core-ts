@@ -1,11 +1,29 @@
-'use strict';
+export interface IHelpDef {
+  bundle: string;
+  name: string;
+  options: IHelpOptionsDef;
+}
 
-const B = require('./Broadcast');
+export interface IHelpOptionsDef {
+  keywords: string[];
+  command?: string;
+  channel?: string;
+  related?: string[];
+  body: string;
+}
 
 /**
  * Representation of an in game helpfile
  */
-class Helpfile {
+export class Helpfile {
+  bundle: string;
+  name: string;
+  keywords: string[];
+  command?: string;
+  channel?: string;
+  related?: string[];
+  body: string;
+  
   /**
    * @param {string} bundle Bundle the helpfile comes from
    * @param {string} name
@@ -16,7 +34,7 @@ class Helpfile {
    * @param {Array<string>} [options.related]
    * @param {string} options.body
    */
-  constructor(bundle, name, options) {
+  constructor(bundle: string, name: string, options: IHelpOptionsDef) {
     this.bundle = bundle;
     this.name = name;
 
@@ -31,5 +49,3 @@ class Helpfile {
     this.body = options.body;
   }
 }
-
-module.exports = Helpfile;

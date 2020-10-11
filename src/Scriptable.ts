@@ -1,6 +1,4 @@
-'use strict';
-
-const Logger = require('./Logger');
+import { Logger } from "./Logger";
 
 /**
  * @ignore
@@ -8,7 +6,7 @@ const Logger = require('./Logger');
  * @param {*} parentClass
  * @return {module:ScriptableFn~Scriptable}
  */
-const Scriptable = parentClass =>
+export const Scriptable = (parentClass: any) =>
 
 /**
  * Mixin for entities that can have behaviors attached from a BehaviorManager
@@ -16,7 +14,7 @@ const Scriptable = parentClass =>
  * @alias module:ScriptableFn~Scriptable
  */
 class extends parentClass {
-  emit(name, ...args) {
+  emit(name: string, ...args: any) {
     // Squelch events on a pruned entity. Attempts to prevent the case where an entity has been effectively removed
     // from the game but somehow still triggered a listener. Set by respective entity Manager class
     if (this.__pruned) {
@@ -31,7 +29,7 @@ class extends parentClass {
    * @param {string} name
    * @return {boolean}
    */
-  hasBehavior(name) {
+  hasBehavior(name: string) {
     return this.behaviors.has(name);
   }
 
@@ -39,7 +37,7 @@ class extends parentClass {
    * @param {string} name
    * @return {*}
    */
-  getBehavior(name) {
+  getBehavior(name: string) {
     return this.behaviors.get(name);
   }
 
@@ -47,7 +45,7 @@ class extends parentClass {
    * Attach this entity's behaviors from the manager
    * @param {BehaviorManager} manager
    */
-  setupBehaviors(manager) {
+  setupBehaviors(manager: BehaviorManager) {
     for (let [behaviorName, config] of this.behaviors) {
       let behavior = manager.get(behaviorName);
       if (!behavior) {
@@ -61,5 +59,3 @@ class extends parentClass {
     }
   }
 };
-
-module.exports = Scriptable;

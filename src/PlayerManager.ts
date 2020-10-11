@@ -1,9 +1,10 @@
-'use strict';
+import { EventEmitter } from "events";
+import { Account } from "./Account";
+import { Data } from "./Data";
+import { EntityLoader } from "./EntityLoader";
+import { Player } from "./Player";
 
-const EventEmitter = require('events');
-const Data = require('./Data');
-const Player = require('./Player');
-const EventManager = require('./EventManager');
+const EventManager = require("./EventManager");
 
 /**
  * Keeps track of all active players in game
@@ -14,20 +15,24 @@ const EventManager = require('./EventManager');
  * @listens PlayerManager#save
  * @listens PlayerManager#updateTick
  */
-class PlayerManager extends EventEmitter {
+export class PlayerManager extends EventEmitter {
+  players: Map<string, Player>;
+  events: EventManager;
+  loader: EntityLoader | null;
+
   constructor() {
     super();
     this.players = new Map();
     this.events = new EventManager();
     this.loader = null;
-    this.on('updateTick', this.tickAll);
+    this.on("updateTick", this.tickAll);
   }
 
   /**
    * Set the entity loader from which players are loaded
    * @param {EntityLoader}
    */
-  setLoader(loader) {
+  setLoader(loader: EntityLoader) {
     this.loader = loader;
   }
 
@@ -35,14 +40,14 @@ class PlayerManager extends EventEmitter {
    * @param {string} name
    * @return {Player}
    */
-  getPlayer(name) {
+  getPlayer(name: string) {
     return this.players.get(name.toLowerCase());
   }
 
   /**
    * @param {Player} player
    */
-  addPlayer(player) {
+  addPlayer(player: Player) {
     this.players.set(this.keyify(player), player);
   }
 
@@ -52,7 +57,7 @@ class PlayerManager extends EventEmitter {
    * @param {Player} player
    * @param {boolean} killSocket true to also force close the player's socket
    */
-  removePlayer(player, killSocket = false) {
+  removePlayer(player: Player, killSocket: boolean = false) {
     if (killSocket) {
       player.socket.end();
     }
@@ -78,7 +83,7 @@ class PlayerManager extends EventEmitter {
    * @param {string}   behaviorName
    * @param {Function} listener
    */
-  addListener(event, listener) {
+  addListener(event: string | symbol, listener: (...args: any[]) => void){
     this.events.add(event, listener);
   }
 
@@ -86,7 +91,7 @@ class PlayerManager extends EventEmitter {
    * @param {Function} fn Filter function
    * @return {array}
    */
-  filter(fn) {
+  filter(fn: Function) {
     return this.getPlayersAsArray().filter(fn);
   }
 
@@ -98,13 +103,13 @@ class PlayerManager extends EventEmitter {
    * @param {boolean} force true to force reload from storage
    * @return {Player}
    */
-  async loadPlayer(state, account, username, force) {
+  async loadPlayer(state: IGameState, account: Account, username: string, force: boolean) {
     if (this.players.has(username) && !force) {
       return this.getPlayer(username);
     }
 
     if (!this.loader) {
-      throw new Error('No entity loader configured for players');
+      throw new Error("No entity loader configured for players");
     }
 
     const data = await this.loader.fetch(username);
@@ -124,7 +129,7 @@ class PlayerManager extends EventEmitter {
    * @param {Player} player
    * @return {string}
    */
-  keyify(player) {
+  keyify(player: Player) {
     return player.name.toLowerCase();
   }
 
@@ -132,17 +137,17 @@ class PlayerManager extends EventEmitter {
    * @param {string} name
    * @return {boolean}
    */
-  exists(name) {
-    return Data.exists('player', name);
+  exists(name: string) {
+    return Data.exists("player", name);
   }
 
   /**
    * Save a player
    * @fires Player#save
    */
-  async save(player) {
+  async save(player: Player) {
     if (!this.loader) {
-      throw new Error('No entity loader configured for players');
+      throw new Error("No entity loader configured for players");
     }
 
     await this.loader.update(player.name, player.serialize());
@@ -150,14 +155,14 @@ class PlayerManager extends EventEmitter {
     /**
      * @event Player#saved
      */
-    player.emit('saved');
+    player.emit("saved");
   }
 
   /**
    * @fires Player#saved
    */
   async saveAll() {
-    for (const [ name, player ] of this.players.entries()) {
+    for (const [name, player] of this.players.entries()) {
       await this.save(player);
     }
   }
@@ -166,11 +171,11 @@ class PlayerManager extends EventEmitter {
    * @fires Player#updateTick
    */
   tickAll() {
-    for (const [ name, player ] of this.players.entries()) {
+    for (const [name, player] of this.players.entries()) {
       /**
        * @event Player#updateTick
        */
-      player.emit('updateTick');
+      player.emit("updateTick");
     }
   }
 
@@ -182,5 +187,3 @@ class PlayerManager extends EventEmitter {
     return this.getPlayersAsArray();
   }
 }
-
-module.exports = PlayerManager;

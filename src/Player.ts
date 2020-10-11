@@ -1,14 +1,37 @@
-'use strict';
+"use strict";
 
-const Attributes = require('./Attributes');
-const Character = require('./Character');
-const CommandQueue = require('./CommandQueue');
-const Config = require('./Config');
-const Data = require('./Data');
-const QuestTracker = require('./QuestTracker');
-const Room = require('./Room');
-const Logger = require('./Logger');
-const PlayerRoles = require('./PlayerRoles');
+import { Character } from "./Character";
+import { IInventoryDef } from "./Inventory";
+import { IItemDef } from "./Item";
+import { Logger } from "./Logger";
+import { Metadata } from "./Metadatable";
+
+const CommandQueue = require("./CommandQueue");
+const Config = require("./Config");
+const QuestTracker = require("./QuestTracker");
+const PlayerRoles = require("./PlayerRoles");
+
+export interface IPlayerDef {
+  account: Account | null;
+  experience: number;
+  password: string;
+  prompt: string;
+  socket: any | null; // TODO: Socket Definition
+  quests: ISerializedQuestTracker;
+  role: string; // TODO: PlayerRole
+}
+
+export interface ISerializedPlayer {
+  account: string;
+  experience: number;
+  inventory: IInventoryDef;
+  metadata: Metadata;
+  password: string;
+  prompt: string;
+  quests: ISerializedQuestTracker;
+  role: string;
+  equipment: Record<string, IItemDef> | null;
+}
 
 /**
  * @property {Account} account
@@ -21,37 +44,44 @@ const PlayerRoles = require('./PlayerRoles');
  * @property {{completed: Array, active: Array}} questData
  * @extends Character
  */
-class Player extends Character {
-  constructor(data) {
+export class Player extends Character {
+  constructor(data: IPlayerDef) {
     super(data);
 
     this.account = data.account || null;
     this.experience = data.experience || 0;
     this.extraPrompts = new Map();
-    this.password  = data.password;
-    this.prompt = data.prompt || '> ';
+    this.password = data.password;
+    this.prompt = data.prompt || "> ";
     this.socket = data.socket || null;
-    const questData = Object.assign({
-      completed: [],
-      active: []
-    }, data.quests);
+    const questData = Object.assign(
+      {
+        completed: [],
+        active: [],
+      },
+      data.quests
+    );
 
-    this.questTracker = new QuestTracker(this, questData.active, questData.completed);
+    this.questTracker = new QuestTracker(
+      this,
+      questData.active,
+      questData.completed
+    );
     this.commandQueue = new CommandQueue();
     this.role = data.role || PlayerRoles.PLAYER;
 
     // Default max inventory size config
     if (!isFinite(this.inventory.getMax())) {
-      this.inventory.setMax(Config.get('defaultMaxPlayerInventory') || 20);
+      this.inventory.setMax(Config.get("defaultMaxPlayerInventory") || 20);
     }
   }
 
   /**
    * @see CommandQueue::enqueue
    */
-  queueCommand(executable, lag) {
+  queueCommand(executable: Function, lag: number) {
     const index = this.commandQueue.enqueue(executable, lag);
-    this.emit('commandQueued', index);
+    this.emit("commandQueued", index);
   }
 
   /**
@@ -59,7 +89,7 @@ class Player extends Character {
    * @param {string} event
    * @param {...*}   args
    */
-  emit(event, ...args) {
+  emit(event: string, ...args: any) {
     if (this.__pruned || !this.__hydrated) {
       return;
     }
@@ -74,7 +104,7 @@ class Player extends Character {
    * @param {string} promptStr
    * @param {object} extraData Any extra data to give the prompt access to
    */
-  interpolatePrompt(promptStr, extraData = {}) {
+  interpolatePrompt(promptStr: string, extraData: object = {}) {
     let attributeData = {};
     for (const [attr, value] of this.attributes) {
       attributeData[attr] = {
@@ -86,11 +116,13 @@ class Player extends Character {
     const promptData = Object.assign(attributeData, extraData);
 
     let matches = null;
-    while (matches = promptStr.match(/%([a-z\.]+)%/)) {
+    while ((matches = promptStr.match(/%([a-z\.]+)%/))) {
       const token = matches[1];
-      let promptValue = token.split('.').reduce((obj, index) => obj && obj[index], promptData);
+      let promptValue = token
+        .split(".")
+        .reduce((obj, index) => obj && obj[index], promptData);
       if (promptValue === null || promptValue === undefined) {
-        promptValue = 'invalid-token';
+        promptValue = "invalid-token";
       }
       promptStr = promptStr.replace(matches[0], promptValue);
     }
@@ -105,14 +137,14 @@ class Player extends Character {
    * @param {?boolean}    removeOnRender When true prompt will remove itself once rendered
    *    otherwise prompt will continue to be rendered until removed.
    */
-  addPrompt(id, renderer, removeOnRender = false) {
+  addPrompt(id: string, renderer: Function, removeOnRender: boolean = false) {
     this.extraPrompts.set(id, { removeOnRender, renderer });
   }
 
   /**
    * @param {string} id
    */
-  removePrompt(id) {
+  removePrompt(id: string) {
     this.extraPrompts.delete(id);
   }
 
@@ -120,7 +152,7 @@ class Player extends Character {
    * @param {string} id
    * @return {boolean}
    */
-  hasPrompt(id) {
+  hasPrompt(id: string) {
     return this.extraPrompts.has(id);
   }
 
@@ -132,7 +164,7 @@ class Player extends Character {
    * @fires Room#playerEnter
    * @fires Player#enterRoom
    */
-  moveTo(nextRoom, onMoved = _ => _) {
+  moveTo(nextRoom: Room, onMoved = (_) => _) {
     const prevRoom = this.room;
     if (this.room && this.room !== nextRoom) {
       /**
@@ -140,7 +172,7 @@ class Player extends Character {
        * @param {Player} player
        * @param {Room} nextRoom
        */
-      this.room.emit('playerLeave', this, nextRoom);
+      this.room.emit("playerLeave", this, nextRoom);
       this.room.removePlayer(this);
     }
 
@@ -154,30 +186,30 @@ class Player extends Character {
      * @param {Player} player
      * @param {Room} prevRoom
      */
-    nextRoom.emit('playerEnter', this, prevRoom);
+    nextRoom.emit("playerEnter", this, prevRoom);
     /**
      * @event Player#enterRoom
      * @param {Room} room
      */
-    this.emit('enterRoom', nextRoom);
+    this.emit("enterRoom", nextRoom);
   }
 
-  save(callback) {
+  save(callback?: Function) {
     if (!this.__hydrated) {
       return;
     }
 
-    this.emit('save', callback);
+    this.emit("save", callback);
   }
 
-  hydrate(state) {
+  hydrate(state: IGameState) {
     super.hydrate(state);
 
     // QuestTracker has to be hydrated before the rest otherwise events fired by the subsequent
     // hydration will be emitted onto unhydrated quest objects and error
     this.questTracker.hydrate(state);
 
-    if (typeof this.account === 'string') {
+    if (typeof this.account === "string") {
       this.account = state.AccountManager.getAccount(this.account);
     }
 
@@ -192,7 +224,10 @@ class Player extends Character {
       for (const slot in eqDefs) {
         const itemDef = eqDefs[slot];
         try {
-          let newItem = state.ItemFactory.create(state.AreaManager.getArea(itemDef.area), itemDef.entityReference);
+          let newItem = state.ItemFactory.create(
+            state.AreaManager.getArea(itemDef.area),
+            itemDef.entityReference
+          );
           newItem.initializeInventory(itemDef.inventory);
           newItem.hydrate(state, itemDef);
           state.ItemManager.add(newItem);
@@ -205,11 +240,15 @@ class Player extends Character {
       this.equipment = new Map();
     }
 
-    if (typeof this.room === 'string') {
+    if (typeof this.room === "string") {
       let room = state.RoomManager.getRoom(this.room);
       if (!room) {
-        Logger.error(`ERROR: Player ${this.name} was saved to invalid room ${this.room}.`);
-        room = state.AreaManager.getPlaceholderArea().getRoomById('placeholder');
+        Logger.error(
+          `ERROR: Player ${this.name} was saved to invalid room ${this.room}.`
+        );
+        room = state.AreaManager.getPlaceholderArea().getRoomById(
+          "placeholder"
+        );
       }
 
       this.room = room;
@@ -217,7 +256,7 @@ class Player extends Character {
     }
   }
 
-  serialize() {
+  serialize(): ISerializedPlayer {
     let data = Object.assign(super.serialize(), {
       account: this.account.name,
       experience: this.experience,
@@ -231,7 +270,7 @@ class Player extends Character {
 
     if (this.equipment instanceof Map) {
       let eq = {};
-      for (let [ slot, item ] of this.equipment) {
+      for (let [slot, item] of this.equipment) {
         eq[slot] = item.serialize();
       }
       data.equipment = eq;
@@ -242,5 +281,3 @@ class Player extends Character {
     return data;
   }
 }
-
-module.exports = Player;

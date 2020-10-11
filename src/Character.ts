@@ -1,14 +1,39 @@
-'use strict';
+"use strict";
 
-const Attributes = require('./Attributes');
-const Config = require('./Config');
-const EffectList = require('./EffectList');
-const { EquipSlotTakenError, EquipAlreadyEquippedError } = require('./EquipErrors');
-const EventEmitter = require('events');
-const Heal = require('./Heal');
-const Metadatable = require('./Metadatable');
-const { Inventory, InventoryFullError } = require('./Inventory');
+import { Damage } from "./Damage";
+import { Item } from "./Item";
+import { IInventoryDef, Inventory } from "./Inventory";
+import { Logger } from "./Logger";
+import { Metadatable } from "./Metadatable";
+import { EventEmitter } from "events";
 
+const Config = require("./Config");
+const EffectList = require("./EffectList");
+const {
+  EquipSlotTakenError,
+  EquipAlreadyEquippedError,
+} = require("./EquipErrors");
+
+export interface ICharacterConfig {
+  /** @property {string}     name       Name shown on look/who/login */
+  name: string;
+  /** @property {Inventory}  inventory */
+  inventory: IInventoryDef;
+  equipment: Map<string, Item>;
+  /** @property {number}     level */
+  level: number;
+  /** @property {Room}       room       Room the character is currently in */
+  room: Room;
+  metadata: object;
+}
+
+export interface ISerializedCharacter {
+  attributes: object;
+  level: number;
+  name: string;
+  room: string;
+  effects: string[];
+}
 
 /**
  * The Character class acts as the base for both NPCs and Players.
@@ -24,8 +49,21 @@ const { Inventory, InventoryFullError } = require('./Inventory');
  * @extends EventEmitter
  * @mixes Metadatable
  */
-class Character extends Metadatable(EventEmitter) {
-  constructor(data) {
+export class Character extends Metadatable(EventEmitter) {
+  /** @property {string}     name       Name shown on look/who/login */
+  name: string;
+  /** @property {Inventory}  inventory */
+  inventory: Inventory;
+  /** @property {Set}        combatants Enemies this character is currently in combat with */
+  combatants: Set<any>;
+  /** @property {number}     level */
+  level: number;
+  /** @property {EffectList} effects    List of current effects applied to the character */
+  effects: EffectList;
+  /** @property {Room}       room       Room the character is currently in */
+  room: Room;
+
+  constructor(data: ICharacterConfig) {
     super();
 
     this.name = data.name;
@@ -57,18 +95,18 @@ class Character extends Metadatable(EventEmitter) {
    * @param {string} event
    * @param {...*}   args
    */
-  emit(event, ...args) {
+  emit(event: string, ...args: any) {
     super.emit(event, ...args);
 
     this.effects.emit(event, ...args);
   }
 
   /**
-   * @param {string} attr Attribute name
+   * @param {string} attrString Attribute name
    * @return {boolean}
    */
-  hasAttribute(attr) {
-    return this.attributes.has(attr);
+  hasAttribute(attrString: string) {
+    return this.attributes.has(attrString);
   }
 
   /**
@@ -76,12 +114,12 @@ class Character extends Metadatable(EventEmitter) {
    * @param {string} attr
    * @return {number}
    */
-  getMaxAttribute(attr) {
-    if (!this.hasAttribute(attr)) {
-      throw new RangeError(`Character does not have attribute [${attr}]`);
+  getMaxAttribute(attrString: string) {
+    if (!this.hasAttribute(attrString)) {
+      throw new RangeError(`Character does not have attribute [${attrString}]`);
     }
 
-    const attribute = this.attributes.get(attr);
+    const attribute = this.attributes.get(attrString);
     const currentVal = this.effects.evaluateAttribute(attribute);
 
     if (!attribute.formula) {
@@ -90,41 +128,48 @@ class Character extends Metadatable(EventEmitter) {
 
     const { formula } = attribute;
 
-    const requiredValues = formula.requires.map(
-      reqAttr => this.getMaxAttribute(reqAttr)
+    const requiredValues = formula.requires.map((reqAttr: string) =>
+      this.getMaxAttribute(reqAttr)
     );
 
-    return formula.evaluate.apply(formula, [attribute, this, currentVal, ...requiredValues]);
+    return formula.evaluate.apply(formula, [
+      attribute,
+      this,
+      currentVal,
+      ...requiredValues,
+    ]);
   }
 
   /**
    * @see {@link Attributes#add}
    */
-  addAttribute(attribute) {
-    this.attributes.add(attribute);
+  addAttribute(attrString: string) {
+    this.attributes.add(attrString);
   }
 
   /**
    * Get the current value of an attribute (base modified by delta)
-   * @param {string} attr
+   * @param {string} attrString
    * @return {number}
-  */
-  getAttribute(attr) {
-    if (!this.hasAttribute(attr)) {
-      throw new RangeError(`Character does not have attribute [${attr}]`);
+   */
+  getAttribute(attrString: string) {
+    if (!this.hasAttribute(attrString)) {
+      throw new RangeError(`Character does not have attribute [${attrString}]`);
     }
 
-    return this.getMaxAttribute(attr) + this.attributes.get(attr).delta;
+    return (
+      this.getMaxAttribute(attrString) + this.attributes.get(attrString).delta
+    );
   }
 
   /**
    * Get the base value for a given attribute
-   * @param {string} attr Attribute name
+   * @param {string} attrString Attribute name
    * @return {number}
    */
-  getBaseAttribute(attr) {
-    var attr = this.attributes.get(attr);
-    return attr && attr.base;
+  getBaseAttribute(attrString: string) {
+    const attribute = this.attributes.get(attrString);
+    return attribute && attribute.base;
   }
 
   /**
@@ -136,52 +181,52 @@ class Character extends Metadatable(EventEmitter) {
 
   /**
    * Clears any changes to the attribute, setting it to its base value.
-   * @param {string} attr
+   * @param {string} attrString
    * @fires Character#attributeUpdate
-  */
-  setAttributeToMax(attr) {
-    if (!this.hasAttribute(attr)) {
-      throw new Error(`Invalid attribute ${attr}`);
+   */
+  setAttributeToMax(attrString: string) {
+    if (!this.hasAttribute(attrString)) {
+      throw new Error(`Invalid attribute ${attrString}`);
     }
 
-    this.attributes.get(attr).setDelta(0);
-    this.emit('attributeUpdate', attr, this.getAttribute(attr));
+    this.attributes.get(attrString).setDelta(0);
+    this.emit("attributeUpdate", attrString, this.getAttribute(attrString));
   }
 
   /**
    * Raise an attribute by name
-   * @param {string} attr
+   * @param {string} attrString
    * @param {number} amount
    * @see {@link Attributes#raise}
    * @fires Character#attributeUpdate
-  */
-  raiseAttribute(attr, amount) {
-    if (!this.hasAttribute(attr)) {
-      throw new Error(`Invalid attribute ${attr}`);
+   */
+  raiseAttribute(attrString: string, amount: number) {
+    if (!this.hasAttribute(attrString)) {
+      throw new Error(`Invalid attribute ${attrString}`);
     }
 
-    this.attributes.get(attr).raise(amount);
-    this.emit('attributeUpdate', attr, this.getAttribute(attr));
+    this.attributes.get(attrString).raise(amount);
+    this.emit("attributeUpdate", attrString, this.getAttribute(attrString));
   }
 
   /**
    * Lower an attribute by name
-   * @param {string} attr
+   * @param {string} attrString
    * @param {number} amount
    * @see {@link Attributes#lower}
    * @fires Character#attributeUpdate
-  */
-  lowerAttribute(attr, amount) {
-    if (!this.hasAttribute(attr)) {
-      throw new Error(`Invalid attribute ${attr}`);
+   */
+  lowerAttribute(attrString: string, amount: number) {
+    if (!this.hasAttribute(attrString)) {
+      throw new Error(`Invalid attribute ${attrString}`);
     }
 
-    this.attributes.get(attr).lower(amount);
-    this.emit('attributeUpdate', attr, this.getAttribute(attr));
+    this.attributes.get(attrString).lower(amount);
+    this.emit("attributeUpdate", attrString, this.getAttribute(attrString));
   }
 
   /**
-   * Update an attribute's base value. 
+   * Update an attribute's base value.
    *
    * NOTE: You _probably_ don't want to use this the way you think you do. You should not use this
    * for any temporary modifications to an attribute, instead you should use an Effect modifier.
@@ -189,17 +234,17 @@ class Character extends Metadatable(EventEmitter) {
    * This will _permanently_ update the base value for an attribute to be used for things like a
    * player purchasing a permanent upgrade or increasing a stat on level up
    *
-   * @param {string} attr Attribute name
+   * @param {string} attrString Attribute name
    * @param {number} newBase New base value
    * @fires Character#attributeUpdate
    */
-  setAttributeBase(attr, newBase) {
-    if (!this.hasAttribute(attr)) {
-      throw new Error(`Invalid attribute ${attr}`);
+  setAttributeBase(attrString: string, newBase: number) {
+    if (!this.hasAttribute(attrString)) {
+      throw new Error(`Invalid attribute ${attrString}`);
     }
 
-    this.attributes.get(attr).setBase(newBase);
-    this.emit('attributeUpdate', attr, this.getAttribute(attr));
+    this.attributes.get(attrString).setBase(newBase);
+    this.emit("attributeUpdate", attrString, this.getAttribute(attrString));
   }
 
   /**
@@ -207,7 +252,7 @@ class Character extends Metadatable(EventEmitter) {
    * @return {boolean}
    * @see {@link Effect}
    */
-  hasEffectType(type) {
+  hasEffectType(type: string) {
     return this.effects.hasEffectType(type);
   }
 
@@ -215,7 +260,7 @@ class Character extends Metadatable(EventEmitter) {
    * @param {Effect} effect
    * @return {boolean}
    */
-  addEffect(effect) {
+  addEffect(effect: Effect) {
     return this.effects.add(effect);
   }
 
@@ -223,7 +268,7 @@ class Character extends Metadatable(EventEmitter) {
    * @param {Effect} effect
    * @see {@link Effect#remove}
    */
-  removeEffect(effect) {
+  removeEffect(effect: Effect) {
     this.effects.remove(effect);
   }
 
@@ -233,7 +278,7 @@ class Character extends Metadatable(EventEmitter) {
    * @param {?number}   lag    Optional milliseconds of lag to apply before the first attack
    * @fires Character#combatStart
    */
-  initiateCombat(target, lag = 0) {
+  initiateCombat(target: Character, lag: number = 0) {
     if (!this.isInCombat()) {
       this.combatData.lag = lag;
       this.combatData.roundStarted = Date.now();
@@ -241,7 +286,7 @@ class Character extends Metadatable(EventEmitter) {
        * Fired when Character#initiateCombat is called
        * @event Character#combatStart
        */
-      this.emit('combatStart');
+      this.emit("combatStart");
     }
 
     if (this.isInCombat(target)) {
@@ -265,7 +310,7 @@ class Character extends Metadatable(EventEmitter) {
    * @param {?Character} target
    * @return boolean
    */
-  isInCombat(target) {
+  isInCombat(target?: Character) {
     return target ? this.combatants.has(target) : this.combatants.size > 0;
   }
 
@@ -273,7 +318,7 @@ class Character extends Metadatable(EventEmitter) {
    * @param {Character} target
    * @fires Character#combatantAdded
    */
-  addCombatant(target) {
+  addCombatant(target: Character) {
     if (this.isInCombat(target)) {
       return;
     }
@@ -284,7 +329,7 @@ class Character extends Metadatable(EventEmitter) {
      * @event Character#combatantAdded
      * @param {Character} target
      */
-    this.emit('combatantAdded', target);
+    this.emit("combatantAdded", target);
   }
 
   /**
@@ -292,7 +337,7 @@ class Character extends Metadatable(EventEmitter) {
    * @fires Character#combatantRemoved
    * @fires Character#combatEnd
    */
-  removeCombatant(target) {
+  removeCombatant(target: Character) {
     if (!this.combatants.has(target)) {
       return;
     }
@@ -304,15 +349,14 @@ class Character extends Metadatable(EventEmitter) {
      * @event Character#combatantRemoved
      * @param {Character} target
      */
-    this.emit('combatantRemoved', target);
+    this.emit("combatantRemoved", target);
 
     if (!this.combatants.size) {
       /**
        * @event Character#combatEnd
        */
-      this.emit('combatEnd');
+      this.emit("combatEnd");
     }
-
   }
 
   /**
@@ -333,7 +377,7 @@ class Character extends Metadatable(EventEmitter) {
    * @param {Damage} damage
    * @return {number}
    */
-  evaluateIncomingDamage(damage, currentAmount) {
+  evaluateIncomingDamage(damage: Damage, currentAmount: number) {
     let amount = this.effects.evaluateIncomingDamage(damage, currentAmount);
     return Math.floor(amount);
   }
@@ -344,7 +388,7 @@ class Character extends Metadatable(EventEmitter) {
    * @param {number} currentAmount
    * @return {number}
    */
-  evaluateOutgoingDamage(damage, currentAmount) {
+  evaluateOutgoingDamage(damage: Damage, currentAmount: number) {
     return this.effects.evaluateOutgoingDamage(damage, currentAmount);
   }
 
@@ -357,7 +401,7 @@ class Character extends Metadatable(EventEmitter) {
    * @fires Character#equip
    * @fires Item#equip
    */
-  equip(item, slot) {
+  equip(item: Item, slot: string) {
     if (this.equipment.has(slot)) {
       throw new EquipSlotTakenError();
     }
@@ -377,13 +421,13 @@ class Character extends Metadatable(EventEmitter) {
      * @event Item#equip
      * @param {Character} equipper
      */
-    item.emit('equip', this);
+    item.emit("equip", this);
     /**
      * @event Character#equip
      * @param {string} slot
      * @param {Item} item
      */
-    this.emit('equip', slot, item);
+    this.emit("equip", slot, item);
   }
 
   /**
@@ -394,7 +438,7 @@ class Character extends Metadatable(EventEmitter) {
    * @fires Item#unequip
    * @fires Character#unequip
    */
-  unequip(slot) {
+  unequip(slot: string) {
     if (this.isInventoryFull()) {
       throw new InventoryFullError();
     }
@@ -407,13 +451,13 @@ class Character extends Metadatable(EventEmitter) {
      * @event Item#unequip
      * @param {Character} equipper
      */
-    item.emit('unequip', this);
+    item.emit("unequip", this);
     /**
      * @event Character#unequip
      * @param {string} slot
      * @param {Item} item
      */
-    this.emit('unequip', slot, item);
+    this.emit("unequip", slot, item);
     this.addItem(item);
   }
 
@@ -421,7 +465,7 @@ class Character extends Metadatable(EventEmitter) {
    * Move an item to the character's inventory
    * @param {Item} item
    */
-  addItem(item) {
+  addItem(item: Item) {
     this._setupInventory();
     this.inventory.addItem(item);
     item.carriedBy = this;
@@ -433,7 +477,7 @@ class Character extends Metadatable(EventEmitter) {
    * character's inventory
    * @param {Item} item
    */
-  removeItem(item) {
+  removeItem(item: Item) {
     this.inventory.removeItem(item);
 
     // if we removed the last item unset the inventory
@@ -451,8 +495,8 @@ class Character extends Metadatable(EventEmitter) {
    * @param {EntityReference} itemReference
    * @return {Item|boolean}
    */
-  hasItem(itemReference) {
-    for (const [ uuid, item ] of this.inventory) {
+  hasItem(itemReference: string): Item | boolean {
+    for (const [uuid, item] of this.inventory) {
       if (item.entityReference === itemReference) {
         return item;
       }
@@ -472,11 +516,11 @@ class Character extends Metadatable(EventEmitter) {
   /**
    * @private
    */
-  _setupInventory() {
+  private _setupInventory() {
     this.inventory = this.inventory || new Inventory();
     // Default max inventory size config
     if (!this.isNpc && !isFinite(this.inventory.getMax())) {
-      this.inventory.setMax(Config.get('defaultMaxPlayerInventory') || 20);
+      this.inventory.setMax(Config.get("defaultMaxPlayerInventory") || 20);
     }
   }
 
@@ -484,7 +528,7 @@ class Character extends Metadatable(EventEmitter) {
    * Begin following another character. If the character follows itself they stop following.
    * @param {Character} target
    */
-  follow(target) {
+  follow(target: Character) {
     if (target === this) {
       this.unfollow();
       return;
@@ -496,7 +540,7 @@ class Character extends Metadatable(EventEmitter) {
      * @event Character#followed
      * @param {Character} target
      */
-    this.emit('followed', target);
+    this.emit("followed", target);
   }
 
   /**
@@ -509,7 +553,7 @@ class Character extends Metadatable(EventEmitter) {
      * @event Character#unfollowed
      * @param {Character} following
      */
-    this.emit('unfollowed', this.following);
+    this.emit("unfollowed", this.following);
     this.following = null;
   }
 
@@ -517,35 +561,35 @@ class Character extends Metadatable(EventEmitter) {
    * @param {Character} follower
    * @fires Character#gainedFollower
    */
-  addFollower(follower) {
+  addFollower(follower: Character) {
     this.followers.add(follower);
     follower.following = this;
     /**
      * @event Character#gainedFollower
      * @param {Character} follower
      */
-    this.emit('gainedFollower', follower);
+    this.emit("gainedFollower", follower);
   }
 
   /**
    * @param {Character} follower
    * @fires Character#lostFollower
    */
-  removeFollower(follower) {
+  removeFollower(follower: Character) {
     this.followers.delete(follower);
     follower.following = null;
     /**
      * @event Character#lostFollower
      * @param {Character} follower
      */
-    this.emit('lostFollower', follower);
+    this.emit("lostFollower", follower);
   }
 
   /**
    * @param {Character} target
    * @return {boolean}
    */
-  isFollowing(target) {
+  isFollowing(target: Character) {
     return this.following === target;
   }
 
@@ -553,7 +597,7 @@ class Character extends Metadatable(EventEmitter) {
    * @param {Character} target
    * @return {boolean}
    */
-  hasFollower(target) {
+  hasFollower(target: Character) {
     return this.followers.has(target);
   }
 
@@ -561,9 +605,9 @@ class Character extends Metadatable(EventEmitter) {
    * Initialize the character from storage
    * @param {GameState} state
    */
-  hydrate(state) {
+  hydrate(state: IGameState) {
     if (this.__hydrated) {
-      Logger.warn('Attempted to hydrate already hydrated character.');
+      Logger.warn("Attempted to hydrate already hydrated character.");
       return false;
     }
 
@@ -573,19 +617,30 @@ class Character extends Metadatable(EventEmitter) {
 
       for (const attr in attributes) {
         let attrConfig = attributes[attr];
-        if (typeof attrConfig === 'number') {
+        if (typeof attrConfig === "number") {
           attrConfig = { base: attrConfig };
         }
 
-        if (typeof attrConfig !== 'object' || !('base' in attrConfig)) {
-          throw new Error('Invalid base value given to attributes.\n' + JSON.stringify(attributes, null, 2));
+        if (typeof attrConfig !== "object" || !("base" in attrConfig)) {
+          throw new Error(
+            "Invalid base value given to attributes.\n" +
+              JSON.stringify(attributes, null, 2)
+          );
         }
 
         if (!state.AttributeFactory.has(attr)) {
-          throw new Error(`Entity trying to hydrate with invalid attribute ${attr}`);
+          throw new Error(
+            `Entity trying to hydrate with invalid attribute ${attr}`
+          );
         }
 
-        this.addAttribute(state.AttributeFactory.create(attr, attrConfig.base, attrConfig.delta || 0));
+        this.addAttribute(
+          state.AttributeFactory.create(
+            attr,
+            attrConfig.base,
+            attrConfig.delta || 0
+          )
+        );
       }
     }
 
@@ -600,7 +655,7 @@ class Character extends Metadatable(EventEmitter) {
    * Gather data to be persisted
    * @return {Object}
    */
-  serialize() {
+  serialize(): ISerializedCharacter {
     return {
       attributes: this.attributes.serialize(),
       level: this.level,
@@ -624,5 +679,3 @@ class Character extends Metadatable(EventEmitter) {
     return false;
   }
 }
-
-module.exports = Character;

@@ -1,9 +1,10 @@
-'use strict';
+import { Helpfile } from "./Helpfile";
 
 /**
  * Contain/look up helpfiles
  */
-class HelpManager {
+export class HelpManager {
+  helps: Map<string, Helpfile>;
   constructor() {
     this.helps = new Map();
   }
@@ -11,14 +12,14 @@ class HelpManager {
   /**
    * @param {string} help Helpfile name
    */
-  get(help) {
+  get(help: string) {
     return this.helps.get(help);
   }
 
   /**
    * @param {Helpfile} help
    */
-  add(help) {
+  add(help: Helpfile) {
     this.helps.set(help.name, help);
   }
 
@@ -26,14 +27,14 @@ class HelpManager {
    * @param {string} search
    * @return {Help}
    */
-  find(search) {
+  find(search: string) {
     const results = new Map();
     for (const [name, help] of this.helps.entries()) {
       if (name.indexOf(search) === 0) {
         results.set(name, help);
         continue;
       }
-      if (help.keywords.some(keyword => keyword.includes(search))) {
+      if (help.keywords.some((keyword) => keyword.includes(search))) {
         results.set(name, help);
       }
     }
@@ -45,7 +46,7 @@ class HelpManager {
    * @param {string} search
    * @return {?string}
    */
-  getFirst(help) {
+  getFirst(help: string) {
     const results = this.find(help);
 
     if (!results.size) {
@@ -60,5 +61,3 @@ class HelpManager {
     return hfile;
   }
 }
-
-module.exports = HelpManager;

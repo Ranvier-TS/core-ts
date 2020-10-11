@@ -1,29 +1,45 @@
-'use strict';
+import { Character } from "./Character";
+import { Item, ItemDef } from "./Item";
+
+export declare interface IInventoryDef {
+  items?: [string, ItemDef | Item][];
+  max?: number;
+}
+
+export declare interface ISerializedInventory {
+  items?: [string, ItemDef][];
+  max?: number;
+}
 
 /**
  * Representation of a `Character` or container `Item` inventory
  * @extends Map
  */
-class Inventory extends Map {
+export class Inventory extends Map<string, ItemDef | Item> {
+  maxSize: number;
+
   /**
    * @param {object} init
    * @param {Array<Item>} init.items
    * @param {number} init.max Max number of items this inventory can hold
    */
-  constructor(init) {
-    init = Object.assign({
-      items: [],
-      max: Infinity
-    }, init);
+  constructor(init: IInventoryDef) {
+    init = Object.assign(
+      {
+        items: [],
+        max: Infinity,
+      },
+      init
+    );
 
     super(init.items);
-    this.maxSize = init.max;
+    this.maxSize = init.max || Infinity;
   }
 
   /**
    * @param {number} size
    */
-  setMax(size) {
+  setMax(size: number) {
     this.maxSize = size;
   }
 
@@ -44,7 +60,7 @@ class Inventory extends Map {
   /**
    * @param {Item} item
    */
-  addItem(item) {
+  addItem(item: Item) {
     if (this.isFull) {
       throw new InventoryFullError();
     }
@@ -54,17 +70,17 @@ class Inventory extends Map {
   /**
    * @param {Item} item
    */
-  removeItem(item) {
+  removeItem(item: Item) {
     this.delete(item.uuid);
   }
 
   serialize() {
     // Item is imported here to prevent circular dependency with Item having an Inventory
-    const Item = require('./Item');
+    const Item = require("./Item");
 
     let data = {
       items: [],
-      max: this.maxSize
+      max: this.maxSize,
     };
 
     for (const [uuid, item] of this) {
@@ -83,9 +99,9 @@ class Inventory extends Map {
    * @param {GameState} state
    * @param {Character|Item} carriedBy
    */
-  hydrate(state, carriedBy) {
+  hydrate(state: IGameState, carriedBy: Character | Item) {
     // Item is imported here to prevent circular dependency with Item having an Inventory
-    const Item = require('./Item');
+    const Item = require("./Item");
 
     for (const [uuid, def] of this) {
       if (def instanceof Item) {
@@ -112,6 +128,4 @@ class Inventory extends Map {
 /**
  * @extends Error
  */
-class InventoryFullError extends Error {}
-
-module.exports = { Inventory, InventoryFullError };
+export class InventoryFullError extends Error {}

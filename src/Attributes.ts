@@ -1,17 +1,16 @@
-'use strict';
-const { Attribute, AttributeFormula } = require('./Attribute');
+import { Attribute } from "./Attribute";
 
 /**
  * Container for a list of attributes for a {@link Character}
  *
  * @extends Map
  */
-class Attributes extends Map
+export class Attributes extends Map
 {
   /**
    * @param {Attribute} attribute
    */
-  add(attribute) {
+  add(attribute: Attribute) {
     if (!(attribute instanceof Attribute)) {
       throw new TypeError(`${attribute} not an Attribute`);
     }
@@ -41,12 +40,11 @@ class Attributes extends Map
    */
   serialize() {
     let data = {};
-    [...this].forEach(([name, attribute]) => {
+    [...this].forEach((attributeObj: [string, Attribute]) => {
+      const [name, attribute] = attributeObj;
       data[name] = attribute.serialize();
     });
 
     return data;
   }
 }
-
-module.exports = Attributes;

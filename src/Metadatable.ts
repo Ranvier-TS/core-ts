@@ -1,12 +1,10 @@
-'use strict';
-
 /**
  * @ignore
  * @exports MetadatableFn
  * @param {*} parentClass
  * @return {module:MetadatableFn~Metadatable}
  */
-const Metadatable = parentClass =>
+export const Metadatable = (parentClass: any) =>
 
 /**
  * Mixin for objects which have a `metadata` property
@@ -23,7 +21,7 @@ class extends parentClass {
    * @throws RangeError
    * @fires Metadatable#metadataUpdate
    */
-  setMeta(key, value) {
+  setMeta(key: string, value: any) {
     if (!this.metadata) {
       throw new Error('Class does not have metadata property');
     }
@@ -59,7 +57,7 @@ class extends parentClass {
    * @return {*}
    * @throws Error
    */
-  getMeta(key) {
+  getMeta(key: string) {
     if (!this.metadata) {
       throw new Error('Class does not have metadata property');
     }
@@ -69,4 +67,4 @@ class extends parentClass {
   }
 };
 
-module.exports = Metadatable;
+export type Metadata = Record<string, any>;

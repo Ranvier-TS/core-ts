@@ -1,5 +1,3 @@
-'use strict';
-
 const winston = require('winston');
 
 // Reset Console transport and configure it to include ISO timestamp.
@@ -13,20 +11,20 @@ const logExt = '.log';
 /**
  * Wrapper around Winston
  */
-class Logger {
+export class Logger {
 
   static getLevel() {
     return winston.level || process.env.LOG_LEVEL || 'debug';
   }
 
-  static setLevel(level) {
+  static setLevel(level: string) {
     winston.level = level;
   }
 
   /*
     Medium priority logging, default.
   */
-  static log(...messages) {
+  static log(...messages: any) {
     winston.log('info', ...messages);
   }
 
@@ -34,14 +32,14 @@ class Logger {
     Appends red "ERROR" to the start of logs.
     Highest priority logging.
   */
-  static error(...messages) {
+  static error(...messages: any) {
     winston.log('error', ...messages);
   }
 
   /*
     Less high priority than error, still higher visibility than default.
   */
-  static warn(...messages) {
+  static warn(...messages: any) {
     winston.log('warn', ...messages);
   }
 
@@ -49,12 +47,12 @@ class Logger {
     Lower priority logging.
     Only logs if the environment variable is set to VERBOSE.
   */
-  static verbose(...messages) {
+  static verbose(...messages: any) {
     winston.log('verbose', ...messages);
   }
 
   //TODO: Be able to set and deactivate file logging via a server command.
-  static setFileLogging(path) {
+  static setFileLogging(path: string) {
     if (!path.endsWith(logExt)) {
       path += logExt;
     }
@@ -73,6 +71,3 @@ class Logger {
   }
 
 }
-
-module.exports = Logger;
-

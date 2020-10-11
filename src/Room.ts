@@ -1,7 +1,44 @@
-'use strict';
+import { EntityReference } from "./EntityReference";
+import { GameEntity } from "./GameEntity";
+import { IItemDef, Item } from "./Item";
+import { Logger } from "./Logger";
 
-const GameEntity = require('./GameEntity');
-const Logger = require('./Logger');
+export interface IDoor {
+  lockedBy?: EntityReference;
+  locked?: boolean;
+  closed?: boolean;
+}
+
+export interface IExit {
+  roomId: string;
+  direction: string;
+  inferred?: boolean;
+  leaveMessage?: string;
+}
+
+export interface IRoomDef {
+  title: string;
+  description: string;
+  id: string;
+  items?: IRoomItemDef[];
+  npcs?: IRoomNpcDef[] | string[];
+  script?: string;
+  behaviors?: Record<string, any>;
+  coordinates?: [number, number, number];
+  doors?: Record<string, IDoor>;
+  exits: IExit[];
+  metadata: Record<string, any>;
+}
+
+export interface IRoomItemDef {
+  id: string;
+  respawnChance?: number;
+  maxLoad?: number;
+}
+
+export interface IRoomNpcDef {
+  id: string;
+}
 
 /**
  * @property {Area}          area         Area room is in
@@ -20,36 +57,64 @@ const Logger = require('./Logger');
  *
  * @extends GameEntity
  */
-class Room extends GameEntity {
-  constructor(area, def) {
+export class Room extends GameEntity {
+  def: IRoomDef;
+  area: Area;
+  defaultItems: IRoomItemDef[];
+  defaultNpcs: IRoomNpcDef[] | string[];
+  metadata: Record<string, any> = {};
+  script: string | null = null;
+  behaviors: IBehavior | Record<string, any>;
+  coordinates: { x: number; y: number; z: number } | null = null;
+  description: string = "";
+  entityReference: EntityReference = "";
+  exits: IExit[] = [];
+  id: string | number;
+  title: string;
+  doors: Record<string, IDoor> | Map<string, IDoor>;
+  defaultDoors: Record<string, IDoor>;
+
+  items: Set<Item>;
+  npcs: Set<Npc>;
+  players: Set<Player>;
+  spawnedNpcs: Set<Npc>;
+
+  constructor(area: Area, def: IRoomDef) {
     super();
-    const required = ['title', 'description', 'id'];
+    const required = ["title", "description", "id"];
     for (const prop of required) {
       if (!(prop in def)) {
-        throw new Error(`ERROR: AREA[${area.name}] Room does not have required property ${prop}`);
+        throw new Error(
+          `ERROR: AREA[${area.name}] Room does not have required property ${prop}`
+        );
       }
     }
 
     this.def = def;
     this.area = area;
     this.defaultItems = def.items || [];
-    this.defaultNpcs  = def.npcs || [];
+    this.defaultNpcs = def.npcs || [];
     this.metadata = def.metadata || {};
-    this.script = def.script;
+    this.script = def.script || null;
     this.behaviors = new Map(Object.entries(def.behaviors || {}));
-    this.coordinates = Array.isArray(def.coordinates) && def.coordinates.length === 3 ? {
-      x: def.coordinates[0],
-      y: def.coordinates[1],
-      z: def.coordinates[2],
-    } : null;
+    this.coordinates =
+      Array.isArray(def.coordinates) && def.coordinates.length === 3
+        ? {
+            x: def.coordinates[0],
+            y: def.coordinates[1],
+            z: def.coordinates[2],
+          }
+        : null;
     this.description = def.description;
-    this.entityReference = this.area.name + ':' + def.id;
+    this.entityReference = this.area.name + ":" + def.id;
     this.exits = def.exits || [];
     this.id = def.id;
     this.title = def.title;
     // create by-val copies of the doors config so the lock/unlock don't accidentally modify the original definition
-    this.doors = new Map(Object.entries(JSON.parse(JSON.stringify(def.doors || {}))));
-    this.defaultDoors = def.doors;
+    this.doors = new Map(
+      Object.entries(JSON.parse(JSON.stringify(def.doors || {})))
+    );
+    this.defaultDoors = def.doors || {};
 
     this.items = new Set();
     this.npcs = new Set();
@@ -69,14 +134,14 @@ class Room extends GameEntity {
    * @param {...*} args
    * @return {void}
    */
-  emit(eventName, ...args) {
+  emit(eventName: string, ...args: any) {
     super.emit(eventName, ...args);
 
     const proxiedEvents = [
-      'playerEnter',
-      'playerLeave',
-      'npcEnter',
-      'npcLeave'
+      "playerEnter",
+      "playerLeave",
+      "npcEnter",
+      "npcLeave",
     ];
 
     if (proxiedEvents.includes(eventName)) {
@@ -90,21 +155,21 @@ class Room extends GameEntity {
   /**
    * @param {Player} player
    */
-  addPlayer(player) {
+  addPlayer(player: Player) {
     this.players.add(player);
   }
 
   /**
    * @param {Player} player
    */
-  removePlayer(player) {
+  removePlayer(player: Player) {
     this.players.delete(player);
   }
 
   /**
    * @param {Npc} npc
    */
-  addNpc(npc) {
+  addNpc(npc: Npc) {
     this.npcs.add(npc);
     npc.room = this;
     this.area.addNpc(npc);
@@ -112,9 +177,9 @@ class Room extends GameEntity {
 
   /**
    * @param {Npc} npc
-   * @param {boolean} removeSpawn 
+   * @param {boolean} removeSpawn
    */
-  removeNpc(npc, removeSpawn = false) {
+  removeNpc(npc: Npc, removeSpawn: boolean = false) {
     this.npcs.delete(npc);
     if (removeSpawn) {
       this.spawnedNpcs.delete(npc);
@@ -125,7 +190,7 @@ class Room extends GameEntity {
   /**
    * @param {Item} item
    */
-  addItem(item) {
+  addItem(item: Item) {
     this.items.add(item);
     item.room = this;
   }
@@ -133,7 +198,7 @@ class Room extends GameEntity {
   /**
    * @param {Item} item
    */
-  removeItem(item) {
+  removeItem(item: Item) {
     this.items.delete(item);
     item.room = null;
   }
@@ -145,7 +210,7 @@ class Room extends GameEntity {
    * @return {Array<{ id: string, direction: string, inferred: boolean, room: Room= }>}
    */
   getExits() {
-    const exits = JSON.parse(JSON.stringify(this.exits)).map(exit => {
+    const exits = JSON.parse(JSON.stringify(this.exits)).map((exit: IExit) => {
       exit.inferred = false;
       return exit;
     });
@@ -155,16 +220,16 @@ class Room extends GameEntity {
     }
 
     const adjacents = [
-      { dir: 'west', coord: [-1, 0, 0] },
-      { dir: 'east', coord: [1, 0, 0] },
-      { dir: 'north', coord: [0, 1, 0] },
-      { dir: 'south', coord: [0, -1, 0] },
-      { dir: 'up', coord: [0, 0, 1] },
-      { dir: 'down', coord: [0, 0, -1] },
-      { dir: 'northeast', coord: [1, 1, 0] },
-      { dir: 'northwest', coord: [-1, 1, 0] },
-      { dir: 'southeast', coord: [1, -1, 0] },
-      { dir: 'southwest', coord: [-1, -1, 0] },
+      { dir: "west", coord: [-1, 0, 0] },
+      { dir: "east", coord: [1, 0, 0] },
+      { dir: "north", coord: [0, 1, 0] },
+      { dir: "south", coord: [0, -1, 0] },
+      { dir: "up", coord: [0, 0, 1] },
+      { dir: "down", coord: [0, 0, -1] },
+      { dir: "northeast", coord: [1, 1, 0] },
+      { dir: "northwest", coord: [-1, 1, 0] },
+      { dir: "southeast", coord: [1, -1, 0] },
+      { dir: "southwest", coord: [-1, -1, 0] },
     ];
 
     for (const adj of adjacents) {
@@ -175,8 +240,12 @@ class Room extends GameEntity {
         this.coordinates.z + z
       );
 
-      if (room && !exits.find(ex => ex.direction === adj.dir)) {
-        exits.push({ roomId: room.entityReference, direction: adj.dir, inferred: true });
+      if (room && !exits.find((ex: IExit) => ex.direction === adj.dir)) {
+        exits.push({
+          roomId: room.entityReference,
+          direction: adj.dir,
+          inferred: true,
+        });
       }
     }
 
@@ -188,14 +257,16 @@ class Room extends GameEntity {
    * @param {string} exitName exit name search
    * @return {false|Object}
    */
-  findExit(exitName) {
+  findExit(exitName: string) {
     const exits = this.getExits();
 
     if (!exits.length) {
       return false;
     }
 
-    const roomExit = exits.find(ex => ex.direction.indexOf(exitName) === 0);
+    const roomExit = exits.find(
+      (ex: IExit) => ex.direction.indexOf(exitName) === 0
+    );
 
     return roomExit || false;
   }
@@ -205,14 +276,16 @@ class Room extends GameEntity {
    * @param {Room} nextRoom
    * @return {false|Object}
    */
-  getExitToRoom(nextRoom) {
+  getExitToRoom(nextRoom: Room) {
     const exits = this.getExits();
 
     if (!exits.length) {
       return false;
     }
 
-    const roomExit = exits.find(ex => ex.roomId === nextRoom.entityReference);
+    const roomExit = exits.find(
+      (ex: IExit) => ex.roomId === nextRoom.entityReference
+    );
 
     return roomExit || false;
   }
@@ -222,7 +295,7 @@ class Room extends GameEntity {
    * @param {Room} fromRoom
    * @return {boolean}
    */
-  hasDoor(fromRoom) {
+  hasDoor(fromRoom: Room) {
     return this.doors.has(fromRoom.entityReference);
   }
 
@@ -230,7 +303,7 @@ class Room extends GameEntity {
    * @param {Room} fromRoom
    * @return {{lockedBy: EntityReference, locked: boolean, closed: boolean}}
    */
-  getDoor(fromRoom) {
+  getDoor(fromRoom: Room) {
     if (!fromRoom) {
       return null;
     }
@@ -242,7 +315,7 @@ class Room extends GameEntity {
    * @param {Room} fromRoom
    * @return {boolean}
    */
-  isDoorLocked(fromRoom) {
+  isDoorLocked(fromRoom: Room) {
     const door = this.getDoor(fromRoom);
     if (!door) {
       return false;
@@ -254,7 +327,7 @@ class Room extends GameEntity {
   /**
    * @param {Room} fromRoom
    */
-  openDoor(fromRoom) {
+  openDoor(fromRoom: Room) {
     const door = this.getDoor(fromRoom);
     if (!door) {
       return;
@@ -266,7 +339,7 @@ class Room extends GameEntity {
   /**
    * @param {Room} fromRoom
    */
-  closeDoor(fromRoom) {
+  closeDoor(fromRoom: Room) {
     const door = this.getDoor(fromRoom);
     if (!door) {
       return;
@@ -278,7 +351,7 @@ class Room extends GameEntity {
   /**
    * @param {Room} fromRoom
    */
-  unlockDoor(fromRoom) {
+  unlockDoor(fromRoom: Room) {
     const door = this.getDoor(fromRoom);
     if (!door) {
       return;
@@ -290,7 +363,7 @@ class Room extends GameEntity {
   /**
    * @param {Room} fromRoom
    */
-  lockDoor(fromRoom) {
+  lockDoor(fromRoom: Room) {
     const door = this.getDoor(fromRoom);
     if (!door) {
       return;
@@ -305,8 +378,10 @@ class Room extends GameEntity {
    * @param {string} entityRef
    * @return {Item} The newly created item
    */
-  spawnItem(state, entityRef) {
-    Logger.verbose(`\tSPAWN: Adding item [${entityRef}] to room [${this.title}]`);
+  spawnItem(state: IGameState, entityRef: EntityReference) {
+    Logger.verbose(
+      `\tSPAWN: Adding item [${entityRef}] to room [${this.title}]`
+    );
     const newItem = state.ItemFactory.create(this.area, entityRef);
     newItem.hydrate(state);
     newItem.sourceRoom = this;
@@ -315,7 +390,7 @@ class Room extends GameEntity {
     /**
      * @event Item#spawn
      */
-    newItem.emit('spawn');
+    newItem.emit("spawn");
     return newItem;
   }
 
@@ -325,8 +400,10 @@ class Room extends GameEntity {
    * @fires Npc#spawn
    * @return {Npc}
    */
-  spawnNpc(state, entityRef) {
-    Logger.verbose(`\tSPAWN: Adding npc [${entityRef}] to room [${this.title}]`);
+  spawnNpc(state: IGameState, entityRef: EntityReference) {
+    Logger.verbose(
+      `\tSPAWN: Adding npc [${entityRef}] to room [${this.title}]`
+    );
     const newNpc = state.MobFactory.create(this.area, entityRef);
     newNpc.hydrate(state);
     newNpc.sourceRoom = this;
@@ -336,11 +413,11 @@ class Room extends GameEntity {
     /**
      * @event Npc#spawn
      */
-    newNpc.emit('spawn');
+    newNpc.emit("spawn");
     return newNpc;
   }
 
-  hydrate(state) {
+  hydrate(state: IGameState) {
     this.setupBehaviors(state.RoomBehaviorManager);
 
     /**
@@ -348,7 +425,7 @@ class Room extends GameEntity {
      * contents. Use the `ready` event if you need default items to be there.
      * @event Room#spawn
      */
-    this.emit('spawn');
+    this.emit("spawn");
 
     this.items = new Set();
 
@@ -356,16 +433,16 @@ class Room extends GameEntity {
     // persist through reboot unless they're stored on a player.
     // If you would like to change that functionality this is the place
 
-    this.defaultItems.forEach(defaultItem => {
-      if (typeof defaultItem === 'string') {
+    this.defaultItems.forEach((defaultItem) => {
+      if (typeof defaultItem === "string") {
         defaultItem = { id: defaultItem };
       }
 
       this.spawnItem(state, defaultItem.id);
     });
 
-    this.defaultNpcs.forEach(defaultNpc => {
-      if (typeof defaultNpc === 'string') {
+    this.defaultNpcs.forEach((defaultNpc: IRoomNpcDef | string) => {
+      if (typeof defaultNpc === "string") {
         defaultNpc = { id: defaultNpc };
       }
 
@@ -385,5 +462,3 @@ class Room extends GameEntity {
     return [this, ...this.players, ...this.npcs];
   }
 }
-
-module.exports = Room;

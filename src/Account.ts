@@ -1,4 +1,4 @@
-import { Data } from ".";
+import { Data } from "./Data";
 const bcrypt = require("bcryptjs");
 
 export interface IAccountConfig {

@@ -1,4 +1,5 @@
-'use strict';
+import { Attribute } from "./Attribute";
+import { Character } from "./Character";
 
 /**
  * @property {string} attribute Attribute the damage is going to apply to
@@ -7,7 +8,13 @@
  * @property {*} source Where the damage came from: skill, item, room, etc.
  * @property {Object} metadata Extra info about the damage: type, hidden, critical, etc.
  */
-class Damage {
+export class Damage {
+  attribute: string;
+  attacker?: Character | null = null;
+  amount: number;
+  source?: any = null;
+  metadata: object;
+
   /**
    * @param {string} attribute Attribute the damage is going to apply to
    * @param {number} amount
@@ -15,12 +22,20 @@ class Damage {
    * @param {*} [source=null] Where the damage came from: skill, item, room, etc.
    * @property {Object} metadata Extra info about the damage: type, hidden, critical, etc.
    */
-  constructor(attribute, amount, attacker = null, source = null, metadata = {}) {
+  constructor(
+    attribute: string,
+    amount: number,
+    attacker: Character,
+    source: any,
+    metadata: object = {}
+  ) {
     if (!Number.isFinite(amount)) {
-      throw new TypeError(`Damage amount must be a finite Number, got ${amount}.`);
+      throw new TypeError(
+        `Damage amount must be a finite Number, got ${amount}.`
+      );
     }
 
-    if (typeof attribute !== 'string') {
+    if (typeof attribute !== "string") {
       throw new TypeError("Damage attribute name must be a string");
     }
 
@@ -36,7 +51,7 @@ class Damage {
    * @param {Character} target
    * @return {number} Final damage amount
    */
-  evaluate(target) {
+  evaluate(target: Character) {
     let amount = this.amount;
 
     if (this.attacker) {
@@ -52,7 +67,7 @@ class Damage {
    * @fires Character#hit
    * @fires Character#damaged
    */
-  commit(target) {
+  commit(target: Character) {
     const finalAmount = this.evaluate(target);
     target.lowerAttribute(this.attribute, finalAmount);
 
@@ -63,15 +78,13 @@ class Damage {
        * @param {Character} target
        * @param {Number} finalAmount
        */
-      this.attacker.emit('hit', this, target, finalAmount);
+      this.attacker.emit("hit", this, target, finalAmount);
     }
-      /**
-       * @event Character#damaged
-       * @param {Damage} damage
-       * @param {Number} finalAmount
-       */
-    target.emit('damaged', this, finalAmount);
+    /**
+     * @event Character#damaged
+     * @param {Damage} damage
+     * @param {Number} finalAmount
+     */
+    target.emit("damaged", this, finalAmount);
   }
 }
-
-module.exports = Damage;

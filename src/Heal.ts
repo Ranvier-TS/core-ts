@@ -1,19 +1,18 @@
-'use strict';
-
-const Damage = require('./Damage');
+import { Character } from "./Character";
+import { Damage } from "./Damage";
 
 /**
  * Heal is `Damage` that raises an attribute instead of lowering it
  * @extends Damage
  */
-class Heal extends Damage {
+export class Heal extends Damage {
   /**
    * Raise a given attribute
    * @param {Character} target
    * @fires Character#heal
    * @fires Character#healed
    */
-  commit(target) {
+  commit(target: Character) {
     const finalAmount = this.evaluate(target);
     target.raiseAttribute(this.attribute, finalAmount);
 
@@ -34,5 +33,3 @@ class Heal extends Damage {
     target.emit('healed', this, finalAmount);
   }
 }
-
-module.exports = Heal;

@@ -1,9 +1,27 @@
-'use strict';
+import { Broadcast } from "./Broadcast";
+import { ChannelAudience } from "./ChannelAudience";
+import { PartyAudience } from "./PartyAudience";
+import { Player } from "./Player";
+import { PrivateAudience } from "./PrivateAudience";
+import { WorldAudience } from "./WorldAudience";
 
-const Broadcast = require('./Broadcast');
-const WorldAudience = require('./WorldAudience');
-const PrivateAudience = require('./PrivateAudience');
-const PartyAudience = require('./PartyAudience');
+
+export declare interface ChannelConfig {
+  /** @property {string} name Name of the channel */
+  name: string;
+  /** @property {ChannelAudience} audience */
+  audience: ChannelAudience;
+  /** @property {string} [description] */
+  description: string;
+  /** @property {PlayerRoles} [minRequiredRole] */
+  minRequiredRole: PlayerRoles;
+  /** @property {string} [color] */
+  color?: string;
+  /** @property {{sender: function, target: function}} [formatter] */
+  formatter: Function;
+  bundle?: string;
+  aliases?: string[];
+}
 
 /**
  * @property {ChannelAudience} audience People who receive messages from this channel
@@ -13,7 +31,22 @@ const PartyAudience = require('./PartyAudience');
  * @property {string} description
  * @property {{sender: function, target: function}} [formatter]
  */
-class Channel {
+export class Channel {
+  /** @property {ChannelAudience} audience People who receive messages from this channel */
+  audience: ChannelAudience;
+  /** @property {string} name  Actual name of the channel the user will type */
+  name: string;
+  /** @property {string} color Default color. This is purely a helper if you're using default format methods */
+  color: string | null;
+  /** @property {PlayerRoles} minRequiredRole If set only players with the given role or greater can use the channel */
+  minRequiredRole: PlayerRoles;
+  /** @property {string} description */
+  description: string;
+  /** @property {{sender: function, target: function}} [formatter] */
+  formatter: Function;
+  bundle: string | null;
+  aliases: string[] | null;
+
   /**
    * @param {object}  config
    * @param {string} config.name Name of the channel
@@ -23,7 +56,7 @@ class Channel {
    * @param {string} [config.color]
    * @param {{sender: function, target: function}} [config.formatter]
    */
-  constructor(config) {
+  constructor(config: ChannelConfig) {
     if (!config.name) {
       throw new Error("Channels must have a name to be usable.");
     }
@@ -31,12 +64,15 @@ class Channel {
       throw new Error(`Channel ${config.name} is missing a valid audience.`);
     }
     this.name = config.name;
-    this.minRequiredRole = typeof config.minRequiredRole !== 'undefined' ? config.minRequiredRole : null;
+    this.minRequiredRole =
+      typeof config.minRequiredRole !== "undefined"
+        ? config.minRequiredRole
+        : null;
     this.description = config.description;
     this.bundle = config.bundle || null; // for debugging purposes, which bundle it came from
-    this.audience = config.audience || (new WorldAudience());
+    this.audience = config.audience || new WorldAudience();
     this.color = config.color || null;
-    this.aliases = config.aliases;
+    this.aliases = config.aliases || null;
     this.formatter = config.formatter || {
       sender: this.formatToSender.bind(this),
       target: this.formatToReceipient.bind(this),
@@ -49,15 +85,16 @@ class Channel {
    * @param {string}    message
    * @fires GameEntity#channelReceive
    */
-  send(state, sender, message) {
-
+  send(state: IGameState, sender: Player, message: string) {
     // If they don't include a message, explain how to use the channel.
     if (!message.length) {
       throw new NoMessageError();
     }
 
     if (!this.audience) {
-      throw new Error(`Channel [${this.name} has invalid audience [${this.audience}]`);
+      throw new Error(
+        `Channel [${this.name} has invalid audience [${this.audience}]`
+      );
     }
 
     this.audience.configure({ state, sender, message });
@@ -75,18 +112,34 @@ class Channel {
       if (!targets.length) {
         throw new NoRecipientError();
       }
-      Broadcast.sayAt(sender, this.formatter.sender(sender, targets[0], message, this.colorify.bind(this)));
+      Broadcast.sayAt(
+        sender,
+        this.formatter.sender(
+          sender,
+          targets[0],
+          message,
+          this.colorify.bind(this)
+        )
+      );
     } else {
-      Broadcast.sayAt(sender, this.formatter.sender(sender, null, message, this.colorify.bind(this)));
+      Broadcast.sayAt(
+        sender,
+        this.formatter.sender(sender, null, message, this.colorify.bind(this))
+      );
     }
 
     // send to audience targets
     Broadcast.sayAtFormatted(this.audience, message, (target, message) => {
-      return this.formatter.target(sender, target, message, this.colorify.bind(this));
+      return this.formatter.target(
+        sender,
+        target,
+        message,
+        this.colorify.bind(this)
+      );
     });
 
     // strip color tags
-    const rawMessage = message.replace(/\<\/?\w+?\>/gm, '');
+    const rawMessage = message.replace(/\<\/?\w+?\>/gm, "");
 
     for (const target of targets) {
       /**
@@ -98,13 +151,13 @@ class Channel {
        * @param {Character} sender
        * @param {string} rawMessage
        */
-      target.emit('channelReceive', this, sender, rawMessage);
+      target.emit("channelReceive", this, sender, rawMessage);
     }
   }
 
-  describeSelf(sender) {
+  describeSelf(sender: Player) {
     Broadcast.sayAt(sender, `\r\nChannel: ${this.name}`);
-    Broadcast.sayAt(sender, 'Syntax: ' + this.getUsage());
+    Broadcast.sayAt(sender, "Syntax: " + this.getUsage());
     if (this.description) {
       Broadcast.sayAt(sender, this.description);
     }
@@ -126,7 +179,12 @@ class Channel {
    * @param {Function} colorify
    * @return {string}
    */
-  formatToSender(sender, target, message, colorify) {
+  formatToSender(
+    sender: Player,
+    target: Player | Npc,
+    message: string,
+    colorify: Function
+  ) {
     return colorify(`[${this.name}] ${sender.name}: ${message}`);
   }
 
@@ -139,31 +197,32 @@ class Channel {
    * @param {Function} colorify
    * @return {string}
    */
-  formatToReceipient(sender, target, message, colorify) {
+  formatToReceipient(
+    sender: Player | Npc,
+    target: Player | Npc,
+    message: string,
+    colorify: Function
+  ) {
     return this.formatToSender(sender, target, message, colorify);
   }
 
-  colorify(message) {
+  colorify(message: string) {
     if (!this.color) {
       return message;
     }
 
     const colors = Array.isArray(this.color) ? this.color : [this.color];
 
-    const open = colors.map(color => `<${color}>`).join('');
-    const close = colors.reverse().map(color => `</${color}>`).join('');
+    const open = colors.map((color: string) => `<${color}>`).join("");
+    const close = colors
+      .reverse()
+      .map((color) => `</${color}>`)
+      .join("");
 
     return open + message + close;
   }
 }
 
-class NoPartyError extends Error {}
-class NoRecipientError extends Error {}
-class NoMessageError extends Error {}
-
-module.exports = {
-  Channel,
-  NoPartyError,
-  NoRecipientError,
-  NoMessageError,
-};
+export class NoPartyError extends Error {}
+export class NoRecipientError extends Error {}
+export class NoMessageError extends Error {}

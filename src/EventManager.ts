@@ -1,13 +1,14 @@
-'use strict';
-
-const { isIterable } = require('./Util');
+import { EventEmitter } from "events";
+import { isIterable } from "./Util";
 
 /**
  * Generic array hash table to store listener definitions `events` is a `Map`
  * whose keys are event names values are the `Set` of listeners to be attached
  * for that event
  */
-class EventManager {
+export class EventManager {
+  events: Map<string, Set<Function>>;
+
   constructor() {
     this.events = new Map();
   }
@@ -17,7 +18,7 @@ class EventManager {
    * @param {string} name
    * @return {Set}
    */
-  get(name) {
+  get(name: string) {
     return this.events.get(name);
   }
 
@@ -25,11 +26,11 @@ class EventManager {
    * @param {string}   eventName
    * @param {Function} listener
    */
-  add(eventName, listener) {
+  add(eventName: string, listener: Function) {
     if (!this.events.has(eventName)) {
       this.events.set(eventName, new Set());
     }
-    this.events.get(eventName).add(listener);
+    this.events.get(eventName)!.add(listener);
   }
 
   /**
@@ -37,8 +38,8 @@ class EventManager {
    * @param {EventEmitter} emitter
    * @param {Object} config
    */
-  attach(emitter, config) {
-    for (const [ event, listeners ] of this.events) {
+  attach(emitter: EventEmitter, config: object) {
+    for (const [event, listeners] of this.events) {
       for (const listener of listeners) {
         if (config) {
           emitter.on(event, listener.bind(emitter, config));
@@ -60,13 +61,13 @@ class EventManager {
    * @param {EventEmitter}  emitter
    * @param {?string|iterable} events Optional name or list of event names to remove listeners from
    */
-  detach(emitter, events) {
-    if (typeof events === 'string') {
+  detach(emitter: EventEmitter, events: string | Iterable<string>) {
+    if (typeof events === "string") {
       events = [events];
     } else if (!events) {
       events = this.events.keys();
     } else if (!isIterable(events)) {
-      throw new TypeError('events list passed to detach() is not iterable');
+      throw new TypeError("events list passed to detach() is not iterable");
     }
 
     for (const event of events) {
@@ -74,5 +75,3 @@ class EventManager {
     }
   }
 }
-
-module.exports = EventManager;

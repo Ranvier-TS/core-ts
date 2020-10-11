@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Representation of an "Attribute" which is any value that has a base amount and depleted/restored
  * safely. Where safely means without being destructive to the base value.
@@ -13,7 +11,18 @@
  * @property {AttributeFormula} formula
  * @property {object} metadata any custom info for this attribute
  */
-class Attribute {
+export class Attribute {
+  /** @property {string} name */
+  name: string;
+  /** @property {number} base */
+  base: number;
+  /** @property {number} delta Current difference from the base */
+  delta: number = 0;
+  /** @property {AttributeFormula} formula */
+  formula: AttributeFormula | null = null;
+  /** @property {object} metadata any custom info for this attribute */
+  metadata: object = {};
+
   /**
    * @param {string} name
    * @param {number} base
@@ -21,15 +30,23 @@ class Attribute {
    * @param {AttributeFormula} formula=null
    * @param {object} metadata={}
    */
-  constructor(name, base, delta = 0, formula = null, metadata = {}) {
-    if (isNaN(base)) { 
-      throw new TypeError(`Base attribute must be a number, got ${base}.`); 
+  constructor(
+    name: string,
+    base: number,
+    delta: number,
+    formula: AttributeFormula,
+    metadata: object
+  ) {
+    if (isNaN(base)) {
+      throw new TypeError(`Base attribute must be a number, got ${base}.`);
     }
     if (isNaN(delta)) {
       throw new TypeError(`Attribute delta must be a number, got ${delta}.`);
     }
     if (formula && !(formula instanceof AttributeFormula)) {
-      throw new TypeError('Attribute formula must be instance of AttributeFormula');
+      throw new TypeError(
+        "Attribute formula must be instance of AttributeFormula"
+      );
     }
 
     this.name = name;
@@ -43,7 +60,7 @@ class Attribute {
    * Lower current value
    * @param {number} amount
    */
-  lower(amount) {
+  lower(amount: number) {
     this.raise(-amount);
   }
 
@@ -51,7 +68,7 @@ class Attribute {
    * Raise current value
    * @param {number} amount
    */
-  raise(amount) {
+  raise(amount: number) {
     const newDelta = Math.min(this.delta + amount, 0);
     this.delta = newDelta;
   }
@@ -60,7 +77,7 @@ class Attribute {
    * Change the base value
    * @param {number} amount
    */
-  setBase(amount) {
+  setBase(amount: number) {
     this.base = Math.max(amount, 0);
   }
 
@@ -68,7 +85,7 @@ class Attribute {
    * Bypass raise/lower, directly setting the delta
    * @param {amount}
    */
-  setDelta(amount) {
+  setDelta(amount: number) {
     this.delta = Math.min(amount, 0);
   }
 
@@ -82,23 +99,27 @@ class Attribute {
  * @property {Array<string>} requires Array of attributes required for this formula to run
  * @property {function (...number) : number} formula
  */
-class AttributeFormula
-{
-  constructor(requires, fn) {
+export class AttributeFormula {
+  /** @property {Array<string>} requires Array of attributes required for this formula to run */
+  requires: Array<string>;
+  /** @property {function (...number) : number} formula */
+  formula: Function;
+
+  constructor(requires: string[], fn: Function) {
     if (!Array.isArray(requires)) {
-      throw new TypeError('requires not an array');
+      throw new TypeError("requires not an array");
     }
 
-    if (typeof fn !== 'function') {
-      throw new TypeError('Formula function is not a function');
+    if (typeof fn !== "function") {
+      throw new TypeError("Formula function is not a function");
     }
 
     this.requires = requires;
     this.formula = fn;
   }
 
-  evaluate(attribute, ...args) {
-    if (typeof this.formula !== 'function') {
+  evaluate(attribute: string, ...args: any) {
+    if (typeof this.formula !== "function") {
       throw new Error(`Formula is not callable ${this.formula}`);
       return;
     }
@@ -106,8 +127,3 @@ class AttributeFormula
     return this.formula.bind(attribute)(...args);
   }
 }
-
-module.exports = {
-    Attribute,
-    AttributeFormula,
-};

@@ -1,13 +1,17 @@
-'use strict';
-
-const Account = require('./Account');
+import { Account } from "./Account";
+import { EntityLoader } from "./EntityLoader";
 
 /**
  * Creates/loads {@linkplain Account|Accounts}
  * @property {Map<string,Account>} accounts
  * @property {EntityLoader} loader
  */
-class AccountManager {
+export class AccountManager {
+      /** @property {Map<string,Account>} accounts */
+      accounts: Map<string,Account>;
+      /** @property {EntityLoader} loader */
+      loader: EntityLoader | null;
+
   constructor() {
     this.accounts = new Map();
     this.loader = null;
@@ -17,22 +21,22 @@ class AccountManager {
    * Set the entity loader from which accounts are loaded
    * @param {EntityLoader}
    */
-  setLoader(loader) {
+  setLoader(loader: EntityLoader) {
     this.loader = loader;
   }
 
   /**
-   * @param {Account} acc
+   * @param {Account} account
    */
-  addAccount(acc) {
-    this.accounts.set(acc.username, acc);
+  addAccount(account: Account) {
+    this.accounts.set(account.username, account);
   }
 
   /**
    * @param {string} username
    * @return {Account|undefined}
    */
-  getAccount(username) {
+  getAccount(username: string) {
     return this.accounts.get(username);
   }
 
@@ -40,7 +44,7 @@ class AccountManager {
    * @param {string} username
    * @param {boolean} force Force reload data from disk
    */
-  async loadAccount(username, force) {
+  async loadAccount(username: string, force: boolean) {
     if (this.accounts.has(username) && !force) {
       return this.getAccount(username);
     }

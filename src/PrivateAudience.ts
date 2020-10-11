@@ -1,6 +1,4 @@
-'use strict';
-
-const ChannelAudience = require('./ChannelAudience');
+import { ChannelAudience } from "./ChannelAudience";
 
 /**
  * Audience class representing a specific targeted player.
@@ -8,7 +6,7 @@ const ChannelAudience = require('./ChannelAudience');
  * @memberof ChannelAudience
  * @extends ChannelAudience
  */
-class PrivateAudience extends ChannelAudience {
+export class PrivateAudience extends ChannelAudience {
   getBroadcastTargets() {
     const targetPlayerName = this.message.split(' ')[0];
     const targetPlayer = this.state.PlayerManager.getPlayer(targetPlayerName);
@@ -18,10 +16,8 @@ class PrivateAudience extends ChannelAudience {
     return [];
   }
 
-  alterMessage(message) {
+  alterMessage(message: string) {
     // Strips target name from message
     return message.split(' ').slice(1).join(' ');
   }
 }
-
-module.exports = PrivateAudience;

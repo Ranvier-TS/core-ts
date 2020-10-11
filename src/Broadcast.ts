@@ -1,17 +1,20 @@
-'use strict';
+import { Player } from "./Player";
 
-const ansi = require('sty');
+const ansi = require("sty");
 ansi.enable(); // force ansi on even when there isn't a tty for the server
-const wrap = require('wrap-ansi');
+const wrap = require("wrap-ansi");
 
 /** @typedef {{getBroadcastTargets: function(): Array}} */
-var Broadcastable;
+// var Broadcastable;
+export declare type Broadcastable = {
+  getBroadcastTargets: Array<Player | Npc>;
+};
 
 /**
  * Class used for sending text to the player. All output to the player should happen through this
  * class.
  */
-class Broadcast {
+export class Broadcast {
   /**
    * @param {Broadcastable} source Target to send the broadcast to
    * @param {string} message
@@ -20,12 +23,20 @@ class Broadcast {
    * @param {?function(target, message): string} formatter=null Function to call to format the
    *   message to each target
    */
-  static at(source, message = '', wrapWidth = false, useColor = true, formatter = null) {
+  static at(
+    source: Broadcastable,
+    message: string = "",
+    wrapWidth: boolean = false,
+    useColor: boolean = true,
+    formatter: Function | null = null
+  ) {
     if (!Broadcast.isBroadcastable(source)) {
-      throw new Error(`Tried to broadcast message to non-broadcastable object: MESSAGE [${message}]`);
+      throw new Error(
+        `Tried to broadcast message to non-broadcastable object: MESSAGE [${message}]`
+      );
     }
 
-    useColor = typeof useColor === 'boolean' ? useColor : true;
+    useColor = typeof useColor === "boolean" ? useColor : true;
     formatter = formatter || ((target, message) => message);
 
     message = Broadcast._fixNewlines(message);
@@ -36,12 +47,14 @@ class Broadcast {
       }
 
       if (target.socket._prompted) {
-        target.socket.write('\r\n');
+        target.socket.write("\r\n");
         target.socket._prompted = false;
       }
 
       let targetMessage = formatter(target, message);
-      targetMessage = wrapWidth ? Broadcast.wrap(targetMessage, wrapWidth) : ansi.parse(targetMessage);
+      targetMessage = wrapWidth
+        ? Broadcast.wrap(targetMessage, wrapWidth)
+        : ansi.parse(targetMessage);
       target.socket.write(targetMessage);
     }
   }
@@ -51,24 +64,36 @@ class Broadcast {
    * @see {@link Broadcast#at}
    * @param {Broadcastable} source
    * @param {string} message
-   * @param {Array<Player>} excludes
+   * @param {Array<Player>|Player} excludes
    * @param {number|boolean} wrapWidth
    * @param {boolean} useColor
    * @param {function} formatter
    */
-  static atExcept(source, message, excludes, wrapWidth, useColor, formatter) {
+  static atExcept(
+    source: Broadcastable,
+    message: string,
+    excludes: Broadcastable[] | Broadcastable,
+    wrapWidth?: number,
+    useColor?: boolean,
+    formatter?: Function
+  ) {
     if (!Broadcast.isBroadcastable(source)) {
-      throw new Error(`Tried to broadcast message to non-broadcastable object: MESSAGE [${message}]`);
+      throw new Error(
+        `Tried to broadcast message to non-broadcastable object: MESSAGE [${message}]`
+      );
     }
 
     // Could be an array or a single target.
-    excludes = [].concat(excludes);
+    if (!Array.isArray(excludes)) {
+      excludes = [excludes];
+    }
 
-    const targets = source.getBroadcastTargets()
-      .filter(target => !excludes.includes(target));
+    const targets = source
+      .getBroadcastTargets()
+      .filter((target: Broadcastable) => !excludes.includes(target));
 
     const newSource = {
-      getBroadcastTargets: () => targets
+      getBroadcastTargets: () => targets,
     };
 
     Broadcast.at(newSource, message, wrapWidth, useColor, formatter);
@@ -91,40 +116,82 @@ class Broadcast {
    * `Broadcast.at` with a newline
    * @see {@link Broadcast#at}
    */
-  static sayAt(source, message, wrapWidth, useColor, formatter) {
-    Broadcast.at(source, message, wrapWidth, useColor, (target, message) => {
-      return (formatter ? formatter(target, message) : message ) + '\r\n';
-    });
+  static sayAt(
+    source: Broadcastable,
+    message?: string,
+    wrapWidth?: number,
+    useColor?: boolean,
+    formatter?: Function
+  ) {
+    Broadcast.at(
+      source,
+      message,
+      wrapWidth,
+      useColor,
+      (target: Broadcastable, message: string) => {
+        return (formatter ? formatter(target, message) : message) + "\r\n";
+      }
+    );
   }
 
   /**
    * `Broadcast.atExcept` with a newline
    * @see {@link Broadcast#atExcept}
    */
-  static sayAtExcept(source, message, excludes, wrapWidth, useColor, formatter) {
-    Broadcast.atExcept(source, message, excludes, wrapWidth, useColor, (target, message) => {
-      return (formatter ? formatter(target, message) : message ) + '\r\n';
-    });
+  static sayAtExcept(
+    source: Broadcastable,
+    message: string,
+    excludes?: Broadcastable[],
+    wrapWidth?: number,
+    useColor?: boolean,
+    formatter?: Function
+  ) {
+    Broadcast.atExcept(
+      source,
+      message,
+      excludes,
+      wrapWidth,
+      useColor,
+      (target: Broadcastable, message: string) => {
+        return (formatter ? formatter(target, message) : message) + "\r\n";
+      }
+    );
   }
 
   /**
    * `Broadcast.atFormatted` with a newline
    * @see {@link Broadcast#atFormatted}
    */
-  static sayAtFormatted(source, message, formatter, wrapWidth, useColor) {
+  static sayAtFormatted(
+    source: Broadcastable,
+    message: string,
+    formatter?: Function,
+    wrapWidth?: number,
+    useColor?: boolean
+  ) {
     Broadcast.sayAt(source, message, wrapWidth, useColor, formatter);
   }
 
   /**
    * Render the player's prompt including any extra prompts
    * @param {Player} player
-   * @param {object} extra     extra data to avail to the prompt string interpolator
-   * @param {number} wrapWidth
-   * @param {boolean} useColor
+   * @param {?object} extra     extra data to avail to the prompt string interpolator
+   * @param {?number} wrapWidth
+   * @param {?boolean} useColor
    */
-  static prompt(player, extra, wrapWidth, useColor) {
+  static prompt(
+    player: Player,
+    extra?: object,
+    wrapWidth?: number,
+    useColor?: boolean
+  ) {
     player.socket._prompted = false;
-    Broadcast.at(player, '\r\n' + player.interpolatePrompt(player.prompt, extra) + ' ', wrapWidth, useColor);
+    Broadcast.at(
+      player,
+      "\r\n" + player.interpolatePrompt(player.prompt, extra) + " ",
+      wrapWidth,
+      useColor
+    );
     let needsNewline = player.extraPrompts.size > 0;
     if (needsNewline) {
       Broadcast.sayAt(player);
@@ -138,12 +205,12 @@ class Broadcast {
     }
 
     if (needsNewline) {
-      Broadcast.at(player, '> ');
+      Broadcast.at(player, "> ");
     }
 
     player.socket._prompted = true;
     if (player.socket.writable) {
-      player.socket.command('goAhead');
+      player.socket.command("goAhead");
     }
   }
 
@@ -157,20 +224,29 @@ class Broadcast {
    * @param {string} delimiters Characters to wrap the bar in
    * @return {string}
    */
-  static progress(width, percent, color, barChar = "#", fillChar = " ", delimiters = "()") {
+  static progress(
+    width: number,
+    percent: number,
+    color: string,
+    barChar: string = "#",
+    fillChar: string = " ",
+    delimiters: string = "()"
+  ) {
     percent = Math.max(0, percent);
     width -= 3; // account for delimiters and tip of bar
     if (percent === 100) {
-        width++; // 100% bar doesn't have a second right delimiter
+      width++; // 100% bar doesn't have a second right delimiter
     }
     barChar = barChar[0];
     fillChar = fillChar[0];
-    const [ leftDelim, rightDelim ] = delimiters;
+    const [leftDelim, rightDelim] = delimiters;
     const openColor = `<${color}>`;
     const closeColor = `</${color}>`;
     let buf = openColor + leftDelim + "<bold>";
     const widthPercent = Math.round((percent / 100) * width);
-    buf += Broadcast.line(widthPercent, barChar) + (percent === 100 ? '' : rightDelim);
+    buf +=
+      Broadcast.line(widthPercent, barChar) +
+      (percent === 100 ? "" : rightDelim);
     buf += Broadcast.line(width - widthPercent, fillChar);
     buf += "</bold>" + rightDelim + closeColor;
     return buf;
@@ -184,10 +260,15 @@ class Broadcast {
    * @param {?string} fillChar Character to pad with, defaults to ' '
    * @return {string}
    */
-  static center(width, message, color, fillChar = " ") {
+  static center(
+    width: number,
+    message: string,
+    color?: string,
+    fillChar?: string
+  ) {
     const padWidth = width / 2 - message.length / 2;
-    let openColor = '';
-    let closeColor = '';
+    let openColor = "";
+    let closeColor = "";
     if (color) {
       openColor = `<${color}>`;
       closeColor = `</${color}>`;
@@ -195,9 +276,9 @@ class Broadcast {
 
     return (
       openColor +
-      Broadcast.line(Math.floor(padWidth), fillChar) +
+      Broadcast.line(Math.floor(padWidth), fillChar || " ") +
       message +
-      Broadcast.line(Math.ceil(padWidth), fillChar) +
+      Broadcast.line(Math.ceil(padWidth), fillChar || " ") +
       closeColor
     );
   }
@@ -209,14 +290,14 @@ class Broadcast {
    * @param {?string} color
    * @return {string}
    */
-  static line(width, fillChar = "-", color = null) {
-    let openColor = '';
-    let closeColor = '';
+  static line(width: number, fillChar?: string, color?: string) {
+    let openColor = "";
+    let closeColor = "";
     if (color) {
       openColor = `<${color}>`;
       closeColor = `</${color}>`;
     }
-    return openColor + (new Array(width + 1)).join(fillChar) + closeColor;
+    return openColor + new Array(width + 1).join(fillChar || "-") + closeColor;
   }
 
   /**
@@ -225,8 +306,8 @@ class Broadcast {
    * @param {?number} width   Defaults to 80
    * @return {string}
    */
-  static wrap(message, width = 80) {
-    return Broadcast._fixNewlines(wrap(ansi.parse(message), width));
+  static wrap(message: string, width?: number) {
+    return Broadcast._fixNewlines(wrap(ansi.parse(message), width || 80));
   }
 
   /**
@@ -235,10 +316,10 @@ class Broadcast {
    * @param {number} indent
    * @return {string}
    */
-  static indent(message, indent) {
+  static indent(message: string, indent: number) {
     message = Broadcast._fixNewlines(message);
-    const padding = Broadcast.line(indent, ' ');
-    return padding + message.replace(/\r\n/g, '\r\n' + padding);
+    const padding = Broadcast.line(indent || 0, " ");
+    return padding + message.replace(/\r\n/g, "\r\n" + padding);
   }
 
   /**
@@ -247,17 +328,15 @@ class Broadcast {
    * @return {string}
    * @private
    */
-  static _fixNewlines(message) {
+  static _fixNewlines(message: string) {
     // Fix \n not in a \r\n pair to prevent bad rendering on windows
-    message = message.replace(/\r\n/g, '<NEWLINE>').split('\n');
-    message = message.join('\r\n').replace(/<NEWLINE>/g, '\r\n');
+    const messageArray = message.replace(/\r\n/g, "<NEWLINE>").split("\n");
+    message = messageArray.join("\r\n").replace(/<NEWLINE>/g, "\r\n");
     // fix sty's incredibly stupid default of always appending ^[[0m
-    return message.replace(/\x1B\[0m$/, '');
+    return message.replace(/\x1B\[0m$/, "");
   }
 
-  static isBroadcastable(source) {
-    return source && typeof source.getBroadcastTargets === 'function';
+  static isBroadcastable(source: Broadcastable) {
+    return source && typeof source.getBroadcastTargets === "function";
   }
 }
-
-module.exports = Broadcast;
