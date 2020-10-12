@@ -1,6 +1,10 @@
-'use strict';
+"use strict";
 
-const EventEmitter = require('events');
+import { EventEmitter } from "events";
+import { Player } from "./Player";
+import { Quest } from "./Quest";
+
+export interface IQuestGoalDef {}
 
 /**
  * Representation of a goal of a quest.
@@ -8,18 +12,25 @@ const EventEmitter = require('events');
  * create new quest goals for quests
  * @extends EventEmitter
  */
-class QuestGoal extends EventEmitter {
+export class QuestGoal extends EventEmitter {
+  config: IQuestGoalDef;
+  quest: Quest;
+  state: object;
+  player: Player;
   /**
    * @param {Quest} quest Quest this goal is for
    * @param {object} config
    * @param {Player} player
    */
-  constructor(quest, config, player) {
+  constructor(quest: Quest, config: IQuestGoalDef, player: Player) {
     super();
 
-    this.config = Object.assign({
-      // no defaults currently
-    }, config);
+    this.config = Object.assign(
+      {
+        // no defaults currently
+      },
+      config
+    );
     this.quest = quest;
     this.state = {};
     this.player = player;
@@ -31,15 +42,15 @@ class QuestGoal extends EventEmitter {
   getProgress() {
     return {
       percent: 0,
-      display: '[WARNING] Quest does not have progress display configured. Please tell an admin'
+      display:
+        "[WARNING] Quest does not have progress display configured. Please tell an admin",
     };
   }
 
   /**
    * Put any cleanup activities after the quest is finished here
    */
-  complete() {
-  }
+  complete() {}
 
   serialize() {
     return {
@@ -49,9 +60,7 @@ class QuestGoal extends EventEmitter {
     };
   }
 
-  hydrate(state) {
+  hydrate(state: object) {
     this.state = state;
   }
 }
-
-module.exports = QuestGoal;

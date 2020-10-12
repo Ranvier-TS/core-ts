@@ -1,3 +1,4 @@
+import { Skill } from "./Skill";
 import { SkillFlag } from "./SkillFlag";
 
 /**

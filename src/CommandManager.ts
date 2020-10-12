@@ -1,3 +1,5 @@
+import { Command } from "./Command";
+
 /**
  * Contains all active in game commands
  */

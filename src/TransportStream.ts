@@ -1,12 +1,11 @@
-'use strict';
-
-const EventEmitter = require('events');
+import { EventEmitter } from "events";
 
 /**
  * Base class for anything that should be sending or receiving data from the player
  */
-class TransportStream extends EventEmitter
-{
+export class TransportStream extends EventEmitter {
+  socket?: object;
+
   get readable() {
     return true;
   }
@@ -26,12 +25,12 @@ class TransportStream extends EventEmitter
    * @param {...*} args
    * @return {*}
    */
-  command(command, ...args) {
+  command(command: string, ...args: any[]) {
     if (!command || !command.length) {
       throw new RangeError("Must specify a command to the stream");
     }
-    command = 'execute' + command[0].toUpperCase() + command.substr(1);
-    if (typeof this[command] === 'function') {
+    command = "execute" + command[0].toUpperCase() + command.substr(1);
+    if (typeof this[command] === "function") {
       return this[command](...args);
     }
   }
@@ -64,13 +63,11 @@ class TransportStream extends EventEmitter
    * Attach a socket to this stream
    * @param {*} socket
    */
-  attach(socket) {
+  attach(socket: object) {
     this.socket = socket;
 
-    this.socket.on('close', _ => {
-      this.emit('close');
+    this.socket.on("close", (_?: any) => {
+      this.emit("close");
     });
   }
 }
-
-module.exports = TransportStream;

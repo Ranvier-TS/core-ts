@@ -1,19 +1,16 @@
-'use strict';
+import { EventEmitter } from "events";
 
-const EventEmitter = require('events');
-
-class GameServer extends EventEmitter
-{
+export class GameServer extends EventEmitter {
   /**
    * @param {commander} commander
    * @fires GameServer#startup
    */
-  startup(commander) {
+  startup(commander: object) {
     /**
      * @event GameServer#startup
      * @param {commander} commander
      */
-    this.emit('startup', commander);
+    this.emit("startup", commander);
   }
 
   /**
@@ -23,8 +20,6 @@ class GameServer extends EventEmitter
     /**
      * @event GameServer#shutdown
      */
-    this.emit('shutdown');
+    this.emit("shutdown");
   }
 }
-
-module.exports = GameServer;

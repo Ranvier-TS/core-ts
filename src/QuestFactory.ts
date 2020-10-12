@@ -1,23 +1,30 @@
-'use strict';
+import { EntityReference } from "./EntityReference";
+import { Logger } from "./Logger";
+import { Player } from "./Player";
+import { IQuestDef, Quest } from "./Quest";
 
-const Quest = require('./Quest');
-const Logger = require('./Logger');
+export interface IQuestFactoryDef {
+  area: string;
+  id: string;
+  config: IQuestDef;
+}
 
 /**
  * @property {Map} quests
  */
-class QuestFactory {
+export class QuestFactory {
+  quests: Map<string, IQuestFactoryDef>;
   constructor() {
     this.quests = new Map();
   }
 
-  add(areaName, id, config) {
+  add(areaName: string, id: string, config: IQuestDef) {
     const entityRef = this.makeQuestKey(areaName, id);
     config.entityReference = entityRef;
     this.quests.set(entityRef, { id, area: areaName, config });
   }
 
-  set(qid, val) {
+  set(qid: EntityReference, val: IQuestFactoryDef) {
     this.quests.set(qid, val);
   }
 
@@ -26,7 +33,7 @@ class QuestFactory {
    * @param {string} qid
    * @return {object}
    */
-  get(qid) {
+  get(qid: EntityReference) {
     return this.quests.get(qid);
   }
 
@@ -36,7 +43,7 @@ class QuestFactory {
    * @param {entityReference} questRef
    * @return {boolean}
    */
-  canStart(player, questRef) {
+  canStart(player: Player, questRef: EntityReference) {
     const quest = this.get(questRef);
     if (!quest) {
       throw new Error(`Invalid quest id [${questRef}]`);
@@ -56,7 +63,9 @@ class QuestFactory {
       return true;
     }
 
-    return quest.config.requires.every(requiresRef => tracker.isComplete(requiresRef));
+    return quest.config.requires.every((requiresRef) =>
+      tracker.isComplete(requiresRef)
+    );
   }
 
   /**
@@ -66,7 +75,12 @@ class QuestFactory {
    * @param {Array}     state     current quest state
    * @return {Quest}
    */
-  create(GameState, qid, player, state = []) {
+  create(
+    GameState: IGameState,
+    qid: EntityReference,
+    player: Player,
+    state: any[] = []
+  ) {
     const quest = this.quests.get(qid);
     if (!quest) {
       throw new Error(`Trying to create invalid quest id [${qid}]`);
@@ -79,22 +93,22 @@ class QuestFactory {
       instance.addGoal(new goalType(instance, goal.config, player));
     }
 
-    instance.on('progress', (progress) => {
-      player.emit('questProgress', instance, progress);
+    instance.on("progress", (progress) => {
+      player.emit("questProgress", instance, progress);
       player.save();
     });
 
-    instance.on('start', () => {
-      player.emit('questStart', instance);
-      instance.emit('progress', instance.getProgress());
+    instance.on("start", () => {
+      player.emit("questStart", instance);
+      instance.emit("progress", instance.getProgress());
     });
 
-    instance.on('turn-in-ready', () => {
-      player.emit('questTurnInReady', instance);
+    instance.on("turn-in-ready", () => {
+      player.emit("questTurnInReady", instance);
     });
 
-    instance.on('complete', () => {
-      player.emit('questComplete', instance);
+    instance.on("complete", () => {
+      player.emit("questComplete", instance);
       player.questTracker.complete(instance.entityReference);
 
       if (!quest.config.rewards) {
@@ -107,11 +121,13 @@ class QuestFactory {
           const rewardClass = GameState.QuestRewardManager.get(reward.type);
 
           if (!rewardClass) {
-            throw new Error(`Quest [${qid}] has invalid reward type ${reward.type}`);
+            throw new Error(
+              `Quest [${qid}] has invalid reward type ${reward.type}`
+            );
           }
 
           rewardClass.reward(GameState, instance, reward.config, player);
-          player.emit('questReward', reward);
+          player.emit("questReward", reward);
         } catch (e) {
           Logger.error(e.message);
         }
@@ -128,9 +144,7 @@ class QuestFactory {
    * @param {number} id
    * @return {string}
    */
-  makeQuestKey(area, id) {
-    return area + ':' + id;
+  makeQuestKey(area: string, id: string | number) {
+    return area + ":" + id;
   }
 }
-
-module.exports = QuestFactory;

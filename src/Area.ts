@@ -136,7 +136,7 @@ export class Area extends GameEntity {
     }
 
     const floor = this.map.get(z);
-    floor.addRoom(x, y, room);
+    floor && floor.addRoom(x, y, room);
   }
 
   /**

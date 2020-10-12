@@ -1,13 +1,13 @@
-"use strict";
-
 import { Damage } from "./Damage";
 import { Item } from "./Item";
-import { IInventoryDef, Inventory } from "./Inventory";
+import { IInventoryDef, Inventory, InventoryFullError } from "./Inventory";
 import { Logger } from "./Logger";
 import { Metadatable } from "./Metadatable";
 import { EventEmitter } from "events";
+import { Room } from "./Room";
+import { Attributes } from "./Attributes";
+import { Config } from "./Config";
 
-const Config = require("./Config");
 const EffectList = require("./EffectList");
 const {
   EquipSlotTakenError,
@@ -520,7 +520,7 @@ export class Character extends Metadatable(EventEmitter) {
     this.inventory = this.inventory || new Inventory();
     // Default max inventory size config
     if (!this.isNpc && !isFinite(this.inventory.getMax())) {
-      this.inventory.setMax(Config.get("defaultMaxPlayerInventory") || 20);
+      this.inventory.setMax(Config.get("defaultMaxPlayerInventory", 20));
     }
   }
 

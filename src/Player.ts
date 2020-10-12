@@ -2,14 +2,14 @@
 
 import { Character } from "./Character";
 import { CommandQueue } from "./CommandQueue";
+import { Config } from "./Config";
 import { IInventoryDef } from "./Inventory";
 import { IItemDef } from "./Item";
 import { Logger } from "./Logger";
 import { Metadata } from "./Metadatable";
 import { PlayerRoles } from "./PlayerRoles";
-
-const Config = require("./Config");
-const QuestTracker = require("./QuestTracker");
+import { QuestTracker } from "./QuestTracker";
+import { Room } from "./Room";
 
 export interface IPlayerDef {
   account: Account | null;
@@ -72,7 +72,7 @@ export class Player extends Character {
 
     // Default max inventory size config
     if (!isFinite(this.inventory.getMax())) {
-      this.inventory.setMax(Config.get("defaultMaxPlayerInventory") || 20);
+      this.inventory.setMax(Config.get("defaultMaxPlayerInventory", 20));
     }
   }
 
@@ -164,7 +164,7 @@ export class Player extends Character {
    * @fires Room#playerEnter
    * @fires Player#enterRoom
    */
-  moveTo(nextRoom: Room, onMoved = (_) => _) {
+  moveTo(nextRoom: Room, onMoved = (_?: any) => _) {
     const prevRoom = this.room;
     if (this.room && this.room !== nextRoom) {
       /**

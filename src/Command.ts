@@ -1,6 +1,7 @@
 import { CommandType } from "./CommandType";
 import { Npc } from "./Npc";
 import { Player } from "./Player";
+import { PlayerRoles } from "./PlayerRoles";
 
 export interface ICommandDef {
   name: string;

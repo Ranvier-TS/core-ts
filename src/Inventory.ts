@@ -1,5 +1,7 @@
 import { Character } from "./Character";
 import { Item, ItemDef } from "./Item";
+import { Npc } from "./Npc";
+import { Player } from "./Player";
 
 export declare interface IInventoryDef {
   items?: [string, ItemDef | Item][];
@@ -99,7 +101,7 @@ export class Inventory extends Map<string, ItemDef | Item> {
    * @param {GameState} state
    * @param {Character|Item} carriedBy
    */
-  hydrate(state: IGameState, carriedBy: Character | Item) {
+  hydrate(state: IGameState, carriedBy: Player | Npc | Item) {
     // Item is imported here to prevent circular dependency with Item having an Inventory
     const Item = require("./Item");
 
