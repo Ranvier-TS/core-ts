@@ -1,12 +1,12 @@
-'use strict';
-
-const EventManager = require('./EventManager');
+import { EventManager } from "./EventManager";
 
 /**
  * BehaviorManager keeps a map of BehaviorName:EventManager which is used
  * during Item and NPC hydrate() methods to attach events
  */
-class BehaviorManager {
+export class BehaviorManager {
+  behaviors: Map<string, EventManager>;
+
   constructor() {
     this.behaviors = new Map();
   }
@@ -16,7 +16,7 @@ class BehaviorManager {
    * @param {string} name
    * @return {EventManager}
    */
-  get(name) {
+  get(name: string) {
     return this.behaviors.get(name);
   }
 
@@ -25,7 +25,7 @@ class BehaviorManager {
    * @param {string} name
    * @return {boolean}
    */
-  has(name) {
+  has(name: string) {
     return this.behaviors.has(name);
   }
 
@@ -33,13 +33,14 @@ class BehaviorManager {
    * @param {string}   behaviorName
    * @param {Function} listener
    */
-  addListener(behaviorName, event, listener) {
+  addListener(behaviorName: string, event: string, listener: Function) {
     if (!this.behaviors.has(behaviorName)) {
       this.behaviors.set(behaviorName, new EventManager());
     }
 
-    this.behaviors.get(behaviorName).add(event, listener);
+    const behavior = this.behaviors.get(behaviorName);
+    if (behavior) {
+      behavior.add(event, listener);
+    }
   }
 }
-
-module.exports = BehaviorManager;

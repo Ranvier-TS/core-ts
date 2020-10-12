@@ -1,15 +1,15 @@
 "use strict";
 
 import { Character } from "./Character";
+import { CommandQueue } from "./CommandQueue";
 import { IInventoryDef } from "./Inventory";
 import { IItemDef } from "./Item";
 import { Logger } from "./Logger";
 import { Metadata } from "./Metadatable";
+import { PlayerRoles } from "./PlayerRoles";
 
-const CommandQueue = require("./CommandQueue");
 const Config = require("./Config");
 const QuestTracker = require("./QuestTracker");
-const PlayerRoles = require("./PlayerRoles");
 
 export interface IPlayerDef {
   account: Account | null;

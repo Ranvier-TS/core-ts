@@ -1,5 +1,4 @@
-import { Attribute } from "./Attribute";
-import { Character } from "./Character";
+import { PlayerOrNpc } from "./GameEntity";
 
 /**
  * @property {string} attribute Attribute the damage is going to apply to
@@ -10,7 +9,7 @@ import { Character } from "./Character";
  */
 export class Damage {
   attribute: string;
-  attacker?: Character | null = null;
+  attacker?: PlayerOrNpc | null = null;
   amount: number;
   source?: any = null;
   metadata: object;
@@ -25,7 +24,7 @@ export class Damage {
   constructor(
     attribute: string,
     amount: number,
-    attacker: Character,
+    attacker: PlayerOrNpc,
     source: any,
     metadata: object = {}
   ) {
@@ -51,7 +50,7 @@ export class Damage {
    * @param {Character} target
    * @return {number} Final damage amount
    */
-  evaluate(target: Character) {
+  evaluate(target: PlayerOrNpc) {
     let amount = this.amount;
 
     if (this.attacker) {
@@ -67,7 +66,7 @@ export class Damage {
    * @fires Character#hit
    * @fires Character#damaged
    */
-  commit(target: Character) {
+  commit(target: PlayerOrNpc) {
     const finalAmount = this.evaluate(target);
     target.lowerAttribute(this.attribute, finalAmount);
 

@@ -1,7 +1,17 @@
-'use strict';
+import { CommandType } from "./CommandType";
+import { Npc } from "./Npc";
+import { Player } from "./Player";
 
-const CommandType = require('./CommandType');
-const PlayerRoles = require('./PlayerRoles');
+export interface ICommandDef {
+  name: string;
+  func: Function;
+  type?: CommandType;
+  aliases?: string[];
+  usage?: string;
+  requiredRole?: PlayerRoles;
+  metadata?: Record<string, any>;
+  command: Function;
+}
 
 /**
  * In game command. See the {@link http://ranviermud.com/extending/commands/|Command guide}
@@ -14,7 +24,17 @@ const PlayerRoles = require('./PlayerRoles');
  * @property {PlayerRoles} requiredRole
  * @property {Object} metadata General use configuration object
  */
-class Command {
+export class Command {
+  bundle: string;
+  type: CommandType;
+  name: string;
+  func: Function;
+  aliases?: string[];
+  usage: string;
+  requiredRole: PlayerRoles;
+  file: string;
+  metadata: Record<string, any>;
+
   /**
    * @param {string} bundle Bundle the command came from
    * @param {string} name   Name of the command
@@ -26,7 +46,7 @@ class Command {
    * @param {PlayerRoles} requiredRole=PlayerRoles.PLAYER
    * @param {string} file File the command comes from
    */
-  constructor(bundle, name, def, file) {
+  constructor(bundle: string, name: string, def: ICommandDef, file: string) {
     this.bundle = bundle;
     this.type = def.type || CommandType.COMMAND;
     this.name = name;
@@ -44,9 +64,7 @@ class Command {
    * @param {string} arg0   The actual command the user typed, useful when checking which alias was used for a command
    * @return {*}
    */
-  execute(args, player, arg0) {
+  execute(args: string, player: Npc | Player, arg0: string) {
     return this.func(args, player, arg0);
   }
 }
-
-module.exports = Command;

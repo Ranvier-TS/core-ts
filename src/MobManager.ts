@@ -1,25 +1,26 @@
-'use strict';
+import { Npc } from "./Npc";
 
 /**
  * Keeps track of all the individual mobs in the game
  */
-class MobManager {
+export class MobManager {
+  mobs: Map<string, Npc>;
   constructor() {
     this.mobs = new Map();
   }
 
   /**
-   * @param {Mob} mob
+   * @param {Npc} mob
    */
-  addMob(mob) {
+  addMob(mob: Npc) {
     this.mobs.set(mob.uuid, mob);
   }
 
   /**
    * Completely obliterate a mob from the game, nuclear option
-   * @param {Mob} mob
+   * @param {Npc} mob
    */
-  removeMob(mob) {
+  removeMob(mob: Npc) {
     mob.effects.clear();
     const room = mob.room;
     if (room) {
@@ -31,5 +32,3 @@ class MobManager {
     this.mobs.delete(mob.uuid);
   }
 }
-
-module.exports = MobManager;

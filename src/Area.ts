@@ -1,7 +1,15 @@
-'use strict';
+import { AreaFloor } from "./AreaFloor";
+import { GameEntity } from "./GameEntity";
+import { Metadata } from "./Metadatable";
+import { Npc } from "./Npc";
+import { Room } from "./Room";
 
-const GameEntity = require('./GameEntity');
-const AreaFloor = require('./AreaFloor');
+export interface IAreaDef {
+  title: string;
+  metadata?: Metadata;
+  script?: string;
+  behaviors?: Record<string, any>;
+}
 
 /**
  * Representation of an in game area
@@ -21,8 +29,25 @@ const AreaFloor = require('./AreaFloor');
  *
  * @extends GameEntity
  */
-class Area extends GameEntity {
-  constructor(bundle, name, manifest) {
+export class Area extends GameEntity {
+  /** Bundle this area comes from */
+  bundle: string | null;
+  /** @property {string} name */
+  name: string;
+  /** @property {string} title */
+  title: string;
+  /** @property {string} script A custom script for this item */
+  script: string | undefined;
+  /** @property {Map<number, AreaFloor>} map a Map object keyed by the floor z-index, each floor is an array with [x][y] indexes for coordinates. */
+  map: Map<number, AreaFloor>;
+  /** Map of room id to Room */
+  rooms: Map<string, Room>;
+  /** Active NPCs that originate from this area. Note: this is NPCs that */
+  npcs: Set<Npc>;
+  metadata: Metadata;
+  behaviors: IBehavior | Record<string, any>;
+
+  constructor(bundle: string | null, name: string, manifest: IAreaDef) {
     super();
     this.bundle = bundle;
     this.name = name;
@@ -34,7 +59,7 @@ class Area extends GameEntity {
     this.script = manifest.script;
     this.behaviors = new Map(Object.entries(manifest.behaviors || {}));
 
-    this.on('updateTick', state => {
+    this.on("updateTick", (state: IGameState) => {
       this.update(state);
     });
   }
@@ -55,12 +80,11 @@ class Area extends GameEntity {
     return [...this.map.keys()].sort();
   }
 
-
   /**
    * @param {string} id Room id
    * @return {Room|undefined}
    */
-  getRoomById(id) {
+  getRoomById(id: string) {
     return this.rooms.get(id);
   }
 
@@ -68,7 +92,7 @@ class Area extends GameEntity {
    * @param {Room} room
    * @fires Area#roomAdded
    */
-  addRoom(room) {
+  addRoom(room: Room) {
     this.rooms.set(room.id, room);
 
     if (room.coordinates) {
@@ -79,33 +103,33 @@ class Area extends GameEntity {
      * @event Area#roomAdded
      * @param {Room} room
      */
-    this.emit('roomAdded', room);
+    this.emit("roomAdded", room);
   }
 
   /**
    * @param {Room} room
    * @fires Area#roomRemoved
    */
-  removeRoom(room) {
+  removeRoom(room: Room) {
     this.rooms.delete(room.id);
 
     /**
      * @event Area#roomRemoved
      * @param {Room} room
      */
-    this.emit('roomRemoved', room);
+    this.emit("roomRemoved", room);
   }
 
   /**
    * @param {Room} room
    * @throws Error
    */
-  addRoomToMap(room) {
+  addRoomToMap(room: Room) {
     if (!room.coordinates) {
-      throw new Error('Room does not have coordinates');
+      throw new Error("Room does not have coordinates");
     }
 
-    const {x, y, z} = room.coordinates;
+    const { x, y, z } = room.coordinates;
 
     if (!this.map.has(z)) {
       this.map.set(z, new AreaFloor(z));
@@ -122,7 +146,7 @@ class Area extends GameEntity {
    * @param {number} z
    * @return {Room|boolean}
    */
-  getRoomAtCoordinates(x, y, z) {
+  getRoomAtCoordinates(x: number, y: number, z: number) {
     const floor = this.map.get(z);
     return floor && floor.getRoom(x, y);
   }
@@ -130,7 +154,7 @@ class Area extends GameEntity {
   /**
    * @param {Npc} npc
    */
-  addNpc(npc) {
+  addNpc(npc: Npc) {
     this.npcs.add(npc);
   }
 
@@ -138,7 +162,7 @@ class Area extends GameEntity {
    * Removes an NPC from the area. NOTE: This must manually remove the NPC from its room as well
    * @param {Npc} npc
    */
-  removeNpc(npc) {
+  removeNpc(npc: Npc) {
     this.npcs.delete(npc);
   }
 
@@ -146,18 +170,18 @@ class Area extends GameEntity {
    * This method is automatically called every N milliseconds where N is defined in the
    * `setInterval` call to `GameState.AreaMAnager.tickAll` in the `ranvier` executable. It, in turn,
    * will fire the `updateTick` event on all its rooms and npcs
-   * 
+   *
    * @param {GameState} state
    * @fires Room#updateTick
    * @fires Npc#updateTick
    */
-  update(state) {
-    for(const [id, room] of this.rooms) {
+  update(state: IGameState) {
+    for (const [id, room] of this.rooms) {
       /**
        * @see Area#update
        * @event Room#updateTick
        */
-      room.emit('updateTick');
+      room.emit("updateTick");
     }
 
     for (const npc of this.npcs) {
@@ -165,11 +189,11 @@ class Area extends GameEntity {
        * @see Area#update
        * @event Npc#updateTick
        */
-      npc.emit('updateTick');
+      npc.emit("updateTick");
     }
   }
 
-  hydrate(state) {
+  hydrate(state: IGameState) {
     this.setupBehaviors(state.AreaBehaviorManager);
     const { rooms } = state.AreaFactory.getDefinition(this.name);
     for (const roomRef of rooms) {
@@ -181,7 +205,7 @@ class Area extends GameEntity {
        * Fires after the room is hydrated and added to its area
        * @event Room#ready
        */
-      room.emit('ready');
+      room.emit("ready");
     }
   }
 
@@ -191,9 +215,10 @@ class Area extends GameEntity {
    * @return {Array<Broadcastable>}
    */
   getBroadcastTargets() {
-    const roomTargets = [...this.rooms].reduce((acc, [, room]) => acc.concat(room.getBroadcastTargets()), []);
+    const roomTargets = [...this.rooms].reduce(
+      (acc, [, room]) => acc.concat(room.getBroadcastTargets()),
+      []
+    );
     return [this, ...roomTargets];
   }
 }
-
-module.exports = Area;

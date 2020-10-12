@@ -1,4 +1,4 @@
-import { Player } from "./Player";
+import { PlayerOrNpc } from "./GameEntity";
 
 const ansi = require("sty");
 ansi.enable(); // force ansi on even when there isn't a tty for the server
@@ -7,7 +7,7 @@ const wrap = require("wrap-ansi");
 /** @typedef {{getBroadcastTargets: function(): Array}} */
 // var Broadcastable;
 export declare type Broadcastable = {
-  getBroadcastTargets: Array<Player | Npc>;
+  getBroadcastTargets: Array<PlayerOrNpc>;
 };
 
 /**

@@ -1,11 +1,11 @@
-'use strict';
-
-const Room = require('./Room');
+import { EntityReference } from "./EntityReference";
+import { Room } from "./Room";
 
 /**
  * Keeps track of all the individual rooms in the game
  */
-class RoomManager {
+export class RoomManager {
+  rooms: Map<string, Room>;
   constructor() {
     this.rooms = new Map();
   }
@@ -14,23 +14,21 @@ class RoomManager {
    * @param {string} entityRef
    * @return {Room}
    */
-  getRoom(entityRef) {
+  getRoom(entityRef: EntityReference) {
     return this.rooms.get(entityRef);
   }
 
   /**
    * @param {Room} room
    */
-  addRoom(room) {
+  addRoom(room: Room) {
     this.rooms.set(room.entityReference, room);
   }
 
   /**
    * @param {Room} room
    */
-  removeRoom(room) {
+  removeRoom(room: Room) {
     this.rooms.delete(room.entityReference);
   }
 }
-
-module.exports = RoomManager;

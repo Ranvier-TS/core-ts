@@ -1,11 +1,39 @@
-'use strict';
+import { Broadcast } from "./Broadcast";
+import { Damage } from "./Damage";
+import { PlayerOrNpc } from "./GameEntity";
+import {
+  CooldownError,
+  NotEnoughResourcesError,
+  PassiveError,
+} from "./SkillErrors";
+import { SkillFlag } from "./SkillFlag";
+import { SkillType } from "./SkillType";
 
-const SkillFlag = require('./SkillFlag');
-const SkillType = require('./SkillType');
-const SkillErrors = require('./SkillErrors');
-const Damage = require('./Damage');
-const Broadcast = require('./Broadcast');
+export interface ISkillOptions {
+  configureEffect?: Function;
+  cooldown?: number | ISkillCooldown;
+  effect?: string;
+  flags?: any[];
+  info?: Function;
+  initiatesCombat?: boolean;
+  name: string;
+  requiresTarget?: boolean;
+  resource?: any;
+  run?: Function;
+  targetSelf?: boolean;
+  type: SkillType;
+  options?: any;
+}
 
+export interface ISkillCooldown {
+  group: string;
+  length: number;
+}
+
+export interface ISkillResource {
+  attribute: string;
+  cost: number;
+}
 /**
  * @property {function (Effect)} configureEffect modify the skill's effect before adding to player
  * @property {null|number}      cooldownLength When a number > 0 apply a cooldown effect to disallow usage
@@ -17,33 +45,49 @@ const Broadcast = require('./Broadcast');
  * @property {GameState}        state
  * @property {SkillType}        type
  */
-class Skill {
+export class Skill {
+  configureEffect: Function;
+  cooldownGroup: string | null;
+  cooldownLength: number | null;
+  effect: string | null;
+  flags: any[];
+  id: string;
+  info: Skill;
+  initiatesCombat: boolean;
+  name: string;
+  options: object;
+  requiresTarget: boolean;
+  resource: ISkillResource | ISkillResource[];
+  run: Function;
+  state: IGameState;
+  targetSelf: boolean;
+  type: SkillType;
   /**
    * @param {string} id
    * @param {object} config
    * @param {GameState} state
    */
-  constructor(id, config, state) {
+  constructor(id: string, config: ISkillOptions, state: IGameState) {
     const {
-      configureEffect = _ => _,
+      configureEffect = (_: any) => _,
       cooldown = null,
       effect = null,
       flags = [],
-      info = _ => {},
+      info = (_: any) => {},
       initiatesCombat = false,
       name,
       requiresTarget = true,
-      resource = null, /* format [{ attribute: 'someattribute', cost: 10}] */
-      run = _ => {},
+      resource = null /* format [{ attribute: 'someattribute', cost: 10}] */,
+      run = (_: any) => {},
       targetSelf = false,
       type = SkillType.SKILL,
-      options = {}
+      options = {},
     } = config;
 
     this.configureEffect = configureEffect;
 
     this.cooldownGroup = null;
-    if (cooldown && typeof cooldown === 'object') {
+    if (cooldown && typeof cooldown === "object") {
       this.cooldownGroup = cooldown.group;
       this.cooldownLength = cooldown.length;
     } else {
@@ -71,19 +115,19 @@ class Skill {
    * @param {Player} player
    * @param {Character} target
    */
-  execute(args, player, target) {
+  execute(args: string, player: PlayerOrNpc, target: PlayerOrNpc) {
     if (this.flags.includes(SkillFlag.PASSIVE)) {
-      throw new SkillErrors.PassiveError();
+      throw new PassiveError();
     }
 
     const cdEffect = this.onCooldown(player);
     if (this.cooldownLength && cdEffect) {
-      throw new SkillErrors.CooldownError(cdEffect);
+      throw new CooldownError(cdEffect);
     }
 
     if (this.resource) {
       if (!this.hasEnoughResources(player)) {
-        throw new SkillErrors.NotEnoughResourcesError();
+        throw new NotEnoughResourcesError();
       }
     }
 
@@ -106,7 +150,7 @@ class Skill {
    * @param {Player} player
    * @return {boolean} If the player has paid the resource cost(s).
    */
-  payResourceCosts(player) {
+  payResourceCosts(player: PlayerOrNpc) {
     const hasMultipleResourceCosts = Array.isArray(this.resource);
     if (hasMultipleResourceCosts) {
       for (const resourceCost of this.resource) {
@@ -119,7 +163,7 @@ class Skill {
   }
 
   // Helper to pay a single resource cost.
-  payResourceCost(player, resource) {
+  payResourceCost(player: PlayerOrNpc, resource: ISkillResource) {
     // Resource cost is calculated as the player damaging themself so effects
     // could potentially reduce resource costs
     const damage = new Damage(resource.attribute, resource.cost, player, this, {
@@ -129,18 +173,18 @@ class Skill {
     damage.commit(player);
   }
 
-
-  activate(player) {
+  activate(player: PlayerOrNpc) {
     if (!this.flags.includes(SkillFlag.PASSIVE)) {
       return;
     }
 
     if (!this.effect) {
-      throw new Error('Passive skill has no attached effect');
+      throw new Error("Passive skill has no attached effect");
     }
 
-
-    let effect = this.state.EffectFactory.create(this.effect, { description: this.info(player) });
+    let effect = this.state.EffectFactory.create(this.effect, {
+      description: this.info(player),
+    });
     effect = this.configureEffect(effect);
     effect.skill = this;
     player.addEffect(effect);
@@ -151,9 +195,12 @@ class Skill {
    * @param {Character} character
    * @return {boolean|Effect} If on cooldown returns the cooldown effect
    */
-  onCooldown(character) {
+  onCooldown(character: PlayerOrNpc) {
     for (const effect of character.effects.entries()) {
-      if (effect.id === 'cooldown' && effect.state.cooldownId === this.getCooldownId()) {
+      if (
+        effect.id === "cooldown" &&
+        effect.state.cooldownId === this.getCooldownId()
+      ) {
         return effect;
       }
     }
@@ -166,7 +213,7 @@ class Skill {
    * @param {number} duration Cooldown duration
    * @param {Character} character
    */
-  cooldown(character) {
+  cooldown(character: PlayerOrNpc) {
     if (!this.cooldownLength) {
       return;
     }
@@ -175,7 +222,9 @@ class Skill {
   }
 
   getCooldownId() {
-    return this.cooldownGroup ? "skillgroup:" + this.cooldownGroup : "skill:" + this.id;
+    return this.cooldownGroup
+      ? "skillgroup:" + this.cooldownGroup
+      : "skill:" + this.id;
   }
 
   /**
@@ -185,13 +234,16 @@ class Skill {
    * @return {Effect}
    */
   createCooldownEffect() {
-    if (!this.state.EffectFactory.has('cooldown')) {
-      this.state.EffectFactory.add('cooldown', this.getDefaultCooldownConfig());
+    if (!this.state.EffectFactory.has("cooldown")) {
+      this.state.EffectFactory.add("cooldown", this.getDefaultCooldownConfig());
     }
 
     const effect = this.state.EffectFactory.create(
-      'cooldown',
-      { name: "Cooldown: " + this.name, duration: this.cooldownLength * 1000 },
+      "cooldown",
+      {
+        name: "Cooldown: " + this.name,
+        duration: this.cooldownLength || 0 * 1000,
+      },
       { cooldownId: this.getCooldownId() }
     );
     effect.skill = this;
@@ -202,19 +254,22 @@ class Skill {
   getDefaultCooldownConfig() {
     return {
       config: {
-        name: 'Cooldown',
-        description: 'Cannot use ability while on cooldown.',
+        name: "Cooldown",
+        description: "Cannot use ability while on cooldown.",
         unique: false,
-        type: 'cooldown',
+        type: "cooldown",
       },
       state: {
-        cooldownId: null
+        cooldownId: null,
       },
       listeners: {
         effectDeactivated: function () {
-          Broadcast.sayAt(this.target, `You may now use <bold>${this.skill.name}</bold> again.`);
-        }
-      }
+          Broadcast.sayAt(
+            this.target,
+            `You may now use <bold>${this.skill.name}</bold> again.`
+          );
+        },
+      },
     };
   }
 
@@ -222,9 +277,11 @@ class Skill {
    * @param {Character} character
    * @return {boolean}
    */
-  hasEnoughResources(character) {
+  hasEnoughResources(character: PlayerOrNpc) {
     if (Array.isArray(this.resource)) {
-      return this.resource.every((resource) => this.hasEnoughResource(character, resource));
+      return this.resource.every((resource) =>
+        this.hasEnoughResource(character, resource)
+      );
     }
     return this.hasEnoughResource(character, this.resource);
   }
@@ -234,12 +291,11 @@ class Skill {
    * @param {{ attribute: string, cost: number}} resource
    * @return {boolean}
    */
-  hasEnoughResource(character, resource) {
-    return !resource.cost || (
-      character.hasAttribute(resource.attribute) &&
-      character.getAttribute(resource.attribute) >= resource.cost
+  hasEnoughResource(character: PlayerOrNpc, resource: ISkillResource) {
+    return (
+      !resource.cost ||
+      (character.hasAttribute(resource.attribute) &&
+        character.getAttribute(resource.attribute) >= resource.cost)
     );
   }
 }
-
-module.exports = Skill;

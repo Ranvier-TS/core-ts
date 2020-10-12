@@ -1,4 +1,4 @@
-'use strict';
+import { Command } from "./Command";
 
 /** @typedef {{ execute: function (), label: string, lag: number= }} */
 var CommandExecutable;
@@ -6,7 +6,11 @@ var CommandExecutable;
 /**
  * Keeps track of the queue off commands to execute for a player
  */
-class CommandQueue {
+export class CommandQueue {
+  commands: Command[];
+  lag: number;
+  lastRun: number;
+
   constructor() {
     this.commands = [];
     this.lag = 0;
@@ -19,7 +23,7 @@ class CommandQueue {
    * directly manipulate the `lag` property.
    * @param {number} amount milliseconds of lag
    */
-  addLag(amount) {
+  addLag(amount: number) {
     this.lag += Math.max(0, amount);
   }
 
@@ -27,7 +31,7 @@ class CommandQueue {
    * @param {CommandExecutable} executable Thing to run with an execute and a queue label
    * @param {number} lag Amount of lag to apply to the queue after the command is run
    */
-  enqueue(executable, lag) {
+  enqueue(executable: CommandExecutable, lag: number) {
     let newIndex = this.commands.push(Object.assign(executable, { lag })) - 1;
     return newIndex;
   }
@@ -47,6 +51,9 @@ class CommandQueue {
 
     const command = this.commands.shift();
 
+    if (!command) {
+      return false;
+    }
     this.lastRun = Date.now();
     this.lag = command.lag;
     command.execute();
@@ -94,7 +101,7 @@ class CommandQueue {
    * @type {number}
    */
   get msTilNextRun() {
-    return Math.max(0, (this.lastRun + this.lag) - Date.now());
+    return Math.max(0, this.lastRun + this.lag - Date.now());
   }
 
   /**
@@ -103,7 +110,7 @@ class CommandQueue {
    * @param {boolean} milliseconds
    * @return {number}
    */
-  getTimeTilRun(commandIndex) {
+  getTimeTilRun(commandIndex: number) {
     return this.getMsTilRun(commandIndex) / 1000;
   }
 
@@ -112,7 +119,7 @@ class CommandQueue {
    * @param {number} commandIndex
    * @return {number}
    */
-  getMsTilRun(commandIndex) {
+  getMsTilRun(commandIndex: number) {
     if (!this.commands[commandIndex]) {
       throw new RangeError("Invalid command index");
     }
@@ -125,7 +132,6 @@ class CommandQueue {
 
       lagTotal += this.commands[i].lag;
     }
+    throw new RangeError("Invalid command index");
   }
 }
-
-module.exports = CommandQueue;

@@ -1,10 +1,13 @@
 import { GameEntity } from "./GameEntity";
 import { IInventoryDef, Inventory } from "./Inventory";
 import { Logger } from "./Logger";
+import { ItemType } from "./ItemType";
+import { Room } from "./Room";
+import { Npc } from "./Npc";
+import { Player } from "./Player";
+import { Area } from "./Area";
 
 const uuid = require("uuid/v4");
-
-const ItemType = require("./ItemType");
 
 export declare interface IItemDef {
   name: string;
@@ -89,7 +92,7 @@ export class Item extends GameEntity {
   locked: boolean;
   lockedBy: string | null;
 
-  carriedBy: string | null;
+  carriedBy: Npc | Player | null;
   equippedBy: string | null;
 
   keywords: string[];

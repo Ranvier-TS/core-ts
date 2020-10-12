@@ -1,12 +1,15 @@
-'use strict';
-
-const Npc = require('./Npc');
-const BehaviorManager = require('./BehaviorManager');
+import { Area } from "./Area";
+import { EntityReference } from "./EntityReference";
+import { Item } from "./Item";
+import { Npc } from "./Npc";
+import { Room } from "./Room";
 
 /**
  * Stores definitions of entities to allow for easy creation/cloning
  */
-class EntityFactory {
+export class EntityFactory {
+  entities: Map<EntityReference, any>;
+  scripts: BehaviorManager;
   constructor() {
     this.entities = new Map();
     this.scripts = new BehaviorManager();
@@ -18,15 +21,15 @@ class EntityFactory {
    * @param {number} id
    * @return {string}
    */
-  createEntityRef(area, id) {
-    return area + ':' + id;
+  createEntityRef(area: string, id: string | number) {
+    return area + ":" + id;
   }
 
   /**
    * @param {string} entityRef
    * @return {Object}
    */
-  getDefinition(entityRef) {
+  getDefinition(entityRef: EntityReference) {
     return this.entities.get(entityRef);
   }
 
@@ -34,7 +37,7 @@ class EntityFactory {
    * @param {string} entityRef
    * @param {Object} def
    */
-  setDefinition(entityRef, def) {
+  setDefinition(entityRef: EntityReference, def: any) {
     def.entityReference = entityRef;
     this.entities.set(entityRef, def);
   }
@@ -46,7 +49,11 @@ class EntityFactory {
    * @param {string}   event
    * @param {Function} listener
    */
-  addScriptListener(entityRef, event, listener) {
+  addScriptListener(
+    entityRef: EntityReference,
+    event: string,
+    listener: Function
+  ) {
     this.scripts.addListener(entityRef, event, listener);
   }
 
@@ -60,10 +67,14 @@ class EntityFactory {
    * @param {Class}  Type      Type of entity to instantiate
    * @return {type}
    */
-  createByType(area, entityRef, Type) {
+  createByType(
+    area: Area,
+    entityRef: EntityReference,
+    Type: typeof Room | typeof Npc | typeof Item
+  ) {
     const definition = this.getDefinition(entityRef);
     if (!definition) {
-      throw new Error('No Entity definition found for ' + entityRef)
+      throw new Error("No Entity definition found for " + entityRef);
     }
     const entity = new Type(area, definition);
 
@@ -74,7 +85,7 @@ class EntityFactory {
     return entity;
   }
 
-  create() {
+  create(...args: any[]) {
     throw new Error("No type specified for Entity.create");
   }
 
@@ -83,9 +94,7 @@ class EntityFactory {
    * @param {Item|Npc|Room|Area} entity
    * @return {Item|Npc|Room|Area}
    */
-  clone(entity) {
+  clone(entity: Room | Npc | Item | Area) {
     return this.create(entity.area, entity.entityReference);
   }
 }
-
-module.exports = EntityFactory;

@@ -1,11 +1,10 @@
-'use strict';
-
-const SkillFlag = require('./SkillFlag');
+import { SkillFlag } from "./SkillFlag";
 
 /**
  * Keeps track of registered skills
  */
 class SkillManager {
+  skills: Map<string, Skill>;
   constructor() {
     this.skills = new Map();
   }
@@ -14,21 +13,21 @@ class SkillManager {
    * @param {string} skill Skill name
    * @return {Skill|undefined}
    */
-  get(skill) {
+  get(skill: string) {
     return this.skills.get(skill);
   }
 
   /**
    * @param {Skill} skill
    */
-  add(skill) {
+  add(skill: Skill) {
     this.skills.set(skill.id, skill);
   }
 
   /**
    * @param {Skill} skill
    */
-  remove(skill) {
+  remove(skill: Skill) {
     this.skills.delete(skill.name);
   }
 
@@ -38,8 +37,8 @@ class SkillManager {
    * @param {boolean} includePassive
    * @return {Skill}
    */
-  find(search, includePassive = false) {
-    for (const [ id, skill ] of this.skills) {
+  find(search: string, includePassive: boolean = false) {
+    for (const [id, skill] of this.skills) {
       if (!includePassive && skill.flags.includes(SkillFlag.PASSIVE)) {
         continue;
       }
@@ -50,5 +49,3 @@ class SkillManager {
     }
   }
 }
-
-module.exports = SkillManager;

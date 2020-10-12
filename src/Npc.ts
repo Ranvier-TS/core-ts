@@ -1,12 +1,25 @@
-'use strict';
+import { Area } from "./Area";
+import { Character } from "./Character";
+import { CommandQueue } from "./CommandQueue";
+import { EntityReference } from "./EntityReference";
+import { Logger } from "./Logger";
+import { Room } from "./Room";
+import { Scriptable } from "./Scriptable";
 
-const uuid = require('uuid/v4');
-const Attributes = require('./Attributes');
-const Character = require('./Character');
-const Config = require('./Config');
-const Logger = require('./Logger');
-const Scriptable = require('./Scriptable');
-const CommandQueue = require('./CommandQueue');
+const uuid = require("uuid");
+
+export interface INpcDef {
+  script?: string;
+  behaviors?: Record<string, any>;
+  equipment?: Record<string, { entityRefence: string }>;
+  items?: EntityReference[];
+  description: string;
+  entityReference: EntityReference;
+  id: string | number;
+  keywords: string[];
+  quests?: EntityReference[];
+  uuid?: string;
+}
 
 /**
  * @property {number} id   Area-relative id (vnum)
@@ -15,25 +28,31 @@ const CommandQueue = require('./CommandQueue');
  * @extends Character
  * @mixes Scriptable
  */
-class Npc extends Scriptable(Character) {
-  constructor(area, data) {
+export class Npc extends Scriptable(Character) {
+  area: Area;
+  script?: string;
+  behaviors?: Record<string, any>;
+
+  constructor(area: Area, data: INpcDef) {
     super(data);
-    const validate = ['keywords', 'name', 'id'];
+    const validate = ["keywords", "name", "id"];
 
     for (const prop of validate) {
       if (!(prop in data)) {
-        throw new ReferenceError(`NPC in area [${area.name}] missing required property [${prop}]`);
+        throw new ReferenceError(
+          `NPC in area [${area.name}] missing required property [${prop}]`
+        );
       }
     }
 
-    this.area = data.area;
+    this.area = area;
     this.script = data.script;
     this.behaviors = new Map(Object.entries(data.behaviors || {}));
     this.equipment = new Map();
     this.defaultEquipment = data.equipment || {};
     this.defaultItems = data.items || [];
     this.description = data.description;
-    this.entityReference = data.entityReference; 
+    this.entityReference = data.entityReference;
     this.id = data.id;
     this.keywords = data.keywords;
     this.quests = data.quests || [];
@@ -49,7 +68,7 @@ class Npc extends Scriptable(Character) {
    * @fires Room#npcEnter
    * @fires Npc#enterRoom
    */
-  moveTo(nextRoom, onMoved = _ => _) {
+  moveTo(nextRoom: Room, onMoved: any = (_: any) => _) {
     const prevRoom = this.room;
     if (this.room) {
       /**
@@ -57,7 +76,7 @@ class Npc extends Scriptable(Character) {
        * @param {Npc} npc
        * @param {Room} nextRoom
        */
-      this.room.emit('npcLeave', this, nextRoom);
+      this.room.emit("npcLeave", this, nextRoom);
       this.room.removeNpc(this);
     }
 
@@ -71,30 +90,34 @@ class Npc extends Scriptable(Character) {
      * @param {Npc} npc
      * @param {Room} prevRoom
      */
-    nextRoom.emit('npcEnter', this, prevRoom);
+    nextRoom.emit("npcEnter", this, prevRoom);
     /**
      * @event Npc#enterRoom
      * @param {Room} room
      */
-    this.emit('enterRoom', nextRoom);
+    this.emit("enterRoom", nextRoom);
   }
 
-  hydrate(state) {
+  hydrate(state: IGameState) {
     super.hydrate(state);
     state.MobManager.addMob(this);
 
     this.setupBehaviors(state.MobBehaviorManager);
 
-    for (let defaultItemId of this.defaultItems) {
-      Logger.verbose(`\tDIST: Adding item [${defaultItemId}] to npc [${this.name}]`);
+    for (const defaultItemId of this.defaultItems) {
+      Logger.verbose(
+        `\tDIST: Adding item [${defaultItemId}] to npc [${this.name}]`
+      );
       const newItem = state.ItemFactory.create(this.area, defaultItemId);
       newItem.hydrate(state);
       state.ItemManager.add(newItem);
       this.addItem(newItem);
     }
 
-    for (let [slot, defaultEqId] of Object.entries(this.defaultEquipment)) {
-      Logger.verbose(`\tDIST: Equipping item [${defaultEqId}] to npc [${this.name}] in slot [${slot}]`);
+    for (const [slot, defaultEqId] of Object.entries(this.defaultEquipment)) {
+      Logger.verbose(
+        `\tDIST: Equipping item [${defaultEqId}] to npc [${this.name}] in slot [${slot}]`
+      );
       const newItem = state.ItemFactory.create(this.area, defaultEqId);
       newItem.hydrate(state);
       state.ItemManager.add(newItem);
@@ -106,5 +129,3 @@ class Npc extends Scriptable(Character) {
     return true;
   }
 }
-
-module.exports = Npc;

@@ -1,12 +1,11 @@
-'use strict';
-
-const Area = require('./Area');
-const EntityFactory = require('./EntityFactory');
+import { Area } from "./Area";
+import { EntityFactory } from "./EntityFactory";
+import { EntityReference } from "./EntityReference";
 
 /**
  * Stores definitions of items to allow for easy creation/cloning of objects
  */
-class AreaFactory extends EntityFactory {
+export class AreaFactory extends EntityFactory {
   /**
    * Create a new instance of an area by name. Resulting area will not have
    * any of its contained entities (items, npcs, rooms) hydrated. You will
@@ -17,7 +16,7 @@ class AreaFactory extends EntityFactory {
    * @param {string} entityRef Area name
    * @return {Area}
    */
-  create(entityRef) {
+  create(entityRef: EntityReference) {
     const definition = this.getDefinition(entityRef);
     if (!definition) {
       throw new Error('No Entity definition found for ' + entityRef)
@@ -35,10 +34,7 @@ class AreaFactory extends EntityFactory {
   /**
    * @see AreaFactory#create
    */
-  clone(area) {
+  clone(area: Area) {
     return this.create(area.name);
   }
 }
-
-module.exports = AreaFactory;
-

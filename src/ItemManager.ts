@@ -1,21 +1,22 @@
-'use strict';
-
-const ItemType = require('./ItemType');
+import { Item } from "./Item";
+import { ItemType } from "./ItemType";
+import { Room } from "./Room";
 
 /**
  * Keep track of all items in game
  */
-class ItemManager {
+export class ItemManager {
+  items: Set<Item>;
   constructor() {
     this.items = new Set();
   }
 
-  add(item) {
+  add(item: Item) {
     this.items.add(item);
   }
 
-  remove(item) {
-    if (item.room) {
+  remove(item: Item) {
+    if (item.room && item.room instanceof Room) {
       item.room.removeItem(item);
     }
 
@@ -24,7 +25,7 @@ class ItemManager {
     }
 
     if (item.type === ItemType.CONTAINER && item.inventory) {
-      item.inventory.forEach(childItem => this.remove(childItem));
+      item.inventory.forEach((childItem: Item) => this.remove(childItem));
     }
 
     item.__pruned = true;
@@ -40,9 +41,7 @@ class ItemManager {
       /**
        * @event Item#updateTick
        */
-      item.emit('updateTick');
+      item.emit("updateTick");
     }
   }
 }
-
-module.exports = ItemManager;

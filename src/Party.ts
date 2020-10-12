@@ -1,22 +1,24 @@
-'use strict';
+import { PlayerOrNpc } from "./GameEntity";
 
 /**
  * Representation of an adventuring party
  */
-class Party extends Set {
-  constructor(leader) {
+export class Party extends Set {
+  invited: Set<PlayerOrNpc>;
+  leader: PlayerOrNpc;
+  constructor(leader: PlayerOrNpc) {
     super();
     this.invited = new Set();
     this.leader = leader;
     this.add(leader);
   }
 
-  delete(member) {
+  delete(member: PlayerOrNpc) {
     super.delete(member);
     member.party = null;
   }
 
-  add(member) {
+  add(member: PlayerOrNpc) {
     super.add(member);
     member.party = this;
     this.invited.delete(member);
@@ -28,15 +30,15 @@ class Party extends Set {
     }
   }
 
-  invite(target) {
+  invite(target: PlayerOrNpc) {
     this.invited.add(target);
   }
 
-  isInvited(target) {
+  isInvited(target: PlayerOrNpc) {
     return this.invited.has(target);
   }
 
-  removeInvite(target) {
+  removeInvite(target: PlayerOrNpc) {
     this.invited.delete(target);
   }
 
@@ -44,5 +46,3 @@ class Party extends Set {
     return [...this];
   }
 }
-
-module.exports = Party;

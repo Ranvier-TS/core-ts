@@ -1,14 +1,14 @@
-'use strict';
-
-const BehaviorManager = require('./BehaviorManager');
-const Area = require('./Area');
-const Room = require('./Room');
+import { Area } from "./Area";
+import { BehaviorManager } from "./BehaviorManager";
 
 /**
  * Stores references to, and handles distribution of, active areas
  * @property {Map<string,Area>} areas
  */
-class AreaManager {
+export class AreaManager {
+  areas: Map<string, Area>;
+  scripts: BehaviorManager;
+  
   constructor() {
     this.areas = new Map();
     this.scripts = new BehaviorManager();
@@ -27,7 +27,7 @@ class AreaManager {
    * @return Area
    */
   getAreaByReference(entityRef) {
-    const [ name ] = entityRef.split(':');
+    const [name] = entityRef.split(":");
     return this.getArea(name);
   }
 
@@ -51,12 +51,12 @@ class AreaManager {
    * @fires Area#updateTick
    */
   tickAll(state) {
-    for (const [ name, area ] of this.areas) {
+    for (const [name, area] of this.areas) {
       /**
        * @see Area#update
        * @event Area#updateTick
        */
-      area.emit('updateTick', state);
+      area.emit("updateTick", state);
     }
   }
 
@@ -71,14 +71,15 @@ class AreaManager {
       return this._placeholder;
     }
 
-    this._placeholder = new Area(null, 'placeholder', {
-      title: 'Placeholder'
+    this._placeholder = new Area(null, "placeholder", {
+      title: "Placeholder",
     });
 
     const placeholderRoom = new Room(this._placeholder, {
-      id: 'placeholder',
-      title: 'Placeholder',
-      description: 'You are not in a valid room. Please contact an administrator.',
+      id: "placeholder",
+      title: "Placeholder",
+      description:
+        "You are not in a valid room. Please contact an administrator.",
     });
 
     this._placeholder.addRoom(placeholderRoom);
@@ -86,5 +87,3 @@ class AreaManager {
     return this._placeholder;
   }
 }
-
-module.exports = AreaManager;

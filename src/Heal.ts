@@ -1,5 +1,5 @@
-import { Character } from "./Character";
 import { Damage } from "./Damage";
+import { PlayerOrNpc } from "./GameEntity";
 
 /**
  * Heal is `Damage` that raises an attribute instead of lowering it
@@ -12,7 +12,7 @@ export class Heal extends Damage {
    * @fires Character#heal
    * @fires Character#healed
    */
-  commit(target: Character) {
+  commit(target: PlayerOrNpc) {
     const finalAmount = this.evaluate(target);
     target.raiseAttribute(this.attribute, finalAmount);
 

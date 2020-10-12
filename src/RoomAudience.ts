@@ -1,6 +1,5 @@
-'use strict';
-
-const ChannelAudience = require('./ChannelAudience');
+import { ChannelAudience } from "./ChannelAudience";
+import { PlayerOrNpc } from "./GameEntity";
 
 /**
  * Audience class representing other players in the same room as the sender
@@ -10,11 +9,9 @@ const ChannelAudience = require('./ChannelAudience');
  * @memberof ChannelAudience
  * @extends ChannelAudience
  */
-class RoomAudience extends ChannelAudience {
+export class RoomAudience extends ChannelAudience {
   getBroadcastTargets() {
     return this.sender.room.getBroadcastTargets()
-      .filter(target => target !== this.sender);
+      .filter((target: PlayerOrNpc) => target !== this.sender);
   }
 }
-
-module.exports = RoomAudience;

@@ -24,6 +24,7 @@ export class ChannelAudience {
   sender: Player;
   /** @param {string} message */
   message: string = "";
+  constructor(...args: any[]) {}
   /**
    * Configure the current state for the audience. Called by {@link Channel#send}
    * @param {object} options

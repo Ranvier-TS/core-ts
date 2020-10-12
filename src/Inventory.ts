@@ -23,7 +23,7 @@ export class Inventory extends Map<string, ItemDef | Item> {
    * @param {Array<Item>} init.items
    * @param {number} init.max Max number of items this inventory can hold
    */
-  constructor(init: IInventoryDef) {
+  constructor(init: IInventoryDef = {}) {
     init = Object.assign(
       {
         items: [],

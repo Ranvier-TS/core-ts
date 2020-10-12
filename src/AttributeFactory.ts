@@ -1,11 +1,12 @@
-'use strict';
-
-const { Attribute, AttributeFormula } = require('./Attribute');
+import { Attribute, AttributeFormula } from "./Attribute";
 
 /**
  * @property {Map} attributes
  */
-class AttributeFactory {
+export class AttributeFactory {
+  /** @property {Map} attributes */
+  attributes: Map<string, object>;
+
   constructor() {
     this.attributes = new Map();
   }
@@ -15,9 +16,9 @@ class AttributeFactory {
    * @param {number} base
    * @param {AttributeFormula} formula
    */
-  add(name, base, formula = null, metadata = {}) {
+  add(name: string, base: number, formula = null, metadata = {}) {
     if (formula && !(formula instanceof AttributeFormula)) {
-      throw new TypeError('Formula not instance of AttributeFormula');
+      throw new TypeError("Formula not instance of AttributeFormula");
     }
 
     this.attributes.set(name, {
@@ -31,7 +32,7 @@ class AttributeFactory {
   /**
    * @see Map#has
    */
-  has(name) {
+  has(name: string) {
     return this.attributes.has(name);
   }
 
@@ -40,7 +41,7 @@ class AttributeFactory {
    * @param {string} name
    * @return {object}
    */
-  get(name) {
+  get(name: string) {
     return this.attributes.get(name);
   }
 
@@ -49,13 +50,19 @@ class AttributeFactory {
    * @param {number} delta
    * @return {Attribute}
    */
-  create(name, base = null, delta = 0) {
+  create(name: string, base = null, delta = 0) {
     if (!this.has(name)) {
       throw new RangeError(`No attribute definition found for [${name}]`);
     }
 
     const def = this.attributes.get(name);
-    return new Attribute(name, base || def.base, delta, def.formula, def.metadata);
+    return new Attribute(
+      name,
+      base || def.base,
+      delta,
+      def.formula,
+      def.metadata
+    );
   }
 
   /**
@@ -63,21 +70,26 @@ class AttributeFactory {
    * @throws Error
    */
   validateAttributes() {
-    const references = [...this.attributes].reduce((acc, [ attrName, { formula } ]) => {
-      if (!formula) {
+    const references = [...this.attributes].reduce(
+      (acc, [attrName, { formula }]) => {
+        if (!formula) {
+          return acc;
+        }
+
+        acc[attrName] = formula.requires;
+
         return acc;
-      }
-
-      acc[attrName] = formula.requires;
-
-      return acc;
-    }, {});
+      },
+      {}
+    );
 
     for (const attrName in references) {
-      const check = this._checkReferences(attrName, references);
+      const check = this.checkReferences(attrName, references);
       if (Array.isArray(check)) {
-        const path = check.concat(attrName).join(' -> ');
-        throw new Error(`Attribute formula for [${attrName}] has circular dependency [${path}]`);
+        const path = check.concat(attrName).join(" -> ");
+        throw new Error(
+          `Attribute formula for [${attrName}] has circular dependency [${path}]`
+        );
       }
     }
   }
@@ -89,7 +101,11 @@ class AttributeFactory {
    * @param {Array<string>} stack
    * @return bool
    */
-  _checkReferences(attr, references, stack = []) {
+  private checkReferences(
+    attr: string,
+    references: Record<string, string[]>,
+    stack: string[] = []
+  ): boolean | string[] {
     if (stack.includes(attr)) {
       return stack;
     }
@@ -101,7 +117,11 @@ class AttributeFactory {
     }
 
     for (const reqAttr of requires) {
-      const check = this._checkReferences(reqAttr, references, stack.concat(attr));
+      const check = this.checkReferences(
+        reqAttr,
+        references,
+        stack.concat(attr)
+      );
       if (Array.isArray(check)) {
         return check;
       }
@@ -110,6 +130,3 @@ class AttributeFactory {
     return true;
   }
 }
-
-module.exports = AttributeFactory;
-

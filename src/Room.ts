@@ -1,7 +1,10 @@
+import { Area } from "./Area";
 import { EntityReference } from "./EntityReference";
 import { GameEntity } from "./GameEntity";
 import { IItemDef, Item } from "./Item";
 import { Logger } from "./Logger";
+import { Npc } from "./Npc";
+import { Player } from "./Player";
 
 export interface IDoor {
   lockedBy?: EntityReference;
@@ -26,8 +29,8 @@ export interface IRoomDef {
   behaviors?: Record<string, any>;
   coordinates?: [number, number, number];
   doors?: Record<string, IDoor>;
-  exits: IExit[];
-  metadata: Record<string, any>;
+  exits?: IExit[];
+  metadata?: Record<string, any>;
 }
 
 export interface IRoomItemDef {
@@ -69,7 +72,7 @@ export class Room extends GameEntity {
   description: string = "";
   entityReference: EntityReference = "";
   exits: IExit[] = [];
-  id: string | number;
+  id: string;
   title: string;
   doors: Record<string, IDoor> | Map<string, IDoor>;
   defaultDoors: Record<string, IDoor>;

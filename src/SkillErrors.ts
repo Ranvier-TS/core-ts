@@ -1,25 +1,22 @@
-'use strict';
-
 /**
  * Error used when trying to execute a skill and the player doesn't have enough resources
  * @extends Error
  */
-class NotEnoughResourcesError extends Error {}
-exports.NotEnoughResourcesError = NotEnoughResourcesError;
+export class NotEnoughResourcesError extends Error {}
 
 /**
  * Error used when trying to execute a passive skill
  * @extends Error
  */
-class PassiveError extends Error {}
-exports.PassiveError = PassiveError;
+export class PassiveError extends Error {}
 
 /**
  * Error used when trying to execute a skill on cooldown
  * @property {Effect} effect
  * @extends Error
  */
-class CooldownError extends Error {
+export class CooldownError extends Error {
+  effect: Effect;
   /**
    * @param {Effect} effect Cooldown effect that triggered this error
    */
@@ -29,4 +26,3 @@ class CooldownError extends Error {
     this.effect = effect;
   }
 }
-exports.CooldownError = CooldownError;
