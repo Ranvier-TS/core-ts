@@ -14,7 +14,6 @@ const Metadatable = require('./Metadatable');
  * @property {boolean} banned Whether this account is banned or not
  */
 class Account extends Metadatable(EventEmitter) {
-
   /**
    * @param {Object} data Account save data
    */
@@ -91,9 +90,11 @@ class Account extends Metadatable(EventEmitter) {
    */
   save(callback) {
     this.__manager.loader.update(this.username, this.serialize())
-      .then((data) => {if (typeof callback === 'function') {
-        callback()
-      } console.log(data)});
+      .then((data) => {
+        if (typeof callback === 'function') {
+          callback()
+        }
+      });
   }
 
   /**
