@@ -38,7 +38,7 @@ export class EventManager {
    * @param {EventEmitter} emitter
    * @param {Object} config
    */
-  attach(emitter: EventEmitter, config: object) {
+  attach(emitter: EventEmitter, config?: object) {
     for (const [event, listeners] of this.events) {
       for (const listener of listeners) {
         if (config) {

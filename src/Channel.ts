@@ -3,6 +3,7 @@ import { ChannelAudience } from "./ChannelAudience";
 import { GameState } from "./GameState";
 import { PartyAudience } from "./PartyAudience";
 import { Player } from "./Player";
+import { PlayerRoles } from './PlayerRoles';
 import { PrivateAudience } from "./PrivateAudience";
 import { WorldAudience } from "./WorldAudience";
 
@@ -19,9 +20,10 @@ export declare interface ChannelConfig {
   /** @property {string} [color] */
   color?: string;
   /** @property {{sender: function, target: function}} [formatter] */
-  formatter: Function;
+  formatter: { sender: Function, target: Function };
   bundle?: string;
   aliases?: string[];
+  eventOnly?: boolean;
 }
 
 /**
@@ -31,6 +33,8 @@ export declare interface ChannelConfig {
  * @property {PlayerRoles} minRequiredRole If set only players with the given role or greater can use the channel
  * @property {string} description
  * @property {{sender: function, target: function}} [formatter]
+ * @property {boolean} eventOnly If true, only channel events will be fired in response to a message, without
+ * explicitly sending the message to players
  */
 export class Channel {
   /** @property {ChannelAudience} audience People who receive messages from this channel */
@@ -40,13 +44,14 @@ export class Channel {
   /** @property {string} color Default color. This is purely a helper if you're using default format methods */
   color: string | null;
   /** @property {PlayerRoles} minRequiredRole If set only players with the given role or greater can use the channel */
-  minRequiredRole: PlayerRoles;
+  minRequiredRole: PlayerRoles | null;
   /** @property {string} description */
   description: string;
   /** @property {{sender: function, target: function}} [formatter] */
-  formatter: Function;
+  formatter: {sender: Function, target: Function};
   bundle: string | null;
   aliases: string[] | null;
+  eventOnly: boolean;
 
   /**
    * @param {object}  config
@@ -56,6 +61,7 @@ export class Channel {
    * @param {PlayerRoles} [config.minRequiredRole]
    * @param {string} [config.color]
    * @param {{sender: function, target: function}} [config.formatter]
+   * @param {boolean} [config.eventOnly]
    */
   constructor(config: ChannelConfig) {
     if (!config.name) {
@@ -78,6 +84,7 @@ export class Channel {
       sender: this.formatToSender.bind(this),
       target: this.formatToReceipient.bind(this),
     };
+    this.eventOnly = config.eventOnly || false;
   }
 
   /**
@@ -85,6 +92,7 @@ export class Channel {
    * @param {Player}    sender
    * @param {string}    message
    * @fires GameEntity#channelReceive
+   * @fires GameEntity#channelSend
    */
   send(state: GameState, sender: Player, message: string) {
     // If they don't include a message, explain how to use the channel.
@@ -101,23 +109,32 @@ export class Channel {
     this.audience.configure({ state, sender, message });
     const targets = this.audience.getBroadcastTargets();
 
-    if (this.audience instanceof PartyAudience && !targets.length) {
+    if (this.audience instanceof PartyAudience && !sender.party) {
       throw new NoPartyError();
     }
 
     // Allow audience to change message e.g., strip target name.
     message = this.audience.alterMessage(message);
 
-    // Private channels also send the target player to the formatter
-    if (this.audience instanceof PrivateAudience) {
-      if (!targets.length) {
-        throw new NoRecipientError();
+    // Send messages with Broadcast unless the channel is eventOnly.
+    if (!this.eventOnly) {
+      // Private channels also send the target player to the formatter
+      if (this.audience instanceof PrivateAudience) {
+        Broadcast.sayAt(sender, this.formatter.sender(sender, targets[0], message, this.colorify.bind(this)));
+      } else {
+        Broadcast.sayAt(sender, this.formatter.sender(sender, null, message, this.colorify.bind(this)));
       }
+      if (!message.length) {
+        throw new NoMessageError();
+      }
+
+      const target = targets[0];
+
       Broadcast.sayAt(
         sender,
         this.formatter.sender(
           sender,
-          targets[0],
+          target,
           message,
           this.colorify.bind(this)
         )
@@ -141,6 +158,15 @@ export class Channel {
 
     // strip color tags
     const rawMessage = message.replace(/\<\/?\w+?\>/gm, "");
+
+    // Emit channel events
+
+    /**
+     * @event GameEntity#channelSend
+     * @param {Channel} channel
+     * @param {string} rawMessage
+     */
+    sender.emit('channelSend', this, rawMessage);
 
     for (const target of targets) {
       /**
@@ -176,6 +202,7 @@ export class Channel {
    * How to render the message the player just sent to the channel
    * E.g., you may want "chat" to say "You chat, 'message here'"
    * @param {Player} sender
+   * @param {Player} target
    * @param {string} message
    * @param {Function} colorify
    * @return {string}

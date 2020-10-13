@@ -10,6 +10,7 @@ export interface IDataSource {
   fetch(config: IEntityLoaderConfig, id: string | number): any;
   replace(config: IEntityLoaderConfig, data: any): void;
   update(config: IEntityLoaderConfig, id: string | number, data: any): void;
+  delete(config: IEntityLoaderConfig, id: string | number): void;
 }
 
 /**
@@ -71,6 +72,12 @@ export class EntityLoader {
 
     return this.dataSource.update(this.config, id, data);
   }
-}
 
-module.exports = EntityLoader;
+  delete(id: string | number) {
+    if (!("delete" in this.dataSource)) {
+      throw new Error(`delete not supported by ${this.dataSource.name}`);
+    }
+
+    return this.dataSource.delete(this.config, id);
+  }
+}

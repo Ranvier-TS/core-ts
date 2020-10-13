@@ -1,3 +1,14 @@
+<<<<<<< HEAD:src/Player.js
+'use strict';
+
+const Character = require('./Character');
+const CommandQueue = require('./CommandQueue');
+const Config = require('./Config');
+const QuestTracker = require('./QuestTracker');
+const Room = require('./Room');
+const Logger = require('./Logger');
+const PlayerRoles = require('./PlayerRoles');
+=======
 "use strict";
 
 import { Character } from "./Character";
@@ -33,6 +44,7 @@ export interface ISerializedPlayer {
   role: string;
   equipment: Record<string, IItemDef> | null;
 }
+>>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Player.ts
 
 /**
  * @property {Account} account
@@ -199,8 +211,12 @@ export class Player extends Character {
     if (!this.__hydrated) {
       return;
     }
+<<<<<<< HEAD:src/Player.js
+    this.emit('save', callback);
+=======
 
     this.emit("save", callback);
+>>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Player.ts
   }
 
   hydrate(state: GameState) {
@@ -216,7 +232,6 @@ export class Player extends Character {
 
     // Hydrate inventory
     this.inventory.hydrate(state, this);
-
     // Hydrate equipment
     // maybe refactor Equipment to be an object like Inventory?
     if (this.equipment && !(this.equipment instanceof Map)) {
@@ -225,14 +240,24 @@ export class Player extends Character {
       for (const slot in eqDefs) {
         const itemDef = eqDefs[slot];
         try {
+<<<<<<< HEAD:src/Player.js
+          const entityRef = typeof itemDef === 'string' ? itemDef : itemDef.entityReference;
+          const itemState = typeof itemDef === 'string' ? {} : itemDef;
+          let newItem = state.ItemFactory.create(state.AreaManager.getArea(itemDef.area), itemDef.entityReference);
+=======
           let newItem = state.ItemFactory.create(
             state.AreaManager.getArea(itemDef.area),
             itemDef.entityReference
           );
+>>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Player.ts
           newItem.initializeInventory(itemDef.inventory);
           newItem.hydrate(state, itemDef);
           state.ItemManager.add(newItem);
           this.equip(newItem, slot);
+          /**
+           * @event Item#spawn
+           */
+          newItem.emit('spawn', {type: Player});
         } catch (e) {
           Logger.error(e.message);
         }
@@ -257,16 +282,29 @@ export class Player extends Character {
     }
   }
 
+<<<<<<< HEAD:src/Player.js
+  serialize() {
+    const account = this.account.name;
+    const experience = this.experience;
+    const inventory = this.inventory && this.inventory.serialize();
+    const metadata = this.metadata;
+    const password = this.password;
+    const prompt = this.prompt;
+    const quests = this.questTracker.serialize();
+    const role = this.role;
+=======
   serialize(): ISerializedPlayer {
+>>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Player.ts
     let data = Object.assign(super.serialize(), {
-      account: this.account.name,
-      experience: this.experience,
-      inventory: this.inventory && this.inventory.serialize(),
-      metadata: this.metadata,
-      password: this.password,
-      prompt: this.prompt,
-      quests: this.questTracker.serialize(),
-      role: this.role,
+      account,
+      experience,
+      inventory,
+      metadata,
+      password,
+      prompt,
+      quests,
+      role,
+      _id: this.name,
     });
 
     if (this.equipment instanceof Map) {
@@ -278,7 +316,11 @@ export class Player extends Character {
     } else {
       data.equipment = null;
     }
-
     return data;
   }
 }
+<<<<<<< HEAD:src/Player.js
+
+module.exports = Player;
+=======
+>>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Player.ts

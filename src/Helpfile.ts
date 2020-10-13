@@ -32,6 +32,7 @@ export class Helpfile {
    * @param {string} [options.command]
    * @param {string} [options.channel]
    * @param {Array<string>} [options.related]
+   * @param {string} [options.tooltip]
    * @param {string} options.body
    */
   constructor(bundle: string, name: string, options: IHelpOptionsDef) {
@@ -47,5 +48,6 @@ export class Helpfile {
     this.channel = options.channel;
     this.related = options.related || [];
     this.body = options.body;
+    this.tooltip = options.tooltip;
   }
 }

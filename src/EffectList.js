@@ -94,6 +94,9 @@ class EffectList {
       throw new Error('Cannot add effect, already has a target.');
     }
 
+    // create deep clone of state before proceeding
+    effect.state = JSON.parse(JSON.stringify(effect.state));
+
     for (const activeEffect of this.effects) {
       if (effect.config.type === activeEffect.config.type) {
         if (activeEffect.config.maxStacks && activeEffect.state.stacks < activeEffect.config.maxStacks) {
@@ -153,7 +156,7 @@ class EffectList {
     /**
      * @event Character#effectRemoved
      */
-    this.target.emit('effectRemoved');
+    this.target.emit('effectRemoved', effect);
   }
 
   /**
@@ -194,6 +197,24 @@ class EffectList {
     }
 
     return attrValue;
+  }
+
+  /**
+   * Gets the effective value of property doing all effect modifications.
+   * @param {string} propertyName
+   * @return {number}
+   */
+  evaluateProperty(propertyName, propertyValue) {
+    this.validateEffects();
+
+    for (const effect of this.effects) {
+      if (effect.paused) {
+        continue;
+      }
+      propertyValue = effect.modifyProperty(propertyName, propertyValue);
+    }
+
+    return propertyValue;
   }
 
   /**

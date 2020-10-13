@@ -124,6 +124,10 @@ export class Inventory extends Map<string, ItemDef | Item> {
       newItem.hydrate(state, def);
       this.set(uuid, newItem);
       state.ItemManager.add(newItem);
+      /**
+       * @event Item#spawn
+       */
+      newItem.emit('spawn', {type: Inventory});
     }
   }
 }

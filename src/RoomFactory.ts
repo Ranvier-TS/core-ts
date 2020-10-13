@@ -4,7 +4,7 @@ import { EntityReference } from "./EntityReference";
 import { Room } from "./Room";
 
 /**
- * Stores definitions of npcs to allow for easy creation/cloning
+ * Stores definitions of rooms to allow for easy creation/cloning
  * @extends EntityFactory
  */
 export class RoomFactory extends EntityFactory {
@@ -16,8 +16,8 @@ export class RoomFactory extends EntityFactory {
    * @return {Room}
    */
   create(area: Area, entityRef: EntityReference) {
-    const npc = this.createByType(area, entityRef, Room);
-    npc.area = area;
-    return npc;
+    const room = this.createByType(area, entityRef, Room);
+    room.area = area;
+    return room;
   }
 }

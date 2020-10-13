@@ -211,15 +211,16 @@ export class Effect extends EventEmitter {
     }
 
     this.startedAt = Date.now() - this.elapsed;
+    this.active = true;
+
     /**
      * @event Effect#effectActivated
      */
-    this.emit("effectActivated");
-    this.active = true;
+    this.emit('effectActivated');
   }
 
   /**
-   * Set this effect active
+   * Deactivate this effect
    * @fires Effect#effectDeactivated
    */
   deactivate() {
@@ -227,11 +228,12 @@ export class Effect extends EventEmitter {
       return;
     }
 
+    this.active = false;
+
     /**
      * @event Effect#effectDeactivated
      */
-    this.emit("effectDeactivated");
-    this.active = false;
+    this.emit('effectDeactivated');
   }
 
   /**
@@ -261,9 +263,11 @@ export class Effect extends EventEmitter {
   }
 
   /**
+   * Apply effect attribute modifiers to a given value
+   *
    * @param {string} attrName
    * @param {number} currentValue
-   * @return {number} attribute modified by effect
+   * @return {number} attribute value modified by effect
    */
   modifyAttribute(attrName: string, currentValue: number) {
     let modifier = (_?: any) => _;
@@ -273,6 +277,25 @@ export class Effect extends EventEmitter {
       };
     } else if (attrName in this.modifiers.attributes) {
       modifier = this.modifiers.attributes[attrName];
+    }
+    return modifier.bind(this)(currentValue);
+  }
+
+  /**
+   * Apply effect property modifiers to a given value
+   *
+   * @param {string} propertyName
+   * @param {*} currentValue
+   * @return {*} property value modified by effect
+   */
+  modifyProperty(propertyName, currentValue) {
+    let modifier = _ => _;
+    if (typeof this.modifiers.properties === 'function') {
+      modifier = (current) => {
+        return this.modifiers.properties.bind(this)(propertyName, current);
+      };
+    } else if (propertyName in this.modifiers.properties) {
+      modifier = this.modifiers.properties[propertyName];
     }
     return modifier.bind(this)(currentValue);
   }
@@ -327,18 +350,19 @@ export class Effect extends EventEmitter {
    * @param {Object} data
    */
   hydrate(state: GameState, data) {
-    data.config.duration =
-      data.config.duration === "inf" ? Infinity : data.config.duration;
-    this.config = data.config;
+    if (data.config) {
+      data.config.duration = data.config.duration === 'inf' ? Infinity : data.config.duration;
+      this.config = data.config;
+    }
 
     if (!isNaN(data.elapsed)) {
       this.startedAt = Date.now() - data.elapsed;
     }
 
-    if (!isNaN(data.state.lastTick)) {
+    if (data.state && !isNaN(data.state.lastTick)) {
       data.state.lastTick = Date.now() - data.state.lastTick;
+      this.state = data.state;
     }
-    this.state = data.state;
 
     if (data.skill) {
       this.skill =

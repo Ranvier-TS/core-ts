@@ -22,11 +22,26 @@ export class MobManager {
    */
   removeMob(mob: Npc) {
     mob.effects.clear();
-    const room = mob.room;
-    if (room) {
-      room.area.removeNpc(mob);
-      room.removeNpc(mob, true);
+
+    const sourceRoom = mob.sourceRoom;
+    if (sourceRoom) {
+      sourceRoom.area.removeNpc(mob);
+      sourceRoom.removeNpc(mob, true);
     }
+
+    const room = mob.room;
+    if (room && room !== sourceRoom) {
+      room.removeNpc(mob);
+    }
+
+    if (mob.equipment && mob.equipment.size) {
+      mob.equipment.forEach((item, slot) => mob.unequip(slot));
+    }
+  
+    if (mob.inventory && mob.inventory.size) {
+      mob.inventory.forEach(item => item.__manager.remove(item));
+    }
+
     mob.__pruned = true;
     mob.removeAllListeners();
     this.mobs.delete(mob.uuid);

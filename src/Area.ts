@@ -3,6 +3,7 @@ import { GameEntity } from "./GameEntity";
 import { GameState } from "./GameState";
 import { Metadata } from "./Metadatable";
 import { Npc } from "./Npc";
+import { Player } from './Player';
 import { Room } from "./Room";
 
 export interface IAreaDef {
@@ -49,7 +50,7 @@ export class Area extends GameEntity {
   behaviors: IBehavior | Record<string, any>;
 
   constructor(bundle: string | null, name: string, manifest: IAreaDef) {
-    super();
+    super(manifest);
     this.bundle = bundle;
     this.name = name;
     this.title = manifest.title;
@@ -112,7 +113,7 @@ export class Area extends GameEntity {
    * @fires Area#roomRemoved
    */
   removeRoom(room: Room) {
-    this.rooms.delete(room.id);
+    this.removeRoomFromMap(room);
 
     /**
      * @event Area#roomRemoved
@@ -138,6 +139,30 @@ export class Area extends GameEntity {
 
     const floor = this.map.get(z);
     floor && floor.addRoom(x, y, room);
+  }
+
+  /**
+   * Remove a room from the map
+   * @param {Room} room
+   * @throws Error
+   */
+  removeRoomFromMap(room: Room) {
+    if (!room.coordinates) {
+      throw new Error('Room does not have coordinates');
+    }
+
+    const {x, y, z} = room.coordinates;
+
+    if (!this.map.has(z)) {
+      throw new Error(`Floor ${z} doesn't exist`);
+    }
+
+    const floor = this.map.get(z);
+    if (!floor) {
+      throw new Error(`Floor ${z} is undefined or null.`)
+    }
+  
+    floor.removeRoom(x, y);
   }
 
   /**
@@ -169,7 +194,7 @@ export class Area extends GameEntity {
 
   /**
    * This method is automatically called every N milliseconds where N is defined in the
-   * `setInterval` call to `GameState.AreaMAnager.tickAll` in the `ranvier` executable. It, in turn,
+   * `setInterval` call to `GameState.AreaManager.tickAll` in the `ranvier` executable. It, in turn,
    * will fire the `updateTick` event on all its rooms and npcs
    *
    * @param {GameState} state
@@ -218,7 +243,7 @@ export class Area extends GameEntity {
   getBroadcastTargets() {
     const roomTargets = [...this.rooms].reduce(
       (acc, [, room]) => acc.concat(room.getBroadcastTargets()),
-      []
+      [] as (Room | Player | Npc)[]
     );
     return [this, ...roomTargets];
   }

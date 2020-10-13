@@ -47,6 +47,7 @@ export class AttributeFactory {
 
   /**
    * @param {string} name
+   * @param {number} base
    * @param {number} delta
    * @return {Attribute}
    */

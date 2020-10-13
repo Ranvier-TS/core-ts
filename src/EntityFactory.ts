@@ -1,4 +1,5 @@
 import { Area } from "./Area";
+import { BehaviorManager } from './BehaviorManager';
 import { EntityReference } from "./EntityReference";
 import { Item } from "./Item";
 import { Npc } from "./Npc";
@@ -78,8 +79,8 @@ export class EntityFactory {
     }
     const entity = new Type(area, definition);
 
-    if (this.scripts.has(entityRef)) {
-      this.scripts.get(entityRef).attach(entity);
+    if (this.scripts?.has(entityRef)) {
+      this.scripts.get(entityRef)?.attach(entity);
     }
 
     return entity;
@@ -90,7 +91,8 @@ export class EntityFactory {
   }
 
   /**
-   * Clone an existing entity.
+   * Clone an existing entity
+   * 
    * @param {Item|Npc|Room|Area} entity
    * @return {Item|Npc|Room|Area}
    */

@@ -1,11 +1,13 @@
+import uuid from "uuid/v4";
+
+import { Area } from './Area';
 import { GameEntity } from "./GameEntity";
 import { IInventoryDef, Inventory } from "./Inventory";
 import { Logger } from "./Logger";
 import { ItemType } from "./ItemType";
+import { Npc } from './Npc';
+import { Player } from './Player';
 import { Room } from "./Room";
-import { Npc } from "./Npc";
-import { Player } from "./Player";
-import { Area } from "./Area";
 import { GameState } from "./GameState";
 
 const uuid = require("uuid/v4");
@@ -77,9 +79,9 @@ export class Item extends GameEntity {
   id: string;
 
   description: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   behaviors: Map<string, any>;
-  defaultItems: Item[] | IItemDef[];
+  defaultItems: Item[] | IItemDef[] | string[];
   entityReference: string;
   maxItems: number;
   isEquipped: boolean;
@@ -93,7 +95,7 @@ export class Item extends GameEntity {
   locked: boolean;
   lockedBy: string | null;
 
-  carriedBy: Npc | Player | null;
+  carriedBy: Npc | Player | Item | null;
   equippedBy: string | null;
 
   keywords: string[];
@@ -128,7 +130,7 @@ export class Item extends GameEntity {
     this.script = item.script || null;
 
     if (typeof item.type === "string") {
-      this.type = ItemType[item.type] || item.type;
+      this.type = item.type;
     } else {
       this.type = item.type || ItemType.OBJECT;
     }
@@ -176,14 +178,6 @@ export class Item extends GameEntity {
    */
   removeItem(item: Item) {
     this.inventory.removeItem(item);
-
-    // if we removed the last item unset the inventory
-    // This ensures that when it's reloaded it won't try to set
-    // its default inventory. Instead it will persist the fact
-    // that all the items were removed from it
-    if (!this.inventory.size) {
-      this.inventory = null;
-    }
     item.carriedBy = null;
   }
 
@@ -274,8 +268,11 @@ export class Item extends GameEntity {
       return false;
     }
 
-    // perform deep copy if behaviors is set to prevent sharing of the object between
-    // item instances
+    this.__manager = state.ItemManager;
+
+    state.ItemManager.add(this);
+
+    // deep copy behaviors to prevent sharing of the object between item instances
     if (serialized.behaviors) {
       const behaviors = JSON.parse(JSON.stringify(serialized.behaviors));
       this.behaviors = new Map(Object.entries(behaviors));
@@ -290,8 +287,14 @@ export class Item extends GameEntity {
     this.metadata = JSON.parse(
       JSON.stringify(serialized.metadata || this.metadata)
     );
-    this.closed = "closed" in serialized ? serialized.closed : this.closed;
-    this.locked = "locked" in serialized ? serialized.locked : this.locked;
+
+    this.closed = Boolean(
+      "closed" in serialized ? serialized.closed : this.closed
+    );
+
+    this.locked = Boolean(
+      "locked" in serialized ? serialized.locked : this.locked
+    );
 
     if (typeof this.area === "string") {
       this.area = state.AreaManager.getArea(this.area);
@@ -312,18 +315,16 @@ export class Item extends GameEntity {
         this.addItem(newItem);
       });
     }
-
-    this.__hydrated = true;
   }
 
   serialize(): ISerializedItem {
-    let behaviors = {};
+    const behaviors: Record<string, unknown> = {};
     for (const behavior of this.behaviors) {
-      const [key, val]: [string, any] = behavior;
+      const [key, val]: [string, unknown] = behavior;
       behaviors[key] = val;
     }
 
-    return {
+    return Object.assign({
       entityReference: this.entityReference,
       inventory: this.inventory && this.inventory.serialize(),
 
@@ -342,6 +343,6 @@ export class Item extends GameEntity {
       // behaviors are serialized in case their config was modified during gameplay
       // and that state needs to persist (charges of a scroll remaining, etc)
       behaviors,
-    };
+    });
   }
 }

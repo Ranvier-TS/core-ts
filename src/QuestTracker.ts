@@ -79,7 +79,11 @@ export class QuestTracker {
    */
   complete(qid: EntityReference) {
     if (!this.isActive(qid)) {
+<<<<<<< HEAD:src/QuestTracker.js
+      throw new Error(`Quest ${qid} not started, cannot complete.`);
+=======
       throw new Error("Quest not started");
+>>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/QuestTracker.ts
     }
 
     this.completedQuests.set(qid, {
@@ -96,7 +100,11 @@ export class QuestTracker {
   start(quest: Quest) {
     const qid = quest.entityReference;
     if (this.activeQuests.has(qid)) {
+<<<<<<< HEAD:src/QuestTracker.js
+      throw new Error(`Quest ${qid} already started.`);
+=======
       throw new Error("Quest already started");
+>>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/QuestTracker.ts
     }
 
     quest.started = new Date().toJSON();

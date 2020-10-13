@@ -5,7 +5,16 @@ import { EntityLoader } from "./EntityLoader";
 import { GameState } from "./GameState";
 import { Player } from "./Player";
 
+<<<<<<< HEAD:src/PlayerManager.js
+const EventEmitter = require('events');
+const Data = require('./Data');
+const Player = require('./Player');
+const EventManager = require('./EventManager');
+const Logger = require('./Logger');
+const util = require('util');
+=======
 const EventManager = require("./EventManager");
+>>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/PlayerManager.ts
 
 /**
  * Keeps track of all active players in game
@@ -69,6 +78,15 @@ export class PlayerManager extends EventEmitter {
     if (player.room) {
       player.room.removePlayer(player);
     }
+
+    if (player.equipment && player.equipment.size) {
+      player.equipment.forEach((item, slot) => player.unequip(slot));
+    }
+  
+    if (player.inventory && player.inventory.size) {
+      player.inventory.forEach(item => item.__manager.remove(item));
+    }
+
     player.__pruned = true;
     this.players.delete(this.keyify(player));
   }
@@ -89,11 +107,16 @@ export class PlayerManager extends EventEmitter {
   }
 
   /**
-   * @param {Function} fn Filter function
-   * @return {array}
+   * @param {Function} predicate Filter function
+   * @return {array},
    */
+<<<<<<< HEAD:src/PlayerManager.js
+  filter(predicate) {
+    return this.getPlayersAsArray().filter(predicate);
+=======
   filter(fn: Function) {
     return this.getPlayersAsArray().filter(fn);
+>>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/PlayerManager.ts
   }
 
   /**
@@ -150,8 +173,9 @@ export class PlayerManager extends EventEmitter {
     if (!this.loader) {
       throw new Error("No entity loader configured for players");
     }
-
-    await this.loader.update(player.name, player.serialize());
+    Logger.warn('Serializing...');
+    const serialized = player.serialize();
+    await this.loader.update(player.name, serialized);
 
     /**
      * @event Player#saved
@@ -160,7 +184,8 @@ export class PlayerManager extends EventEmitter {
   }
 
   /**
-   * @fires Player#saved
+   * Save all players
+   * @fires Player#save
    */
   async saveAll() {
     for (const [name, player] of this.players.entries()) {

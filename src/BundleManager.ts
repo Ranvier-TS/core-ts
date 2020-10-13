@@ -28,6 +28,7 @@ const srcPath = __dirname + '/';
  */
 export class BundleManager {
   /**
+   * @param {string} path
    * @param {GameState} state
    */
   constructor(path, state: GameState) {
@@ -43,19 +44,15 @@ export class BundleManager {
 
   /**
    * Load in all bundles
+   * @param {boolean} distribute
    */
   async loadBundles(distribute = true) {
     Logger.verbose('LOAD: BUNDLES');
 
-    const bundles = fs.readdirSync(this.bundlesPath);
+    const bundles = this.state.Config.get('bundles');
     for (const bundle of bundles) {
       const bundlePath = this.bundlesPath + bundle;
-      if (fs.statSync(bundlePath).isFile() || bundle === '.' || bundle === '..') {
-        continue;
-      }
-
-      // only load bundles the user has configured to be loaded
-      if (this.state.Config.get('bundles', []).indexOf(bundle) === -1) {
+      if (fs.existsSync(bundlePath) && fs.statSync(bundlePath).isFile() || bundle === '.' || bundle === '..') {
         continue;
       }
 
@@ -177,12 +174,23 @@ export class BundleManager {
     Logger.verbose(`\tLOAD: Attributes...`);
 
     const attributes = require(attributesFile);
-    let error = `\tAttributes file [${attributesFile}] from bundle [${bundle}]`;
+    const errorPrefix = `\tAttributes file [${attributesFile}] from bundle [${bundle}]`;
     if (!Array.isArray(attributes)) {
-      Logger.error(`${error} does not define an array of attributes`);
+      Logger.error(`${errorPrefix} does not define an array of attributes`);
       return;
     }
 
+    this.addAttributes(attributes, errorPrefix);
+
+    Logger.verbose(`\tENDLOAD: Attributes...`);
+  }
+
+  /**
+   * Adds each attribute in the array if it fits the correct format.
+   * @param {Array<Attribute>} attributes
+   * @param {string} errorPrefix
+   */
+  addAttributes(attributes, errorPrefix) {
     for (const attribute of attributes) {
       if (typeof attribute !== 'object') {
         Logger.error(`${error} not an object`);
@@ -190,7 +198,7 @@ export class BundleManager {
       }
 
       if (!('name' in attribute) || !('base' in attribute)) {
-        Logger.error(`${error} does not include required properties name and base`);
+        Logger.error(`${errorPrefix} does not include required properties name and base`);
         continue;
       }
 
@@ -206,8 +214,6 @@ export class BundleManager {
 
       this.state.AttributeFactory.add(attribute.name, attribute.base, formula, attribute.metadata);
     }
-
-    Logger.verbose(`\tENDLOAD: Attributes...`);
   }
 
   /**
@@ -246,7 +252,7 @@ export class BundleManager {
     areas = await areaLoader.fetchAll();
 
     for (const name in areas) {
-      const manifest = areas[name];
+      const manifest = areas[name].doc;
       this.areas.push(name);
       await this.loadArea(bundle, name, manifest);
     }
@@ -269,7 +275,7 @@ export class BundleManager {
       rooms: [],
     };
 
-    const scriptPath = this._getAreaScriptPath(bundle, areaName);
+    const scriptPath = this._getAreaScriptPath(bundle, 'area');
 
     if (manifest.script) {
       const areaScriptPath = `${scriptPath}/${manifest.script}.js`;
@@ -319,7 +325,7 @@ export class BundleManager {
    * @param {string} areaName
    * @param {string} type
    * @param {EntityFactory} factory
-   * @return {Array<entityReference>}
+   * @return {Array<string>}
    */
   async loadEntities(bundle, areaName, type, factory) {
     const loader = this.loaderRegistry.get(type);
@@ -335,14 +341,27 @@ export class BundleManager {
       Logger.warn(`\t\t\t${type} has an invalid value [${entities}]`);
       return [];
     }
-
-    const scriptPath = this._getAreaScriptPath(bundle, areaName);
-
     return entities.map(entity => {
       const entityRef = factory.createEntityRef(areaName, entity.id);
       factory.setDefinition(entityRef, entity);
-      if (entity.script) {
-        const entityScript = `${scriptPath}/${type}/${entity.script}.js`;
+      if (entity.script !== undefined) {
+        let scriptPath = ''
+        switch (type) {
+          case 'npcs': {
+            scriptPath = this._getAreaScriptPath(bundle, 'npc');
+            break
+          }
+          case 'items': {
+            scriptPath = this._getAreaScriptPath(bundle, 'item');
+            break
+          }
+          case 'rooms': {
+            scriptPath = this._getAreaScriptPath(bundle, 'room');
+            break
+          }
+        }
+
+        const entityScript = `${scriptPath}/${entity.script}.js`;
         if (!fs.existsSync(entityScript)) {
           Logger.warn(`\t\t\t[${entityRef}] has non-existent script "${entity.script}"`);
         } else {
@@ -357,7 +376,7 @@ export class BundleManager {
 
   /**
    * @param {EntityFactory} factory Instance of EntityFactory that the item/npc will be loaded into
-   * @param {EntityReference} entityRef
+   * @param {string} entityRef
    * @param {string} scriptPath
    */
   loadEntityScript(factory, entityRef, scriptPath) {
@@ -371,9 +390,9 @@ export class BundleManager {
   }
 
   /**
+   * @param {string} bundle
    * @param {string} areaName
-   * @param {string} questsFile
-   * @return {Promise<Array<entityReference>>}
+   * @return {Promise<Array<string>>}
    */
   async loadQuests(bundle, areaName) {
     const loader = this.loaderRegistry.get('quests');
@@ -457,7 +476,6 @@ export class BundleManager {
 
   /**
    * @param {string} bundle
-   * @param {string} helpDir
    */
   async loadHelp(bundle) {
     Logger.verbose(`\tLOAD: Help...`);
@@ -474,8 +492,11 @@ export class BundleManager {
         const hfile = new Helpfile(
           bundle,
           helpName,
-          records[helpName]
+          records[helpName].doc
         );
+
+        const command = this.state.CommandManager.get(hfile.command)
+        hfile.aliases = command ? command.aliases || [] : []
 
         this.state.HelpManager.add(hfile);
       } catch (e) {
@@ -505,7 +526,7 @@ export class BundleManager {
       const loader = require(eventPath);
       const eventImport = this._getLoader(loader, srcPath);
 
-      if (typeof eventImport.event !== 'function') {
+      if (typeof (eventImport || {}).event !== 'function') {
         throw new Error(`Bundle ${bundle} has an invalid input event '${eventName}'. Expected a function, got: `, eventImport.event);
       }
 
@@ -661,11 +682,11 @@ export class BundleManager {
   /**
    * @private
    * @param {string} bundle
-   * @param {string} areaName
+   * @param {string} type
    * @return {string}
    */
-  _getAreaScriptPath(bundle, areaName) {
-    return `${this.bundlesPath}/${bundle}/areas/${areaName}/scripts`;
+  _getAreaScriptPath(bundle, type) {
+    return `${this.bundlesPath}/${bundle}/scripts/${type}`;
   }
 }
 

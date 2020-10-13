@@ -8,7 +8,7 @@
   "version": "3.0.6",
   "repository": "github:ranviermud/core",
   "engines": {
-    "node": ">= 10.12.0"
+    "node": ">= 12.18.2"
   },
   "scripts": {
     "test": "nyc --reporter=html --reporter=text --include=src --all mocha --recursive",
@@ -22,8 +22,6 @@
     "@types/bcryptjs": "^2.4.2",
     "@types/commander": "^2.12.2",
     "@types/js-yaml": "^3.12.5",
-    "@types/node": "^14.11.8",
-    "@types/uuid": "^8.3.0",
     "@types/winston": "^2.4.4",
     "bcryptjs": "^2.4.0",
     "js-yaml": "^3.12.0",
@@ -36,6 +34,8 @@
     "wrap-ansi": "^2.0.0"
   },
   "devDependencies": {
+    "@types/node": "^14.11.8",
+    "@types/uuid": "^8.3.0",
     "coveralls": "^3.0.2",
     "mocha": "^5.2.0",
     "nyc": "^13.1.0"

@@ -37,6 +37,30 @@ export class HelpManager {
       if (help.keywords.some((keyword) => keyword.includes(search))) {
         results.set(name, help);
       }
+      if (help.aliases.some(alias => alias.includes(search))) {
+        results.set(name, help);
+      }
+    }
+    return results;
+  }
+
+  /**
+   * @param {string} search
+   * @return {Help}
+   */
+  findExact(search) {
+    const results = new Map();
+    for (const [name, help] of this.helps.entries()) {
+      if (name.indexOf(search) === 0) {
+        results.set(name, help);
+        continue;
+      }
+      if (help.keywords.some(keyword => keyword === search)) {
+        results.set(name, help);
+      }
+      if (help.aliases.some(alias => alias === search)) {
+        results.set(name, help);
+      }
     }
     return results;
   }
@@ -44,6 +68,7 @@ export class HelpManager {
   /**
    * Returns first help matching keywords
    * @param {string} search
+   * @param {boolean} exact
    * @return {?string}
    */
   getFirst(help: string) {
