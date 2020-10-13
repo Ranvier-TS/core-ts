@@ -114,26 +114,17 @@ export class Npc extends Scriptable(Character) {
     this.emit("enterRoom", nextRoom);
   }
 
-<<<<<<< HEAD
-  hydrate(state: GameState) {
-=======
-<<<<<<< HEAD:src/Npc.js
   /**
    * Initialize the NPC from storage
    * 
    * @param {GameState} state
    */
-  hydrate(state) {
-=======
-  hydrate(state: IGameState) {
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Npc.ts
->>>>>>> development-ts
+  hydrate(state: GameState) {
     super.hydrate(state);
     state.MobManager.addMob(this);
 
     this.setupBehaviors(state.MobBehaviorManager);
 
-<<<<<<< HEAD:src/Npc.js
     // Load Npc's default inventory (Array of entityReferences):
     if (Array.isArray(this.defaultItems)) {
       for (let defaultItemId of this.defaultItems) {
@@ -163,16 +154,6 @@ export class Npc extends Scriptable(Character) {
          */
         newItem.emit('spawn');
       })
-=======
-    for (const defaultItemId of this.defaultItems) {
-      Logger.verbose(
-        `\tDIST: Adding item [${defaultItemId}] to npc [${this.name}]`
-      );
-      const newItem = state.ItemFactory.create(this.area, defaultItemId);
-      newItem.hydrate(state);
-      state.ItemManager.add(newItem);
-      this.addItem(newItem);
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Npc.ts
     }
 
     for (const [slot, defaultEqId] of Object.entries(this.defaultEquipment)) {
@@ -204,8 +185,3 @@ export class Npc extends Scriptable(Character) {
     return true;
   }
 }
-<<<<<<< HEAD:src/Npc.js
-
-module.exports = Npc;
-=======
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Npc.ts

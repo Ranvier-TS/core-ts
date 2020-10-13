@@ -6,8 +6,6 @@ import { BehaviorManager } from "./BehaviorManager";
 import { BundleManager } from "./BundleManager";
 import { ChannelManager } from "./ChannelManager";
 import { CommandManager } from "./CommandManager";
-import { Config } from "./Config";
-import { Data } from "./Data";
 import { DataSourceRegistry } from "./DataSourceRegistry";
 import { EffectFactory } from "./EffectFactory";
 import { EntityLoaderRegistry } from "./EntityLoaderRegistry";
@@ -35,7 +33,6 @@ export class GameState {
   AttributeFactory: AttributeFactory;
   ChannelManager: ChannelManager;
   CommandManager: CommandManager;
-  Config: Config;
   EffectFactory: EffectFactory;
   HelpManager: HelpManager;
   InputEventManager: EventManager;
@@ -57,7 +54,6 @@ export class GameState {
   SpellManager: SkillManager;
   ServerEventManager: EventManager;
   GameServer: GameServer;
-  DataLoader: Data;
   EntityLoaderRegistry: EntityLoaderRegistry;
   DataSourceRegistry: DataSourceRegistry;
   BundleManager: BundleManager;
@@ -70,7 +66,6 @@ export class GameState {
     this.AttributeFactory = new AttributeFactory();
     this.ChannelManager = new ChannelManager();
     this.CommandManager = new CommandManager();
-    this.Config = Config;
     this.EffectFactory = new EffectFactory();
     this.HelpManager = new HelpManager();
     this.InputEventManager = new EventManager();
@@ -92,7 +87,6 @@ export class GameState {
     this.SpellManager = new SkillManager();
     this.ServerEventManager = new EventManager();
     this.GameServer = new GameServer();
-    this.DataLoader = Data;
     this.EntityLoaderRegistry = new EntityLoaderRegistry();
     this.DataSourceRegistry = new DataSourceRegistry();
     this.BundleManager = bundleManager;

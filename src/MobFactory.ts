@@ -20,6 +20,6 @@ export class MobFactory extends EntityFactory {
   create(area: Area, entityRef: EntityReference) {
     const npc = this.createByType(area, entityRef, Npc);
     npc.area = area;
-    return npc;
+    return npc as Npc;
   }
 }

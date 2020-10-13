@@ -22,9 +22,9 @@ export interface AudienceOptions {
  */
 export class ChannelAudience {
   /** @param {GameState} state */
-  state: GameState;
+  state?: GameState;
   /** @param {Player} sender */
-  sender: Player;
+  sender?: Player;
   /** @param {string} message */
   message: string = "";
   constructor(...args: any[]) {}
@@ -46,7 +46,7 @@ export class ChannelAudience {
    * @return {Array<Player>}
    */
   getBroadcastTargets() {
-    return this.state.PlayerManager.getPlayersAsArray();
+    return this.state?.PlayerManager.getPlayersAsArray();
   }
 
   /**

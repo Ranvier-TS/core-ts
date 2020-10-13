@@ -18,6 +18,6 @@ export class RoomFactory extends EntityFactory {
   create(area: Area, entityRef: EntityReference) {
     const room = this.createByType(area, entityRef, Room);
     room.area = area;
-    return room;
+    return room as Room;
   }
 }

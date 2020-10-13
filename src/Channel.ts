@@ -1,6 +1,7 @@
 import { Broadcast } from "./Broadcast";
 import { ChannelAudience } from "./ChannelAudience";
 import { GameState } from "./GameState";
+import { Npc } from "./Npc";
 import { PartyAudience } from "./PartyAudience";
 import { Player } from "./Player";
 import { PlayerRoles } from './PlayerRoles';

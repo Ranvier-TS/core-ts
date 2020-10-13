@@ -1,39 +1,43 @@
-/*jshint node: true, esversion: 6 */
-'use strict';
-
+import fs from "fs";
+import path from "path";
+import { IAreaDef } from "./Area";
+import { Attribute, AttributeFormula } from "./Attribute";
+import { Attributes } from "./Attributes";
+import { BehaviorManager } from "./BehaviorManager";
+import { Channel } from "./Channel";
+import { Command } from "./Command";
+import { Config } from "./Config";
+import { Data } from "./Data";
+import { EntityFactoryType } from "./EntityFactory";
+import { EntityLoaderRegistry } from "./EntityLoaderRegistry";
+import { EntityReference } from "./EntityReference";
+import { GameEntities } from "./GameEntity";
 import { GameState } from "./GameState";
+import { Helpfile } from "./Helpfile";
+import { Logger } from "./Logger";
+import { IQuestDef } from "./Quest";
+import { IQuestFactoryDef } from "./QuestFactory";
+import { QuestGoal } from "./QuestGoal";
+import { QuestReward } from "./QuestReward";
+import { Skill } from "./Skill";
+import { SkillType } from "./SkillType";
 
-const fs = require('fs'),
-    path = require('path'),
-    Data = require('./Data'),
-    Area = require('./Area'),
-    Command = require('./Command'),
-    CommandType = require('./CommandType'),
-    Item = require('./Item'),
-    Npc = require('./Npc'),
-    QuestGoal = require('./QuestGoal'),
-    QuestReward = require('./QuestReward'),
-    Room = require('./Room'),
-    Skill = require('./Skill'),
-    SkillType = require('./SkillType'),
-    Helpfile = require('./Helpfile'),
-    Logger = require('./Logger')
-;
-
-const { AttributeFormula } = require('./Attribute');
-
-const srcPath = __dirname + '/';
+const srcPath = __dirname + "/";
 /**
  * Handles loading/parsing/initializing all bundles. AKA where the magic happens
  */
 export class BundleManager {
+  state: GameState;
+  bundlesPath: string;
+  areas: string[];
+  loaderRegistry: EntityLoaderRegistry;
   /**
    * @param {string} path
    * @param {GameState} state
    */
-  constructor(path, state: GameState) {
+  constructor(path: string, state: GameState) {
     if (!path || !fs.existsSync(path)) {
-      throw new Error('Invalid bundle path');
+      throw new Error("Invalid bundle path");
     }
 
     this.state = state;
@@ -47,12 +51,16 @@ export class BundleManager {
    * @param {boolean} distribute
    */
   async loadBundles(distribute = true) {
-    Logger.verbose('LOAD: BUNDLES');
+    Logger.verbose("LOAD: BUNDLES");
 
-    const bundles = this.state.Config.get('bundles');
+    const bundles = Config.get("bundles");
     for (const bundle of bundles) {
       const bundlePath = this.bundlesPath + bundle;
-      if (fs.existsSync(bundlePath) && fs.statSync(bundlePath).isFile() || bundle === '.' || bundle === '..') {
+      if (
+        (fs.existsSync(bundlePath) && fs.statSync(bundlePath).isFile()) ||
+        bundle === "." ||
+        bundle === ".."
+      ) {
         continue;
       }
 
@@ -66,7 +74,7 @@ export class BundleManager {
       process.exit(0);
     }
 
-    Logger.verbose('ENDLOAD: BUNDLES');
+    Logger.verbose("ENDLOAD: BUNDLES");
 
     if (!distribute) {
       return;
@@ -89,29 +97,29 @@ export class BundleManager {
    * @param {string} bundle Bundle name
    * @param {string} bundlePath Path to bundle directory
    */
-  async loadBundle(bundle, bundlePath) {
+  async loadBundle(bundle: string, bundlePath: string) {
     const features = [
       // quest goals/rewards have to be loaded before areas that have quests which use those goals
-      { path: 'quest-goals/', fn: 'loadQuestGoals' },
-      { path: 'quest-rewards/', fn: 'loadQuestRewards' },
+      { path: "quest-goals/", fn: "loadQuestGoals" },
+      { path: "quest-rewards/", fn: "loadQuestRewards" },
 
-      { path: 'attributes.js', fn: 'loadAttributes' },
+      { path: "attributes.js", fn: "loadAttributes" },
 
       // any entity in an area, including the area itself, can have behaviors so load them first
-      { path: 'behaviors/', fn: 'loadBehaviors' },
+      { path: "behaviors/", fn: "loadBehaviors" },
 
-      { path: 'channels.js', fn: 'loadChannels' },
-      { path: 'commands/', fn: 'loadCommands' },
-      { path: 'effects/', fn: 'loadEffects' },
-      { path: 'input-events/', fn: 'loadInputEvents' },
-      { path: 'server-events/', fn: 'loadServerEvents' },
-      { path: 'player-events.js', fn: 'loadPlayerEvents' },
-      { path: 'skills/', fn: 'loadSkills' },
+      { path: "channels.js", fn: "loadChannels" },
+      { path: "commands/", fn: "loadCommands" },
+      { path: "effects/", fn: "loadEffects" },
+      { path: "input-events/", fn: "loadInputEvents" },
+      { path: "server-events/", fn: "loadServerEvents" },
+      { path: "player-events.js", fn: "loadPlayerEvents" },
+      { path: "skills/", fn: "loadSkills" },
     ];
 
     Logger.verbose(`LOAD: BUNDLE [\x1B[1;33m${bundle}\x1B[0m] START`);
     for (const feature of features) {
-      const path = bundlePath + '/' + feature.path;
+      const path = bundlePath + "/" + feature.path;
       if (fs.existsSync(path)) {
         this[feature.fn](bundle, path);
       }
@@ -123,7 +131,7 @@ export class BundleManager {
     Logger.verbose(`ENDLOAD: BUNDLE [\x1B[1;32m${bundle}\x1B[0m]`);
   }
 
-  loadQuestGoals(bundle, goalsDir) {
+  loadQuestGoals(bundle: string, goalsDir: string) {
     Logger.verbose(`\tLOAD: Quest Goals...`);
     const files = fs.readdirSync(goalsDir);
 
@@ -135,7 +143,9 @@ export class BundleManager {
 
       const goalName = path.basename(goalFile, path.extname(goalFile));
       const loader = require(goalPath);
-      let goalImport = QuestGoal.isPrototypeOf(loader) ? loader : loader(srcPath);
+      let goalImport = QuestGoal.isPrototypeOf(loader)
+        ? loader
+        : loader(srcPath);
       Logger.verbose(`\t\t${goalName}`);
 
       this.state.QuestGoalManager.set(goalName, goalImport);
@@ -144,7 +154,7 @@ export class BundleManager {
     Logger.verbose(`\tENDLOAD: Quest Goals...`);
   }
 
-  loadQuestRewards(bundle, rewardsDir) {
+  loadQuestRewards(bundle: string, rewardsDir: string) {
     Logger.verbose(`\tLOAD: Quest Rewards...`);
     const files = fs.readdirSync(rewardsDir);
 
@@ -156,7 +166,9 @@ export class BundleManager {
 
       const rewardName = path.basename(rewardFile, path.extname(rewardFile));
       const loader = require(rewardPath);
-      let rewardImport = QuestReward.isPrototypeOf(loader) ? loader : loader(srcPath);
+      let rewardImport = QuestReward.isPrototypeOf(loader)
+        ? loader
+        : loader(srcPath);
       Logger.verbose(`\t\t${rewardName}`);
 
       this.state.QuestRewardManager.set(rewardName, rewardImport);
@@ -170,7 +182,7 @@ export class BundleManager {
    * @param {string} bundle
    * @param {string} attributesFile
    */
-  loadAttributes(bundle, attributesFile) {
+  loadAttributes(bundle: string, attributesFile: string) {
     Logger.verbose(`\tLOAD: Attributes...`);
 
     const attributes = require(attributesFile);
@@ -190,15 +202,17 @@ export class BundleManager {
    * @param {Array<Attribute>} attributes
    * @param {string} errorPrefix
    */
-  addAttributes(attributes, errorPrefix) {
+  addAttributes(attributes: Attribute[], errorPrefix: string) {
     for (const attribute of attributes) {
-      if (typeof attribute !== 'object') {
-        Logger.error(`${error} not an object`);
+      if (typeof attribute !== "object") {
+        Logger.error(`${attribute} not an object`);
         continue;
       }
 
-      if (!('name' in attribute) || !('base' in attribute)) {
-        Logger.error(`${errorPrefix} does not include required properties name and base`);
+      if (!("name" in attribute) || !("base" in attribute)) {
+        Logger.error(
+          `${errorPrefix} does not include required properties name and base`
+        );
         continue;
       }
 
@@ -206,13 +220,18 @@ export class BundleManager {
       if (attribute.formula) {
         formula = new AttributeFormula(
           attribute.formula.requires,
-          attribute.formula.fn,
+          attribute.formula.fn
         );
       }
 
       Logger.verbose(`\t\t-> ${attribute.name}`);
 
-      this.state.AttributeFactory.add(attribute.name, attribute.base, formula, attribute.metadata);
+      this.state.AttributeFactory.add(
+        attribute.name,
+        attribute.base,
+        formula,
+        attribute.metadata
+      );
     }
   }
 
@@ -221,7 +240,7 @@ export class BundleManager {
    * @param {string} bundle
    * @param {string} eventsFile event js file to load
    */
-  loadPlayerEvents(bundle, eventsFile) {
+  loadPlayerEvents(bundle: string, eventsFile: string) {
     Logger.verbose(`\tLOAD: Player Events...`);
 
     const loader = require(eventsFile);
@@ -236,16 +255,16 @@ export class BundleManager {
   }
 
   /**
-  * @param {string} bundle
-  */
-  async loadAreas(bundle) {
+   * @param {string} bundle
+   */
+  async loadAreas(bundle: string) {
     Logger.verbose(`\tLOAD: Areas...`);
 
-    const areaLoader = this.loaderRegistry.get('areas');
+    const areaLoader = this.loaderRegistry.get("areas");
     areaLoader.setBundle(bundle);
-    let areas = [];
+    let areas: IAreaDef[] = [];
 
-    if (!await areaLoader.hasData()) {
+    if (!(await areaLoader.hasData())) {
       return areas;
     }
 
@@ -263,9 +282,9 @@ export class BundleManager {
   /**
    * @param {string} bundle
    * @param {string} areaName
-   * @param {string} areaPath
+   * @param {object} manifest
    */
-  async loadArea(bundle, areaName, manifest) {
+  async loadArea(bundle: string, areaName: string, manifest: IAreaDef) {
     const definition = {
       bundle,
       manifest,
@@ -275,27 +294,46 @@ export class BundleManager {
       rooms: [],
     };
 
-    const scriptPath = this._getAreaScriptPath(bundle, 'area');
+    const scriptPath = this._getAreaScriptPath(bundle, "area");
 
     if (manifest.script) {
       const areaScriptPath = `${scriptPath}/${manifest.script}.js`;
       if (!fs.existsSync(areaScriptPath)) {
-        Logger.warn(`\t\t\t[${areaName}] has non-existent script "${manifest.script}"`);
+        Logger.warn(
+          `\t\t\t[${areaName}] has non-existent script "${manifest.script}"`
+        );
       }
 
-      Logger.verbose(`\t\t\tLoading Area Script for [${areaName}]: ${manifest.script}`);
+      Logger.verbose(
+        `\t\t\tLoading Area Script for [${areaName}]: ${manifest.script}`
+      );
       this.loadEntityScript(this.state.AreaFactory, areaName, areaScriptPath);
     }
 
     Logger.verbose(`\t\tLOAD: Quests...`);
     definition.quests = await this.loadQuests(bundle, areaName);
     Logger.verbose(`\t\tLOAD: Items...`);
-    definition.items  = await this.loadEntities(bundle, areaName, 'items', this.state.ItemFactory);
+    definition.items = await this.loadEntities(
+      bundle,
+      areaName,
+      "items",
+      this.state.ItemFactory
+    );
     Logger.verbose(`\t\tLOAD: NPCs...`);
-    definition.npcs   = await this.loadEntities(bundle, areaName, 'npcs', this.state.MobFactory);
+    definition.npcs = await this.loadEntities(
+      bundle,
+      areaName,
+      "npcs",
+      this.state.MobFactory
+    );
     Logger.verbose(`\t\tLOAD: Rooms...`);
-    definition.rooms  = await this.loadEntities(bundle, areaName, 'rooms', this.state.RoomFactory);
-    Logger.verbose('\t\tDone.');
+    definition.rooms = await this.loadEntities(
+      bundle,
+      areaName,
+      "rooms",
+      this.state.RoomFactory
+    );
+    Logger.verbose("\t\tDone.");
 
     for (const npcRef of definition.npcs) {
       const npc = this.state.MobFactory.getDefinition(npcRef);
@@ -308,7 +346,9 @@ export class BundleManager {
       for (const qid of npc.quests) {
         const quest = this.state.QuestFactory.get(qid);
         if (!quest) {
-          Logger.error(`\t\t\tError: NPC is questor for non-existent quest [${qid}]`);
+          Logger.error(
+            `\t\t\tError: NPC is questor for non-existent quest [${qid}]`
+          );
           continue;
         }
         quest.npc = npcRef;
@@ -327,12 +367,17 @@ export class BundleManager {
    * @param {EntityFactory} factory
    * @return {Array<string>}
    */
-  async loadEntities(bundle, areaName, type, factory) {
+  async loadEntities(
+    bundle: string,
+    areaName: string,
+    type: string,
+    factory: EntityFactoryType
+  ) {
     const loader = this.loaderRegistry.get(type);
     loader.setBundle(bundle);
     loader.setArea(areaName);
 
-    if (!await loader.hasData()) {
+    if (!(await loader.hasData())) {
       return [];
     }
 
@@ -341,31 +386,35 @@ export class BundleManager {
       Logger.warn(`\t\t\t${type} has an invalid value [${entities}]`);
       return [];
     }
-    return entities.map(entity => {
+    return entities.map((entity: GameEntities) => {
       const entityRef = factory.createEntityRef(areaName, entity.id);
       factory.setDefinition(entityRef, entity);
       if (entity.script !== undefined) {
-        let scriptPath = ''
+        let scriptPath = "";
         switch (type) {
-          case 'npcs': {
-            scriptPath = this._getAreaScriptPath(bundle, 'npc');
-            break
+          case "npcs": {
+            scriptPath = this._getAreaScriptPath(bundle, "npc");
+            break;
           }
-          case 'items': {
-            scriptPath = this._getAreaScriptPath(bundle, 'item');
-            break
+          case "items": {
+            scriptPath = this._getAreaScriptPath(bundle, "item");
+            break;
           }
-          case 'rooms': {
-            scriptPath = this._getAreaScriptPath(bundle, 'room');
-            break
+          case "rooms": {
+            scriptPath = this._getAreaScriptPath(bundle, "room");
+            break;
           }
         }
 
         const entityScript = `${scriptPath}/${entity.script}.js`;
         if (!fs.existsSync(entityScript)) {
-          Logger.warn(`\t\t\t[${entityRef}] has non-existent script "${entity.script}"`);
+          Logger.warn(
+            `\t\t\t[${entityRef}] has non-existent script "${entity.script}"`
+          );
         } else {
-          Logger.verbose(`\t\t\tLoading Script [${entityRef}] ${entity.script}`);
+          Logger.verbose(
+            `\t\t\tLoading Script [${entityRef}] ${entity.script}`
+          );
           this.loadEntityScript(factory, entityRef, entityScript);
         }
       }
@@ -379,7 +428,11 @@ export class BundleManager {
    * @param {string} entityRef
    * @param {string} scriptPath
    */
-  loadEntityScript(factory, entityRef, scriptPath) {
+  loadEntityScript(
+    factory: EntityFactoryType,
+    entityRef: EntityReference,
+    scriptPath: string
+  ) {
     const loader = require(scriptPath);
     const scriptListeners = this._getLoader(loader, srcPath).listeners;
 
@@ -394,16 +447,16 @@ export class BundleManager {
    * @param {string} areaName
    * @return {Promise<Array<string>>}
    */
-  async loadQuests(bundle, areaName) {
-    const loader = this.loaderRegistry.get('quests');
+  async loadQuests(bundle: string, areaName: string) {
+    const loader = this.loaderRegistry.get("quests");
     loader.setBundle(bundle);
     loader.setArea(areaName);
     let quests = [];
     try {
-       quests = await loader.fetchAll();
+      quests = await loader.fetchAll();
     } catch (err) {}
 
-    return quests.map(quest => {
+    return quests.map((quest: IQuestDef) => {
       Logger.verbose(`\t\t\tLoading Quest [${areaName}:${quest.id}]`);
       this.state.QuestFactory.add(areaName, quest.id, quest);
       return this.state.QuestFactory.makeQuestKey(areaName, quest.id);
@@ -414,7 +467,7 @@ export class BundleManager {
    * @param {string} bundle
    * @param {string} commandsDir
    */
-  loadCommands(bundle, commandsDir) {
+  loadCommands(bundle: string, commandsDir: string) {
     Logger.verbose(`\tLOAD: Commands...`);
     const files = fs.readdirSync(commandsDir);
 
@@ -438,25 +491,19 @@ export class BundleManager {
    * @param {string} bundle
    * @return {Command}
    */
-  createCommand(commandPath, commandName, bundle) {
+  createCommand(commandPath: string, commandName: string, bundle: string) {
     const loader = require(commandPath);
     let cmdImport = this._getLoader(loader, srcPath, this.bundlesPath);
     cmdImport.command = cmdImport.command(this.state);
 
-
-    return new Command(
-      bundle,
-      commandName,
-      cmdImport,
-      commandPath
-    );
+    return new Command(bundle, commandName, cmdImport, commandPath);
   }
 
   /**
    * @param {string} bundle
    * @param {string} channelsFile
    */
-  loadChannels(bundle, channelsFile) {
+  loadChannels(bundle: string, channelsFile: string) {
     Logger.verbose(`\tLOAD: Channels...`);
 
     const loader = require(channelsFile);
@@ -466,7 +513,7 @@ export class BundleManager {
       channels = [channels];
     }
 
-    channels.forEach(channel => {
+    channels.forEach((channel: Channel) => {
       channel.bundle = bundle;
       this.state.ChannelManager.add(channel);
     });
@@ -477,26 +524,23 @@ export class BundleManager {
   /**
    * @param {string} bundle
    */
-  async loadHelp(bundle) {
+  async loadHelp(bundle: string) {
     Logger.verbose(`\tLOAD: Help...`);
-    const loader = this.loaderRegistry.get('help');
+    const loader = this.loaderRegistry.get("help");
     loader.setBundle(bundle);
 
-    if (!await loader.hasData()) {
+    if (!(await loader.hasData())) {
       return;
     }
 
     const records = await loader.fetchAll();
     for (const helpName in records) {
       try {
-        const hfile = new Helpfile(
-          bundle,
-          helpName,
-          records[helpName].doc
-        );
+        const hfile = new Helpfile(bundle, helpName, records[helpName].doc);
 
-        const command = this.state.CommandManager.get(hfile.command)
-        hfile.aliases = command ? command.aliases || [] : []
+        const command =
+          hfile.command && this.state.CommandManager.get(hfile.command);
+        hfile.aliases = command ? command.aliases || [] : [];
 
         this.state.HelpManager.add(hfile);
       } catch (e) {
@@ -512,7 +556,7 @@ export class BundleManager {
    * @param {string} bundle
    * @param {string} inputEventsDir
    */
-  loadInputEvents(bundle, inputEventsDir) {
+  loadInputEvents(bundle: string, inputEventsDir: string) {
     Logger.verbose(`\tLOAD: Events...`);
     const files = fs.readdirSync(inputEventsDir);
 
@@ -526,11 +570,17 @@ export class BundleManager {
       const loader = require(eventPath);
       const eventImport = this._getLoader(loader, srcPath);
 
-      if (typeof (eventImport || {}).event !== 'function') {
-        throw new Error(`Bundle ${bundle} has an invalid input event '${eventName}'. Expected a function, got: `, eventImport.event);
+      if (typeof (eventImport || {}).event !== "function") {
+        throw new Error(
+          `Bundle ${bundle} has an invalid input event '${eventName}'. Expected a function, got: ` +
+            eventImport.event
+        );
       }
 
-      this.state.InputEventManager.add(eventName, eventImport.event(this.state));
+      this.state.InputEventManager.add(
+        eventName,
+        eventImport.event(this.state)
+      );
     }
 
     Logger.verbose(`\tENDLOAD: Events...`);
@@ -540,11 +590,15 @@ export class BundleManager {
    * @param {string} bundle
    * @param {string} behaviorsDir
    */
-  loadBehaviors(bundle, behaviorsDir) {
+  loadBehaviors(bundle: string, behaviorsDir: string) {
     Logger.verbose(`\tLOAD: Behaviors...`);
 
-    const loadEntityBehaviors = (type, manager, state) => {
-      let typeDir = behaviorsDir + type + '/';
+    const loadEntityBehaviors = (
+      type: string,
+      manager: BehaviorManager,
+      state: GameState
+    ) => {
+      let typeDir = behaviorsDir + type + "/";
 
       if (!fs.existsSync(typeDir)) {
         return;
@@ -559,7 +613,10 @@ export class BundleManager {
           continue;
         }
 
-        const behaviorName = path.basename(behaviorFile, path.extname(behaviorFile));
+        const behaviorName = path.basename(
+          behaviorFile,
+          path.extname(behaviorFile)
+        );
         Logger.verbose(`\t\t\tLOAD: BEHAVIORS [${type}] ${behaviorName}...`);
         const loader = require(behaviorPath);
         const behaviorListeners = this._getLoader(loader, srcPath).listeners;
@@ -570,10 +627,10 @@ export class BundleManager {
       }
     };
 
-    loadEntityBehaviors('area', this.state.AreaBehaviorManager, this.state);
-    loadEntityBehaviors('npc', this.state.MobBehaviorManager, this.state);
-    loadEntityBehaviors('item', this.state.ItemBehaviorManager, this.state);
-    loadEntityBehaviors('room', this.state.RoomBehaviorManager, this.state);
+    loadEntityBehaviors("area", this.state.AreaBehaviorManager, this.state);
+    loadEntityBehaviors("npc", this.state.MobBehaviorManager, this.state);
+    loadEntityBehaviors("item", this.state.ItemBehaviorManager, this.state);
+    loadEntityBehaviors("room", this.state.RoomBehaviorManager, this.state);
 
     Logger.verbose(`\tENDLOAD: Behaviors...`);
   }
@@ -582,7 +639,7 @@ export class BundleManager {
    * @param {string} bundle
    * @param {string} effectsDir
    */
-  loadEffects(bundle, effectsDir) {
+  loadEffects(bundle: string, effectsDir: string) {
     Logger.verbose(`\tLOAD: Effects...`);
     const files = fs.readdirSync(effectsDir);
 
@@ -596,7 +653,11 @@ export class BundleManager {
       const loader = require(effectPath);
 
       Logger.verbose(`\t\t${effectName}`);
-      this.state.EffectFactory.add(effectName, this._getLoader(loader, srcPath), this.state);
+      this.state.EffectFactory.add(
+        effectName,
+        this._getLoader(loader, srcPath),
+        this.state
+      );
     }
 
     Logger.verbose(`\tENDLOAD: Effects...`);
@@ -606,7 +667,7 @@ export class BundleManager {
    * @param {string} bundle
    * @param {string} skillsDir
    */
-  loadSkills(bundle, skillsDir) {
+  loadSkills(bundle: string, skillsDir: string) {
     Logger.verbose(`\tLOAD: Skills...`);
     const files = fs.readdirSync(skillsDir);
 
@@ -640,7 +701,7 @@ export class BundleManager {
    * @param {string} bundle
    * @param {string} serverEventsDir
    */
-  loadServerEvents(bundle, serverEventsDir) {
+  loadServerEvents(bundle: string, serverEventsDir: string) {
     Logger.verbose(`\tLOAD: Server Events...`);
     const files = fs.readdirSync(serverEventsDir);
 
@@ -670,8 +731,8 @@ export class BundleManager {
    * @param {function (string)|object|array} loader
    * @return {loader}
    */
-  _getLoader(loader, ...args) {
-    if (typeof loader === 'function') {
+  _getLoader(loader: Function, ...args: any[]) {
+    if (typeof loader === "function") {
       // backwards compatible for old module loader(srcPath)
       return loader(...args);
     }
@@ -685,9 +746,7 @@ export class BundleManager {
    * @param {string} type
    * @return {string}
    */
-  _getAreaScriptPath(bundle, type) {
+  _getAreaScriptPath(bundle: string, type: string) {
     return `${this.bundlesPath}/${bundle}/scripts/${type}`;
   }
 }
-
-module.exports = BundleManager;

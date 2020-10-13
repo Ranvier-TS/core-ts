@@ -48,7 +48,7 @@ export class HelpManager {
    * @param {string} search
    * @return {Help}
    */
-  findExact(search) {
+  findExact(search: string) {
     const results = new Map();
     for (const [name, help] of this.helps.entries()) {
       if (name.indexOf(search) === 0) {
