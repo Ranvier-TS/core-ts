@@ -1,4 +1,4 @@
-import { EventEmitter } from "events";
+import { EffectableEntity } from "./EffectableEntity";
 import { Metadatable } from "./Metadatable";
 import { Npc } from "./Npc";
 import { Player } from "./Player";
@@ -9,7 +9,7 @@ import { Scriptable } from "./Scriptable";
  * @mixes Metadatable
  * @mixes Scriptable
  */
-export class GameEntity extends Scriptable(Metadatable(EventEmitter)) {}
+export class GameEntity extends Scriptable(Metadatable(EffectableEntity)) {}
 
 export type PlayerOrNpc = Player | Npc;
 
