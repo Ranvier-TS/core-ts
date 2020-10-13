@@ -49,7 +49,7 @@ export class Area extends GameEntity {
   behaviors: IBehavior | Record<string, any>;
 
   constructor(bundle: string | null, name: string, manifest: IAreaDef) {
-    super();
+    super(manifest);
     this.bundle = bundle;
     this.name = name;
     this.title = manifest.title;

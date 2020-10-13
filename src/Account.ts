@@ -1,4 +1,6 @@
+import { EventEmitter } from "events";
 import { Data } from "./Data";
+import { Metadatable } from "./Metadatable";
 
 const bcrypt = require("bcryptjs");
 
@@ -40,7 +42,7 @@ export interface IAccountCharacter {
  * @property {string} password Hashed password
  * @property {boolean} banned Whether this account is banned or not
  */
-export class Account {
+export class Account extends Metadatable(EventEmitter) {
   /** @property {string} username */
   username: string;
   /** @property {Array<string>} characters List of character names in this account */
@@ -58,6 +60,7 @@ export class Account {
    * @param {Object} data Account save data
    */
   constructor(data: ISerializedAccount) {
+    super();
     this.username = data.username;
     this.characters = data.characters || [];
     this.password = data.password;
@@ -132,7 +135,13 @@ export class Account {
    * @param {function} callback after-save callback
    */
   save(callback?: Function) {
-    Data.save("account", this.username, this.serialize(), callback);
+    this.__manager.loader
+      .update(this.username, this.serialize())
+      .then((data: any) => {
+        if (typeof callback === "function") {
+          callback();
+        }
+      });
   }
 
   /**

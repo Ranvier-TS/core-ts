@@ -1,25 +1,25 @@
-'use strict';
-
-const Damage = require('./Damage');
-const Room = require('./Room');
-const Character = require('./Character');
+import { Character } from "./Character";
+import { Damage } from "./Damage";
+import { PlayerOrNpc } from "./GameEntity";
+import { Room } from "./Room";
 
 /**
  * Damage class used for applying damage to multiple entities in a room. By
  * default it will target all npcs in the room. To customize this behavior you
  * can extend this class and override the `getValidTargets` method
  */
-class AreaOfEffectDamage extends Damage
-{
+export class AreaOfEffectDamage extends Damage {
   /**
    * @param {Room|Character} target
    * @throws RangeError
    * @fires Room#areaDamage
    */
-  commit(room) {
+  commit(room : Room | PlayerOrNpc) {
     if (!(room instanceof Room)) {
       if (!(room instanceof Character)) {
-        throw new RangeError('AreaOfEffectDamage commit target must be an instance of Room or Character');
+        throw new RangeError(
+          "AreaOfEffectDamage commit target must be an instance of Room or Character"
+        );
       }
 
       super.commit(room);
@@ -36,7 +36,7 @@ class AreaOfEffectDamage extends Damage
      * @param {Damage} damage
      * @param {Array<Character>} targets
      */
-    room.emit('areaDamage', this, targets);
+    room.emit("areaDamage", this, targets);
   }
 
   /**
@@ -45,10 +45,8 @@ class AreaOfEffectDamage extends Damage
    * @param {Room} room
    * @return {Array<Character>}
    */
-  getValidTargets(room) {
+  getValidTargets(room: Room) {
     const targets = [...room.npcs];
-    return targets.filter(t => t.hasAttribute(this.attribute));
+    return targets.filter((t) => t.hasAttribute(this.attribute));
   }
 }
-
-module.exports = AreaOfEffectDamage;

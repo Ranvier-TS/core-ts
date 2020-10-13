@@ -1,19 +1,9 @@
-import { Damage } from "./Damage";
-import { EffectableEntity } from './EffectableEntity';
+import { EffectableEntity } from "./EffectableEntity";
 import { Item } from "./Item";
 import { IInventoryDef, Inventory, InventoryFullError } from "./Inventory";
-import { Logger } from "./Logger";
 import { Metadatable } from "./Metadatable";
-import { EventEmitter } from "events";
 import { Room } from "./Room";
-import { Attributes } from "./Attributes";
 import { Config } from "./Config";
-
-const EffectList = require("./EffectList");
-const {
-  EquipSlotTakenError,
-  EquipAlreadyEquippedError,
-} = require("./EquipErrors");
 
 export interface ICharacterConfig {
   /** @property {string}     name       Name shown on look/who/login */
@@ -336,7 +326,7 @@ export class Character extends Metadatable(EffectableEntity) {
    */
   unfollow() {
     if (!this.following) {
-      return
+      return;
     }
 
     this.following.removeFollower(this);
@@ -394,14 +384,14 @@ export class Character extends Metadatable(EffectableEntity) {
 
   /**
    * Gather data to be persisted
-   * 
+   *
    * @return {Object}
    */
   serialize(): ISerializedCharacter {
     const toReturn = {
       level: this.level,
       name: this.name,
-      room: this.room?.entityReference || 'void',
+      room: this.room?.entityReference || "void",
       attributes: this.attributes,
       effects: this.effects,
     };
