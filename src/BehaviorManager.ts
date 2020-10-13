@@ -1,5 +1,9 @@
 import { EventManager } from "./EventManager";
 
+export interface IBehavior {
+  [key: string]: unknown;
+}
+
 /**
  * BehaviorManager keeps a map of BehaviorName:EventManager which is used
  * during Item and NPC hydrate() methods to attach events
