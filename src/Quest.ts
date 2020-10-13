@@ -1,5 +1,6 @@
 import { EventEmitter } from "events";
 import { EntityReference } from "./EntityReference";
+import { IGameState } from './GameState';
 import { ISerializedPlayer, Player } from "./Player";
 import { IQuestGoalDef, QuestGoal } from "./QuestGoal";
 import { IQuestRewardDef } from "./QuestReward";
@@ -84,16 +85,18 @@ export class Quest extends EventEmitter {
    * @param {...*}   args
    */
   emit(event: string | symbol, ...args: any[]) {
-    super.emit(event, ...args);
+    const result = super.emit(event, ...args);
 
     if (event === "progress") {
       // don't proxy progress event
-      return;
+      return result;
     }
 
     this.goals.forEach((goal) => {
       goal.emit(event, ...args);
     });
+
+    return result;
   }
 
   addGoal(goal: QuestGoal) {

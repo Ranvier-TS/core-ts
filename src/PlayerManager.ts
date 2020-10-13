@@ -1,19 +1,12 @@
 import { EventEmitter } from "events";
 import { Account } from "./Account";
 import { Data } from "./Data";
+import { EffectableEntity } from './EffectableEntity';
 import { EntityLoader } from "./EntityLoader";
+import { Logger } from './Logger';
 import { Player } from "./Player";
 
-<<<<<<< HEAD:src/PlayerManager.js
-const EventEmitter = require('events');
-const Data = require('./Data');
-const Player = require('./Player');
-const EventManager = require('./EventManager');
-const Logger = require('./Logger');
-const util = require('util');
-=======
-const EventManager = require("./EventManager");
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/PlayerManager.ts
+import { EventManager } from "./EventManager";
 
 /**
  * Keeps track of all active players in game
@@ -101,21 +94,24 @@ export class PlayerManager extends EventEmitter {
    * @param {string}   behaviorName
    * @param {Function} listener
    */
-  addListener(event: string | symbol, listener: (...args: any[]) => void){
+  addListener(
+    event: string,
+    listener: (...args: any[]) => void
+  ): this {
     this.events.add(event, listener);
+    return this;
   }
 
   /**
    * @param {Function} predicate Filter function
    * @return {array},
    */
-<<<<<<< HEAD:src/PlayerManager.js
-  filter(predicate) {
-    return this.getPlayersAsArray().filter(predicate);
-=======
-  filter(fn: Function) {
-    return this.getPlayersAsArray().filter(fn);
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/PlayerManager.ts
+  filter(
+    predicate: (player: Player, index: number, array: Player[]) => Player[]
+  ) {
+    return this
+      .getPlayersAsArray()
+      .filter(predicate);
   }
 
   /**
@@ -126,7 +122,12 @@ export class PlayerManager extends EventEmitter {
    * @param {boolean} force true to force reload from storage
    * @return {Player}
    */
-  async loadPlayer(state: IGameState, account: Account, username: string, force: boolean) {
+  async loadPlayer(
+    state: IGameState,
+    account: Account,
+    username: string,
+    force: boolean
+  ) {
     if (this.players.has(username) && !force) {
       return this.getPlayer(username);
     }
@@ -141,7 +142,7 @@ export class PlayerManager extends EventEmitter {
     let player = new Player(data);
     player.account = account;
 
-    this.events.attach(player);
+    this.events.attach(player as EffectableEntity);
 
     this.addPlayer(player);
     return player;

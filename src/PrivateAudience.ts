@@ -15,11 +15,10 @@ export class PrivateAudience extends ChannelAudience {
     if ((targetPlayer === this.sender) || (targetPlayerName === 'me') || (targetPlayerName === 'self')) {
       return ['_self']
     } else {
+      if (targetPlayer) {
+        return [targetPlayer];
+      }
       return []
-    }
-
-    if (targetPlayer) {
-      return [targetPlayer];
     }
   }
 

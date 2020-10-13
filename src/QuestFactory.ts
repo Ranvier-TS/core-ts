@@ -1,4 +1,5 @@
 import { EntityReference } from "./EntityReference";
+import { IGameState } from './GameState';
 import { Logger } from "./Logger";
 import { Player } from "./Player";
 import { IQuestDef, Quest } from "./Quest";
@@ -127,16 +128,10 @@ export class QuestFactory {
           }
 
           rewardClass.reward(GameState, instance, reward.config, player);
-<<<<<<< HEAD:src/QuestFactory.js
           player.emit('questReward', reward);
         } catch(e) {
           Logger.warn(`Error in quest ${qid} happened to ${player.name}.`);
           Logger.warn(e);
-=======
-          player.emit("questReward", reward);
-        } catch (e) {
-          Logger.error(e.message);
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/QuestFactory.ts
         }
       }
 

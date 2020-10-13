@@ -4,7 +4,12 @@ import { EventEmitter } from "events";
 import { Player } from "./Player";
 import { Quest } from "./Quest";
 
-export interface IQuestGoalDef {}
+export interface IQuestGoalDef {
+  name: string;
+  type: string;
+  config?: Record<string, any>;
+  [key: string]: any;
+}
 
 /**
  * Representation of a goal of a quest.
