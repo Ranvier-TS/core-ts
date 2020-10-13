@@ -2,19 +2,10 @@ import { EventEmitter } from "events";
 import { Account } from "./Account";
 import { Data } from "./Data";
 import { EntityLoader } from "./EntityLoader";
+import { EventManager } from "./EventManager";
 import { GameState } from "./GameState";
+import { Logger } from "./Logger";
 import { Player } from "./Player";
-
-<<<<<<< HEAD:src/PlayerManager.js
-const EventEmitter = require('events');
-const Data = require('./Data');
-const Player = require('./Player');
-const EventManager = require('./EventManager');
-const Logger = require('./Logger');
-const util = require('util');
-=======
-const EventManager = require("./EventManager");
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/PlayerManager.ts
 
 /**
  * Keeps track of all active players in game
@@ -110,13 +101,8 @@ export class PlayerManager extends EventEmitter {
    * @param {Function} predicate Filter function
    * @return {array},
    */
-<<<<<<< HEAD:src/PlayerManager.js
-  filter(predicate) {
-    return this.getPlayersAsArray().filter(predicate);
-=======
   filter(fn: Function) {
     return this.getPlayersAsArray().filter(fn);
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/PlayerManager.ts
   }
 
   /**

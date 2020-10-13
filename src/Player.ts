@@ -1,14 +1,3 @@
-<<<<<<< HEAD:src/Player.js
-'use strict';
-
-const Character = require('./Character');
-const CommandQueue = require('./CommandQueue');
-const Config = require('./Config');
-const QuestTracker = require('./QuestTracker');
-const Room = require('./Room');
-const Logger = require('./Logger');
-const PlayerRoles = require('./PlayerRoles');
-=======
 "use strict";
 
 import { Character } from "./Character";
@@ -44,7 +33,6 @@ export interface ISerializedPlayer {
   role: string;
   equipment: Record<string, IItemDef> | null;
 }
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Player.ts
 
 /**
  * @property {Account} account
@@ -211,12 +199,7 @@ export class Player extends Character {
     if (!this.__hydrated) {
       return;
     }
-<<<<<<< HEAD:src/Player.js
     this.emit('save', callback);
-=======
-
-    this.emit("save", callback);
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Player.ts
   }
 
   hydrate(state: GameState) {
@@ -240,16 +223,10 @@ export class Player extends Character {
       for (const slot in eqDefs) {
         const itemDef = eqDefs[slot];
         try {
-<<<<<<< HEAD:src/Player.js
-          const entityRef = typeof itemDef === 'string' ? itemDef : itemDef.entityReference;
-          const itemState = typeof itemDef === 'string' ? {} : itemDef;
-          let newItem = state.ItemFactory.create(state.AreaManager.getArea(itemDef.area), itemDef.entityReference);
-=======
           let newItem = state.ItemFactory.create(
             state.AreaManager.getArea(itemDef.area),
             itemDef.entityReference
           );
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Player.ts
           newItem.initializeInventory(itemDef.inventory);
           newItem.hydrate(state, itemDef);
           state.ItemManager.add(newItem);
@@ -282,8 +259,7 @@ export class Player extends Character {
     }
   }
 
-<<<<<<< HEAD:src/Player.js
-  serialize() {
+  serialize(): ISerializedPlayer {
     const account = this.account.name;
     const experience = this.experience;
     const inventory = this.inventory && this.inventory.serialize();
@@ -292,9 +268,6 @@ export class Player extends Character {
     const prompt = this.prompt;
     const quests = this.questTracker.serialize();
     const role = this.role;
-=======
-  serialize(): ISerializedPlayer {
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Player.ts
     let data = Object.assign(super.serialize(), {
       account,
       experience,
@@ -319,8 +292,3 @@ export class Player extends Character {
     return data;
   }
 }
-<<<<<<< HEAD:src/Player.js
-
-module.exports = Player;
-=======
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Player.ts

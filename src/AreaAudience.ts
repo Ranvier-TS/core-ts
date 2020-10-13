@@ -1,6 +1,5 @@
 import { ChannelAudience } from "./ChannelAudience";
-import { Npc } from "./Npc";
-import { Player } from "./Player";
+import { PlayerOrNpc } from "./GameEntity";
 
 /**
  * Audience class representing characters in the same area as the sender
@@ -16,6 +15,6 @@ export class AreaAudience extends ChannelAudience {
     const { area } = this.sender.room;
     return area
       .getBroadcastTargets()
-      .filter((target: Npc | Player) => target !== this.sender);
+      .filter((target: PlayerOrNpc) => target !== this.sender);
   }
 }
