@@ -1,17 +1,6 @@
-<<<<<<< HEAD:src/Player.js
-'use strict';
-
-const Character = require('./Character');
-const CommandQueue = require('./CommandQueue');
-const Config = require('./Config');
-const QuestTracker = require('./QuestTracker');
-const Room = require('./Room');
-const Logger = require('./Logger');
-const PlayerRoles = require('./PlayerRoles');
-=======
 "use strict";
 
-import { Character } from "./Character";
+import { Character, ICharacterConfig, ISerializedCharacter } from "./Character";
 import { CommandQueue } from "./CommandQueue";
 import { Config } from "./Config";
 import { IInventoryDef } from "./Inventory";
@@ -19,31 +8,30 @@ import { IItemDef } from "./Item";
 import { Logger } from "./Logger";
 import { Metadata } from "./Metadatable";
 import { PlayerRoles } from "./PlayerRoles";
-import { QuestTracker } from "./QuestTracker";
+import { QuestTracker, SerializedQuestTracker } from "./QuestTracker";
 import { Room } from "./Room";
 
-export interface IPlayerDef {
+export interface IPlayerDef extends ICharacterConfig {
   account: Account | null;
   experience: number;
   password: string;
   prompt: string;
   socket: any | null; // TODO: Socket Definition
-  quests: ISerializedQuestTracker;
+  quests: SerializedQuestTracker;
   role: string; // TODO: PlayerRole
 }
 
-export interface ISerializedPlayer {
+export interface ISerializedPlayer extends ISerializedCharacter {
   account: string;
   experience: number;
   inventory: IInventoryDef;
   metadata: Metadata;
   password: string;
   prompt: string;
-  quests: ISerializedQuestTracker;
+  quests: SerializedQuestTracker;
   role: string;
-  equipment: Record<string, IItemDef> | null;
+  equipment?: Record<string, IItemDef> | null;
 }
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Player.ts
 
 /**
  * @property {Account} account
@@ -116,8 +104,8 @@ export class Player extends Character {
    * @param {string} promptStr
    * @param {object} extraData Any extra data to give the prompt access to
    */
-  interpolatePrompt(promptStr: string, extraData: object = {}) {
-    let attributeData = {};
+  interpolatePrompt(promptStr: string, extraData: Record<string, unknown> = {}) {
+    let attributeData: Record<string, unknown> = {};
     for (const [attr, value] of this.attributes) {
       attributeData[attr] = {
         current: this.getAttribute(attr),
@@ -130,13 +118,14 @@ export class Player extends Character {
     let matches = null;
     while ((matches = promptStr.match(/%([a-z\.]+)%/))) {
       const token = matches[1];
-      let promptValue = token
+      let promptValue: any = token
         .split(".")
-        .reduce((obj, index) => obj && obj[index], promptData);
+        .reduce((obj, index) => obj && obj[index] as typeof promptData, promptData);
+      
       if (promptValue === null || promptValue === undefined) {
-        promptValue = "invalid-token";
+        (promptValue as string) = "invalid-token";
       }
-      promptStr = promptStr.replace(matches[0], promptValue);
+      promptStr = promptStr.replace(matches[0], promptValue as string);
     }
 
     return promptStr;
@@ -210,12 +199,8 @@ export class Player extends Character {
     if (!this.__hydrated) {
       return;
     }
-<<<<<<< HEAD:src/Player.js
-    this.emit('save', callback);
-=======
 
     this.emit("save", callback);
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Player.ts
   }
 
   hydrate(state: IGameState) {
@@ -239,16 +224,10 @@ export class Player extends Character {
       for (const slot in eqDefs) {
         const itemDef = eqDefs[slot];
         try {
-<<<<<<< HEAD:src/Player.js
-          const entityRef = typeof itemDef === 'string' ? itemDef : itemDef.entityReference;
-          const itemState = typeof itemDef === 'string' ? {} : itemDef;
-          let newItem = state.ItemFactory.create(state.AreaManager.getArea(itemDef.area), itemDef.entityReference);
-=======
           let newItem = state.ItemFactory.create(
             state.AreaManager.getArea(itemDef.area),
             itemDef.entityReference
           );
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Player.ts
           newItem.initializeInventory(itemDef.inventory);
           newItem.hydrate(state, itemDef);
           state.ItemManager.add(newItem);
@@ -281,8 +260,7 @@ export class Player extends Character {
     }
   }
 
-<<<<<<< HEAD:src/Player.js
-  serialize() {
+  serialize(): ISerializedPlayer {
     const account = this.account.name;
     const experience = this.experience;
     const inventory = this.inventory && this.inventory.serialize();
@@ -291,10 +269,7 @@ export class Player extends Character {
     const prompt = this.prompt;
     const quests = this.questTracker.serialize();
     const role = this.role;
-=======
-  serialize(): ISerializedPlayer {
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Player.ts
-    let data = Object.assign(super.serialize(), {
+    let data: ISerializedPlayer = Object.assign(super.serialize(), {
       account,
       experience,
       inventory,
@@ -307,7 +282,7 @@ export class Player extends Character {
     });
 
     if (this.equipment instanceof Map) {
-      let eq = {};
+      let eq: Record<string, IItemDef> = {};
       for (let [slot, item] of this.equipment) {
         eq[slot] = item.serialize();
       }
@@ -315,11 +290,7 @@ export class Player extends Character {
     } else {
       data.equipment = null;
     }
+
     return data;
   }
 }
-<<<<<<< HEAD:src/Player.js
-
-module.exports = Player;
-=======
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Player.ts
