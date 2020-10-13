@@ -1,13 +1,13 @@
+import uuid from "uuid/v4";
+
+import { Area } from './Area';
 import { GameEntity } from "./GameEntity";
 import { IInventoryDef, Inventory } from "./Inventory";
 import { Logger } from "./Logger";
 import { ItemType } from "./ItemType";
+import { Npc } from './Npc';
+import { Player } from './Player';
 import { Room } from "./Room";
-import { Npc } from "./Npc";
-import { Player } from "./Player";
-import { Area } from "./Area";
-
-const uuid = require("uuid/v4");
 
 export declare interface IItemDef {
   name: string;
@@ -34,13 +34,6 @@ export declare interface IItemDef {
   keywords: string[];
 }
 
-<<<<<<< HEAD:src/Item.js
-const GameEntity = require('./GameEntity');
-const ItemType = require('./ItemType');
-const Logger = require('./Logger');
-
-const { Inventory, InventoryFullError } = require('./Inventory');
-=======
 export interface ISerializedItem {
   entityReference: string;
   inventory: string[];
@@ -53,7 +46,6 @@ export interface ISerializedItem {
   locked: boolean;
   behaviors: Record<string, any>;
 }
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Item.ts
 
 /**
  * @property {Area}    area        Area the item belongs to (warning: this is not the area is currently in but the
@@ -79,20 +71,14 @@ export interface ISerializedItem {
  *
  * @extends GameEntity
  */
-<<<<<<< HEAD:src/Item.js
-class Item extends GameEntity {
-  constructor (area, item) {
-    super(item);
-    const validate = ['name', 'id'];
-=======
 export class Item extends GameEntity {
   name: string;
   id: string;
 
   description: string;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   behaviors: Map<string, any>;
-  defaultItems: Item[] | IItemDef[];
+  defaultItems: Item[] | IItemDef[] | string[];
   entityReference: string;
   maxItems: number;
   isEquipped: boolean;
@@ -106,14 +92,13 @@ export class Item extends GameEntity {
   locked: boolean;
   lockedBy: string | null;
 
-  carriedBy: Npc | Player | null;
+  carriedBy: Npc | Player | Item | null;
   equippedBy: string | null;
 
   keywords: string[];
   constructor(area: Area, item: IItemDef) {
     super();
     const validate = ["keywords", "name", "id"];
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Item.ts
 
     for (const prop of validate) {
       if (!(prop in item)) {
@@ -124,40 +109,25 @@ export class Item extends GameEntity {
     }
 
     this.area = area;
-<<<<<<< HEAD:src/Item.js
-    this.metadata  = Object.assign({}, item.metadata) || {};
-    this.behaviors = new Map(Object.entries(item.behaviors || {}));
-    this.defaultItems = item.items || [];
-    this.description = item.description || '';
-=======
     this.metadata = item.metadata || {};
     this.behaviors = new Map(Object.entries(item.behaviors || {}));
     this.defaultItems = item.items || [];
     this.description = item.description || "Nothing special.";
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Item.ts
     this.entityReference = item.entityReference; // EntityFactory key
     this.id = item.id;
 
     this.maxItems = item.maxItems || Infinity;
     this.initializeInventory(item.inventory, this.maxItems);
 
-<<<<<<< HEAD:src/Item.js
-    this.isEquipped  = item.isEquipped || false;
-    this.name        = item.name;
-    this.room        = item.room || null;
-    this.roomDesc    = item.roomDesc || '';
-    this.script      = item.script || null;
-=======
     this.isEquipped = item.isEquipped || false;
     this.keywords = item.keywords;
     this.name = item.name;
     this.room = item.room || null;
     this.roomDesc = item.roomDesc || "";
     this.script = item.script || null;
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Item.ts
 
     if (typeof item.type === "string") {
-      this.type = ItemType[item.type] || item.type;
+      this.type = item.type;
     } else {
       this.type = item.type || ItemType.OBJECT;
     }
@@ -170,14 +140,6 @@ export class Item extends GameEntity {
 
     this.carriedBy = null;
     this.equippedBy = null;
-
-    if (item.keywords && item.keywords.value) {
-      this.keywordsInherited = true;
-      this.keywords = [...new Set([...(item.keywords.value || []), ...this.name.split(' ')])];
-    } else {
-      this.keywords = [...new Set([...(item.keywords || []), ...this.name.split(' ')])];
-    }
-    this.prototype = item.prototype || null;
   }
 
   /**
@@ -297,21 +259,11 @@ export class Item extends GameEntity {
     this.locked = false;
   }
 
-<<<<<<< HEAD:src/Item.js
-  /**
-   * Initialize the Item from storage
-   * 
-   * @param {GameState} state
-   */
-  hydrate(state, serialized = {}) {
-    super.hydrate(state);
-=======
   hydrate(state: IGameState, serialized?: IItemDef = {}) {
     if (this.__hydrated) {
       Logger.warn("Attempted to hydrate already hydrated item.");
       return false;
     }
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Item.ts
 
     this.__manager = state.ItemManager;
 
@@ -332,8 +284,14 @@ export class Item extends GameEntity {
     this.metadata = JSON.parse(
       JSON.stringify(serialized.metadata || this.metadata)
     );
-    this.closed = "closed" in serialized ? serialized.closed : this.closed;
-    this.locked = "locked" in serialized ? serialized.locked : this.locked;
+
+    this.closed = Boolean(
+      "closed" in serialized ? serialized.closed : this.closed
+    );
+
+    this.locked = Boolean(
+      "locked" in serialized ? serialized.locked : this.locked
+    );
 
     if (typeof this.area === "string") {
       this.area = state.AreaManager.getArea(this.area);
@@ -343,39 +301,6 @@ export class Item extends GameEntity {
     if (this.inventory) {
       this.inventory.hydrate(state, this);
     } else {
-<<<<<<< HEAD:src/Item.js
-      // Load item's default inventory (Array)
-      if (Array.isArray(this.defaultItems)) {
-        for (let defaultItemId of this.defaultItems) {
-          Logger.verbose(`\tDIST: Adding item [${defaultItemId}] to item [${this.name}]`);
-          const newItem = state.ItemFactory.create(this.area, defaultItemId);
-
-          state.ItemManager.add(newItem);
-          this.addItem(newItem);
-          newItem.hydrate(state);
-          /**
-           * @event Item#spawn
-           */
-          newItem.emit('spawn');
-        }
-      // Support composing item definitions in YAML (Object)
-      } else {
-        Object.keys(this.defaultItems).forEach(defaultItemId => {
-          if (this.defaultItems[defaultItemId] === false) return;
-          Logger.verbose(`\tDIST: Adding item [${defaultItemId.replace(/%.*$/g, '')}] to item [${this.name}]`);
-          const newItem = state.ItemFactory.create(this.area, defaultItemId.replace(/%.*$/g, ''));
-
-          state.ItemFactory.modifyDefinition(newItem, false, this.defaultItems[defaultItemId]);
-          state.ItemManager.add(newItem);
-          this.addItem(newItem);
-          newItem.hydrate(state);
-          /**
-           * @event Item#spawn
-           */
-          newItem.emit('spawn');
-        })
-      }
-=======
       // otherwise load its default inv
       this.defaultItems.forEach((defaultItemId: string) => {
         Logger.verbose(
@@ -386,65 +311,17 @@ export class Item extends GameEntity {
         state.ItemManager.add(newItem);
         this.addItem(newItem);
       });
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Item.ts
     }
   }
 
-  /**
-   * Serialize the Item to be used as a prototype
-   * 
-   * @return {Object}
-   */
-  serializeIntoPrototype () {
-    const item = this.serialize();
-
-    delete item.inventory;
-    delete item.entityReference;
-    delete item.description;
-    delete item.keywords;
-
-    if (this.description.length > 0) {
-      item.description = this.description;
-    }
-
-    let keywords;
-    if (this.keywordsInherited) {
-      keywords = {
-        '...': true,
-        value: this.keywords
-      };
-    } else {
-      keywords = this.keywords;
-    }
-
-    return Object.assign(item, {
-      script: this.script || undefined,
-      keywords,
-      behaviors: new Map(this.behaviors || {}),
-      defaultEquipment: this.defaultEquipment || {},
-      defaultItems: this.defaultItems || [],
-      metadata: this.metadata
-    });
-  }
-
-<<<<<<< HEAD:src/Item.js
-  /**
-   * Gather data to be persisted
-   * 
-   * @return {Object}
-   */
-  serialize() {
-    const data = super.serialize();
-=======
   serialize(): ISerializedItem {
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Item.ts
-    let behaviors = {};
+    const behaviors: Record<string, unknown> = {};
     for (const behavior of this.behaviors) {
-      const [key, val]: [string, any] = behavior;
+      const [key, val]: [string, unknown] = behavior;
       behaviors[key] = val;
     }
 
-    return Object.assign(data, {
+    return Object.assign({
       entityReference: this.entityReference,
       inventory: this.inventory && this.inventory.serialize(),
 
@@ -466,8 +343,3 @@ export class Item extends GameEntity {
     });
   }
 }
-<<<<<<< HEAD:src/Item.js
-
-module.exports = Item;
-=======
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Item.ts

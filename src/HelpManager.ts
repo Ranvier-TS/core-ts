@@ -71,19 +71,8 @@ export class HelpManager {
    * @param {boolean} exact
    * @return {?string}
    */
-<<<<<<< HEAD:src/HelpManager.js
-  getFirst(help, exact = false) {
-    let results
-
-    if (exact) {
-      results = this.findExact(help);
-    } else {
-      results = this.find(help);
-    }
-=======
   getFirst(help: string) {
     const results = this.find(help);
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/HelpManager.ts
 
     if (!results.size) {
       /**

@@ -1,4 +1,5 @@
 import { Character } from "./Character";
+import { PlayerOrNpc } from "./GameEntity";
 import { Player } from "./Player";
 
 const ansi = require("sty");
@@ -7,8 +8,8 @@ const wrap = require("wrap-ansi");
 
 /** @typedef {{getBroadcastTargets: function(): Array}} */
 // var Broadcastable;
-export declare type Broadcastable = {
-  getBroadcastTargets: () => Character[];
+export declare type Broadcastable = PlayerOrNpc | {
+  getBroadcastTargets: () => Broadcastable[];
 };
 
 export type FormatterFn = (target: Character, message: string) => string;
@@ -131,7 +132,7 @@ export class Broadcast {
   static sayAtExcept(
     source: Broadcastable,
     message: string,
-    excludes?: Broadcastable[] = [],
+    excludes: Broadcastable[],
     wrapWidth?: number,
     useColor?: boolean,
     formatter?: FormatterFn
@@ -139,7 +140,7 @@ export class Broadcast {
     Broadcast.atExcept(
       source,
       message,
-      excludes,
+      excludes || [],
       wrapWidth,
       useColor,
       (target: Broadcastable, message: string) => {

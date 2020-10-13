@@ -2,6 +2,7 @@ import { Broadcast } from "./Broadcast";
 import { ChannelAudience } from "./ChannelAudience";
 import { PartyAudience } from "./PartyAudience";
 import { Player } from "./Player";
+import { PlayerRoles } from './PlayerRoles';
 import { PrivateAudience } from "./PrivateAudience";
 import { WorldAudience } from "./WorldAudience";
 
@@ -18,9 +19,10 @@ export declare interface ChannelConfig {
   /** @property {string} [color] */
   color?: string;
   /** @property {{sender: function, target: function}} [formatter] */
-  formatter: Function;
+  formatter: { sender: Function, target: Function };
   bundle?: string;
   aliases?: string[];
+  eventOnly?: boolean;
 }
 
 /**
@@ -41,13 +43,14 @@ export class Channel {
   /** @property {string} color Default color. This is purely a helper if you're using default format methods */
   color: string | null;
   /** @property {PlayerRoles} minRequiredRole If set only players with the given role or greater can use the channel */
-  minRequiredRole: PlayerRoles;
+  minRequiredRole: PlayerRoles | null;
   /** @property {string} description */
   description: string;
   /** @property {{sender: function, target: function}} [formatter] */
-  formatter: Function;
+  formatter: {sender: Function, target: Function};
   bundle: string | null;
   aliases: string[] | null;
+  eventOnly: boolean;
 
   /**
    * @param {object}  config
@@ -109,10 +112,6 @@ export class Channel {
       throw new NoPartyError();
     }
 
-    if (this.audience.hasCommunicatorItem && !this.audience.hasCommunicatorItem(sender)) {
-      throw new NoCommunicatorItemError();
-    }
-
     // Allow audience to change message e.g., strip target name.
     message = this.audience.alterMessage(message);
 
@@ -129,23 +128,16 @@ export class Channel {
       }
 
       const target = targets[0];
-      // stop player trying to talk to self on a private audience
-      if (target === '_self') {
-        throw new TargetSelfError();
-      }
-<<<<<<< HEAD:src/Channel.js
-      Broadcast.sayAt(sender, this.formatter.sender(sender, target, message, this.colorify.bind(this)));
-=======
+
       Broadcast.sayAt(
         sender,
         this.formatter.sender(
           sender,
-          targets[0],
+          target,
           message,
           this.colorify.bind(this)
         )
       );
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Channel.ts
     } else {
       Broadcast.sayAt(
         sender,
@@ -153,8 +145,6 @@ export class Channel {
       );
     }
 
-<<<<<<< HEAD:src/Channel.js
-=======
     // send to audience targets
     Broadcast.sayAtFormatted(this.audience, message, (target, message) => {
       return this.formatter.target(
@@ -165,7 +155,6 @@ export class Channel {
       );
     });
 
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Channel.ts
     // strip color tags
     const rawMessage = message.replace(/\<\/?\w+?\>/gm, "");
 
@@ -261,23 +250,6 @@ export class Channel {
   }
 }
 
-<<<<<<< HEAD:src/Channel.js
-class NoPartyError extends Error {}
-class NoRecipientError extends Error {}
-class NoMessageError extends Error {}
-class TargetSelfError extends Error {}
-class NoCommunicatorItemError extends Error {}
-
-module.exports = {
-  Channel,
-  NoPartyError,
-  NoRecipientError,
-  NoMessageError,
-  TargetSelfError,
-  NoCommunicatorItemError
-};
-=======
 export class NoPartyError extends Error {}
 export class NoRecipientError extends Error {}
 export class NoMessageError extends Error {}
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Channel.ts

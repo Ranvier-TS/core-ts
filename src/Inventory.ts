@@ -1,4 +1,3 @@
-import { Character } from "./Character";
 import { Item, ItemDef } from "./Item";
 import { Npc } from "./Npc";
 import { Player } from "./Player";
@@ -134,10 +133,4 @@ export class Inventory extends Map<string, ItemDef | Item> {
 /**
  * @extends Error
  */
-<<<<<<< HEAD:src/Inventory.js
-class InventoryFullError extends Error {}
-
-module.exports = { Inventory, InventoryFullError };
-=======
 export class InventoryFullError extends Error {}
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/Inventory.ts
