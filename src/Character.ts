@@ -7,6 +7,7 @@ import { EventEmitter } from "events";
 import { Room } from "./Room";
 import { Attributes } from "./Attributes";
 import { Config } from "./Config";
+import { GameState } from "./GameState";
 
 const EffectList = require("./EffectList");
 const {
@@ -605,7 +606,7 @@ export class Character extends Metadatable(EventEmitter) {
    * Initialize the character from storage
    * @param {GameState} state
    */
-  hydrate(state: IGameState) {
+  hydrate(state: GameState) {
     if (this.__hydrated) {
       Logger.warn("Attempted to hydrate already hydrated character.");
       return false;

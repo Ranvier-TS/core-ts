@@ -5,6 +5,9 @@
  * @namespace ChannelAudience
  */
 
+import { GameState } from "./GameState";
+import { Player } from "./Player";
+
 export interface AudienceOptions {
   /** @param {GameState} state */
   state: GameState;
@@ -19,7 +22,7 @@ export interface AudienceOptions {
  */
 export class ChannelAudience {
   /** @param {GameState} state */
-  state: IGameState;
+  state: GameState;
   /** @param {Player} sender */
   sender: Player;
   /** @param {string} message */

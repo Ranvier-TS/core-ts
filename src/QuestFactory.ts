@@ -1,4 +1,5 @@
 import { EntityReference } from "./EntityReference";
+import { GameState } from "./GameState";
 import { Logger } from "./Logger";
 import { Player } from "./Player";
 import { IQuestDef, Quest } from "./Quest";
@@ -76,7 +77,7 @@ export class QuestFactory {
    * @return {Quest}
    */
   create(
-    GameState: IGameState,
+    GameState: GameState,
     qid: EntityReference,
     player: Player,
     state: any[] = []

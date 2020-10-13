@@ -1,5 +1,6 @@
 import { EventEmitter } from "events";
 import { EntityReference } from "./EntityReference";
+import { GameState } from "./GameState";
 import { ISerializedPlayer, Player } from "./Player";
 import { IQuestGoalDef, QuestGoal } from "./QuestGoal";
 import { IQuestRewardDef } from "./QuestReward";
@@ -44,11 +45,11 @@ export class Quest extends EventEmitter {
   player: Player;
   goals: QuestGoal[];
   state: any[];
-  GameState: IGameState;
+  GameState: GameState;
   started?: string;
 
   constructor(
-    GameState: IGameState,
+    GameState: GameState,
     id: string,
     config: IQuestDef,
     player: Player

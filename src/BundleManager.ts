@@ -1,6 +1,8 @@
 /*jshint node: true, esversion: 6 */
 'use strict';
 
+import { GameState } from "./GameState";
+
 const fs = require('fs'),
     path = require('path'),
     Data = require('./Data'),
@@ -24,11 +26,11 @@ const srcPath = __dirname + '/';
 /**
  * Handles loading/parsing/initializing all bundles. AKA where the magic happens
  */
-class BundleManager {
+export class BundleManager {
   /**
    * @param {GameState} state
    */
-  constructor(path, state) {
+  constructor(path, state: GameState) {
     if (!path || !fs.existsSync(path)) {
       throw new Error('Invalid bundle path');
     }

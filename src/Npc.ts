@@ -2,6 +2,7 @@ import { Area } from "./Area";
 import { Character } from "./Character";
 import { CommandQueue } from "./CommandQueue";
 import { EntityReference } from "./EntityReference";
+import { GameState } from "./GameState";
 import { Logger } from "./Logger";
 import { Room } from "./Room";
 import { Scriptable } from "./Scriptable";
@@ -98,7 +99,7 @@ export class Npc extends Scriptable(Character) {
     this.emit("enterRoom", nextRoom);
   }
 
-  hydrate(state: IGameState) {
+  hydrate(state: GameState) {
     super.hydrate(state);
     state.MobManager.addMob(this);
 

@@ -1,4 +1,5 @@
 import { EntityReference } from "./EntityReference";
+import { GameState } from "./GameState";
 import { Player } from "./Player";
 import { ISerializedQuestDef, Quest } from "./Quest";
 
@@ -107,7 +108,7 @@ export class QuestTracker {
    * @param {GameState} state
    * @param {object}    questData Data pulled from the pfile
    */
-  hydrate(state: IGameState) {
+  hydrate(state: GameState) {
     for (const [qid, data] of this.activeQuests) {
       const quest = state.QuestFactory.create(
         state,

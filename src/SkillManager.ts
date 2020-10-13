@@ -4,7 +4,7 @@ import { SkillFlag } from "./SkillFlag";
 /**
  * Keeps track of registered skills
  */
-class SkillManager {
+export class SkillManager {
   skills: Map<string, Skill>;
   constructor() {
     this.skills = new Map();

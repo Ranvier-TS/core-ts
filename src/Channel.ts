@@ -1,5 +1,6 @@
 import { Broadcast } from "./Broadcast";
 import { ChannelAudience } from "./ChannelAudience";
+import { GameState } from "./GameState";
 import { PartyAudience } from "./PartyAudience";
 import { Player } from "./Player";
 import { PrivateAudience } from "./PrivateAudience";
@@ -85,7 +86,7 @@ export class Channel {
    * @param {string}    message
    * @fires GameEntity#channelReceive
    */
-  send(state: IGameState, sender: Player, message: string) {
+  send(state: GameState, sender: Player, message: string) {
     // If they don't include a message, explain how to use the channel.
     if (!message.length) {
       throw new NoMessageError();

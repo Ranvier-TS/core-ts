@@ -2,6 +2,7 @@ import { EventEmitter } from "events";
 import { Account } from "./Account";
 import { Data } from "./Data";
 import { EntityLoader } from "./EntityLoader";
+import { GameState } from "./GameState";
 import { Player } from "./Player";
 
 const EventManager = require("./EventManager");
@@ -103,7 +104,7 @@ export class PlayerManager extends EventEmitter {
    * @param {boolean} force true to force reload from storage
    * @return {Player}
    */
-  async loadPlayer(state: IGameState, account: Account, username: string, force: boolean) {
+  async loadPlayer(state: GameState, account: Account, username: string, force: boolean) {
     if (this.players.has(username) && !force) {
       return this.getPlayer(username);
     }

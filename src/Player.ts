@@ -3,6 +3,7 @@
 import { Character } from "./Character";
 import { CommandQueue } from "./CommandQueue";
 import { Config } from "./Config";
+import { GameState } from "./GameState";
 import { IInventoryDef } from "./Inventory";
 import { IItemDef } from "./Item";
 import { Logger } from "./Logger";
@@ -202,7 +203,7 @@ export class Player extends Character {
     this.emit("save", callback);
   }
 
-  hydrate(state: IGameState) {
+  hydrate(state: GameState) {
     super.hydrate(state);
 
     // QuestTracker has to be hydrated before the rest otherwise events fired by the subsequent

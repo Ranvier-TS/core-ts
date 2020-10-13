@@ -1,7 +1,11 @@
-'use strict';
+import { Effect, IEffectDef } from "./Effect";
+import { EventManager } from "./EventManager";
+import { GameState } from "./GameState";
 
-const EventManager = require('./EventManager');
-const Effect = require('./Effect');
+export interface IEffectFactoryDef {
+  definition: IEffectDef;
+  eventManager: EventManager
+}
 
 /** @typedef {{config: Object<string,*>, listeners: Object<String,function (...*)>}} */
 var EffectConfig;
@@ -9,7 +13,8 @@ var EffectConfig;
 /**
  * @property {Map} effects
  */
-class EffectFactory {
+export class EffectFactory {
+  effects: Map<string, IEffectFactoryDef>;
   constructor() {
     this.effects = new Map();
   }
@@ -19,7 +24,7 @@ class EffectFactory {
    * @param {EffectConfig} config
    * @param {GameState} state
    */
-  add(id, config, state) {
+  add(id: string, config: IEffectDef, state: GameState) {
     if (this.effects.has(id)) {
       return;
     }
@@ -39,7 +44,7 @@ class EffectFactory {
     this.effects.set(id, { definition, eventManager });
   }
 
-  has(id) {
+  has(id: string) {
     return this.effects.has(id);
   }
 
@@ -48,7 +53,7 @@ class EffectFactory {
    * @param {string} id
    * @return {object}
    */
-  get(id) {
+  get(id: string) {
     return this.get(id);
   }
 
@@ -58,7 +63,7 @@ class EffectFactory {
    * @param {?object} state   Effect.state override
    * @return {Effect}
    */
-  create(id, config = {}, state = {}) {
+  create(id: string, config = {}, state = {}) {
     const entry = this.effects.get(id);
     if (!entry || !entry.definition) {
       throw new Error(`No valid entry definition found for effect ${id}.`);
@@ -72,5 +77,3 @@ class EffectFactory {
     return effect;
   }
 }
-
-module.exports = EffectFactory;

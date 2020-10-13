@@ -1,6 +1,7 @@
 import { Area } from "./Area";
 import { EntityReference } from "./EntityReference";
 import { GameEntity } from "./GameEntity";
+import { GameState } from "./GameState";
 import { IItemDef, Item } from "./Item";
 import { Logger } from "./Logger";
 import { Npc } from "./Npc";
@@ -381,7 +382,7 @@ export class Room extends GameEntity {
    * @param {string} entityRef
    * @return {Item} The newly created item
    */
-  spawnItem(state: IGameState, entityRef: EntityReference) {
+  spawnItem(state: GameState, entityRef: EntityReference) {
     Logger.verbose(
       `\tSPAWN: Adding item [${entityRef}] to room [${this.title}]`
     );
@@ -403,7 +404,7 @@ export class Room extends GameEntity {
    * @fires Npc#spawn
    * @return {Npc}
    */
-  spawnNpc(state: IGameState, entityRef: EntityReference) {
+  spawnNpc(state: GameState, entityRef: EntityReference) {
     Logger.verbose(
       `\tSPAWN: Adding npc [${entityRef}] to room [${this.title}]`
     );
@@ -420,7 +421,7 @@ export class Room extends GameEntity {
     return newNpc;
   }
 
-  hydrate(state: IGameState) {
+  hydrate(state: GameState) {
     this.setupBehaviors(state.RoomBehaviorManager);
 
     /**
