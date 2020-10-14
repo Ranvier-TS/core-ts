@@ -25,7 +25,7 @@ import { RoomFactory } from "./RoomFactory";
 import { RoomManager } from "./RoomManager";
 import { SkillManager } from "./SkillManager";
 
-export class GameState {
+export interface IGameState {
   AccountManager: AccountManager;
   AreaBehaviorManager: BehaviorManager;
   AreaFactory: AreaFactory;
@@ -51,44 +51,11 @@ export class GameState {
   RoomFactory: RoomFactory;
   RoomManager: RoomManager;
   SkillManager: SkillManager;
-  SpellManager: SkillManager;
+  SpellManager?: SkillManager;
   ServerEventManager: EventManager;
   GameServer: GameServer;
   EntityLoaderRegistry: EntityLoaderRegistry;
   DataSourceRegistry: DataSourceRegistry;
   BundleManager: BundleManager;
-
-  constructor(bundleManager: BundleManager) {
-    this.AccountManager = new AccountManager();
-    this.AreaBehaviorManager = new BehaviorManager();
-    this.AreaFactory = new AreaFactory();
-    this.AreaManager = new AreaManager();
-    this.AttributeFactory = new AttributeFactory();
-    this.ChannelManager = new ChannelManager();
-    this.CommandManager = new CommandManager();
-    this.EffectFactory = new EffectFactory();
-    this.HelpManager = new HelpManager();
-    this.InputEventManager = new EventManager();
-    this.ItemBehaviorManager = new BehaviorManager();
-    this.ItemFactory = new ItemFactory();
-    this.ItemManager = new ItemManager();
-    this.MobBehaviorManager = new BehaviorManager();
-    this.MobFactory = new MobFactory();
-    this.MobManager = new MobManager();
-    this.PartyManager = new PartyManager();
-    this.PlayerManager = new PlayerManager();
-    this.QuestFactory = new QuestFactory();
-    this.QuestGoalManager = new QuestGoalManager();
-    this.QuestRewardManager = new QuestRewardManager();
-    this.RoomBehaviorManager = new BehaviorManager();
-    this.RoomFactory = new RoomFactory();
-    this.RoomManager = new RoomManager();
-    this.SkillManager = new SkillManager();
-    this.SpellManager = new SkillManager();
-    this.ServerEventManager = new EventManager();
-    this.GameServer = new GameServer();
-    this.EntityLoaderRegistry = new EntityLoaderRegistry();
-    this.DataSourceRegistry = new DataSourceRegistry();
-    this.BundleManager = bundleManager;
-  }
+  [key: string]: unknown;
 }

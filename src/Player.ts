@@ -1,37 +1,38 @@
 "use strict";
 
-import { Character } from "./Character";
+import { EventEmitter } from "events";
+import { Character, ICharacterConfig, ISerializedCharacter } from "./Character";
 import { CommandQueue } from "./CommandQueue";
 import { Config } from "./Config";
-import { GameState } from "./GameState";
+import { IGameState } from "./GameState";
 import { IInventoryDef } from "./Inventory";
 import { IItemDef } from "./Item";
 import { Logger } from "./Logger";
 import { Metadata } from "./Metadatable";
 import { PlayerRoles } from "./PlayerRoles";
-import { QuestTracker } from "./QuestTracker";
+import { QuestTracker, SerializedQuestTracker } from "./QuestTracker";
 import { Room } from "./Room";
 
-export interface IPlayerDef {
+export interface IPlayerDef extends ICharacterConfig {
   account: Account | null;
   experience: number;
   password: string;
   prompt: string;
-  socket: any | null; // TODO: Socket Definition
-  quests: ISerializedQuestTracker;
-  role: string; // TODO: PlayerRole
+  socket: EventEmitter | null;
+  quests: SerializedQuestTracker;
+  role: PlayerRoles | number;
 }
 
-export interface ISerializedPlayer {
+export interface ISerializedPlayer extends ISerializedCharacter {
   account: string;
   experience: number;
   inventory: IInventoryDef;
   metadata: Metadata;
   password: string;
   prompt: string;
-  quests: ISerializedQuestTracker;
-  role: string;
-  equipment: Record<string, IItemDef> | null;
+  quests: SerializedQuestTracker;
+  role: PlayerRoles | number;
+  equipment?: Record<string, IItemDef> | null;
 }
 
 /**
@@ -46,6 +47,19 @@ export interface ISerializedPlayer {
  * @extends Character
  */
 export class Player extends Character {
+  account: Account | null;
+  commandQueue: CommandQueue;
+  experience: number;
+  extraPrompts: Map<string, any>;
+  password: string;
+  prompt: string;
+  questTracker: QuestTracker;
+  socket: EventEmitter | null;
+  role: PlayerRoles | number;
+
+  __hydrated?: boolean;
+  __pruned?: boolean;
+
   constructor(data: IPlayerDef) {
     super(data);
 
@@ -92,12 +106,13 @@ export class Player extends Character {
    */
   emit(event: string, ...args: any) {
     if (this.__pruned || !this.__hydrated) {
-      return;
+      return false;
     }
 
-    super.emit(event, ...args);
+    const result = super.emit(event, ...args);
 
     this.questTracker.emit(event, ...args);
+    return result;
   }
 
   /**
@@ -105,8 +120,8 @@ export class Player extends Character {
    * @param {string} promptStr
    * @param {object} extraData Any extra data to give the prompt access to
    */
-  interpolatePrompt(promptStr: string, extraData: object = {}) {
-    let attributeData = {};
+  interpolatePrompt(promptStr: string, extraData: Record<string, unknown> = {}) {
+    let attributeData: Record<string, unknown> = {};
     for (const [attr, value] of this.attributes) {
       attributeData[attr] = {
         current: this.getAttribute(attr),
@@ -119,13 +134,14 @@ export class Player extends Character {
     let matches = null;
     while ((matches = promptStr.match(/%([a-z\.]+)%/))) {
       const token = matches[1];
-      let promptValue = token
+      let promptValue: any = token
         .split(".")
-        .reduce((obj, index) => obj && obj[index], promptData);
+        .reduce((obj, index) => obj && obj[index] as typeof promptData, promptData);
+      
       if (promptValue === null || promptValue === undefined) {
-        promptValue = "invalid-token";
+        (promptValue as string) = "invalid-token";
       }
-      promptStr = promptStr.replace(matches[0], promptValue);
+      promptStr = promptStr.replace(matches[0], promptValue as string);
     }
 
     return promptStr;
@@ -199,7 +215,8 @@ export class Player extends Character {
     if (!this.__hydrated) {
       return;
     }
-    this.emit('save', callback);
+
+    this.emit("save", callback);
   }
 
   hydrate(state: GameState) {
@@ -268,7 +285,7 @@ export class Player extends Character {
     const prompt = this.prompt;
     const quests = this.questTracker.serialize();
     const role = this.role;
-    let data = Object.assign(super.serialize(), {
+    let data: ISerializedPlayer = Object.assign(super.serialize(), {
       account,
       experience,
       inventory,
@@ -281,7 +298,7 @@ export class Player extends Character {
     });
 
     if (this.equipment instanceof Map) {
-      let eq = {};
+      let eq: Record<string, IItemDef> = {};
       for (let [slot, item] of this.equipment) {
         eq[slot] = item.serialize();
       }
@@ -289,6 +306,7 @@ export class Player extends Character {
     } else {
       data.equipment = null;
     }
+
     return data;
   }
 }

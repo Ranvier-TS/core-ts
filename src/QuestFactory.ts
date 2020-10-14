@@ -1,5 +1,5 @@
 import { EntityReference } from "./EntityReference";
-import { GameState } from "./GameState";
+import { IGameState } from './GameState';
 import { Logger } from "./Logger";
 import { Player } from "./Player";
 import { IQuestDef, Quest } from "./Quest";

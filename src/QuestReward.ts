@@ -2,7 +2,12 @@ import { GameState } from "./GameState";
 import { Player } from "./Player";
 import { Quest } from "./Quest";
 
-export interface IQuestRewardDef {}
+export interface IQuestRewardDef {
+  name: string;
+  type: string;
+  config?: Record<string, any>;
+  [key: string]: any;
+}
 
 /**
  * Representation of a quest reward

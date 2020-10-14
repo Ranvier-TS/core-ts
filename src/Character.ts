@@ -1,9 +1,12 @@
 import { EffectableEntity } from "./EffectableEntity";
-import { Item } from "./Item";
+import { IItemDef, Item } from "./Item";
 import { IInventoryDef, Inventory, InventoryFullError } from "./Inventory";
 import { Metadatable } from "./Metadatable";
 import { Room } from "./Room";
 import { Config } from "./Config";
+import { Party } from "./Party";
+import { EquipSlotTakenError, EquipAlreadyEquippedError } from "./EquipErrors";
+import { IEffectConfig, ISerializedEffect } from "./Effect";
 
 export interface ICharacterConfig {
   /** @property {string}     name       Name shown on look/who/login */
@@ -19,11 +22,11 @@ export interface ICharacterConfig {
 }
 
 export interface ISerializedCharacter {
-  attributes: object;
+  attributes: Record<string, unknown>;
   level: number;
   name: string;
   room: string;
-  effects: string[];
+  effects: ISerializedEffect[];
 }
 
 /**
@@ -45,14 +48,22 @@ export class Character extends Metadatable(EffectableEntity) {
   /** @property {Inventory}  inventory */
   inventory: Inventory;
   /** @property {Set}        combatants Enemies this character is currently in combat with */
-  combatants: Set<any>;
+  combatants: Set<Character>;
   /** @property {number}     level */
+  equipment: Record<string, IItemDef> | Map<string, Item>;
+
   level: number;
   /** @property {Room}       room       Room the character is currently in */
   room: Room;
 
+  combatData: Record<string, unknown>;
+
+  followers: Set<Character>;
+  following: Character | null;
+  party: Party | null;
+
   constructor(data: ICharacterConfig) {
-    super();
+    super(data);
 
     this.name = data.name;
     this.inventory = new Inventory(data.inventory || {});
@@ -185,6 +196,10 @@ export class Character extends Metadatable(EffectableEntity) {
    * @fires Item#equip
    */
   equip(item: Item, slot: string) {
+    if (!(this.equipment instanceof Map)) {
+      throw new Error(`Character ${this.name} equipment is not hydrated.`);
+    }
+
     if (this.equipment.has(slot)) {
       throw new EquipSlotTakenError();
     }
@@ -222,11 +237,19 @@ export class Character extends Metadatable(EffectableEntity) {
    * @fires Character#unequip
    */
   unequip(slot: string) {
+    if (!(this.equipment instanceof Map)) {
+      throw new Error(`Character ${this.name} equipment is not hydrated.`);
+    }
+  
     if (this.isInventoryFull()) {
       throw new InventoryFullError();
     }
 
     const item = this.equipment.get(slot);
+    if (!item) {
+      throw new EquipAlreadyEquippedError(`Slot ${slot} already unequipped.`);
+    }
+
     item.isEquipped = false;
     item.equippedBy = null;
     this.equipment.delete(slot);

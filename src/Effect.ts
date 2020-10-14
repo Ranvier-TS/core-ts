@@ -15,6 +15,15 @@ export declare interface IEffectDef {
   modifiers: EffectModifiers;
 }
 
+export interface ISerializedEffect {
+  config: IEffectConfig;
+  elapsed: number | null;
+  id: string;
+  remaining: number;
+  skill?: string;
+  state: Record<string, unknown>;
+}[]
+
 export declare interface IEffectConfig {
   /** @property {boolean} autoActivate If this effect immediately activates itself when added to the target */
   autoActivate: boolean;
@@ -324,7 +333,7 @@ export class Effect extends EventEmitter {
    * Gather data to persist
    * @return {Object}
    */
-  serialize() {
+  serialize(): ISerializedEffect {
     let config = Object.assign({}, this.config);
     config.duration = config.duration === Infinity ? "inf" : config.duration;
 

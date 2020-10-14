@@ -1,8 +1,9 @@
 import { Area } from "./Area";
-import { Config } from "./Config";
+import { IBehavior } from './BehaviorManager';
+import { Config } from './Config';
 import { EntityReference } from "./EntityReference";
 import { GameEntity } from "./GameEntity";
-import { GameState } from "./GameState";
+import { IGameState } from './GameState';
 import { IItemDef, Item } from "./Item";
 import { Logger } from "./Logger";
 import { Npc } from "./Npc";
@@ -62,11 +63,13 @@ export interface IRoomNpcDef {
  *
  * @extends GameEntity
  */
+
+type ComposableDef<T> = Record<string, Partial<T> | boolean>;
 export class Room extends GameEntity {
   def: IRoomDef;
   area: Area;
   defaultItems: IRoomItemDef[];
-  defaultNpcs: IRoomNpcDef[] | string[];
+  defaultNpcs: IRoomNpcDef[] | string[] | Record<string, ComposableDef<IRoomNpcDef>>;
   metadata: Record<string, any> = {};
   script: string | null = null;
   behaviors: IBehavior | Record<string, any>;
@@ -76,7 +79,7 @@ export class Room extends GameEntity {
   exits: IExit[] = [];
   id: string;
   title: string;
-  doors: Record<string, IDoor> | Map<string, IDoor>;
+  doors: Map<string, IDoor>;
   defaultDoors: Record<string, IDoor>;
 
   items: Set<Item>;
@@ -238,17 +241,13 @@ export class Room extends GameEntity {
       return exits;
     }
 
-    const adjacents = [
-      { dir: "west", coord: [-1, 0, 0] },
-      { dir: "east", coord: [1, 0, 0] },
-      { dir: "north", coord: [0, 1, 0] },
-      { dir: "south", coord: [0, -1, 0] },
-      { dir: "up", coord: [0, 0, 1] },
-      { dir: "down", coord: [0, 0, -1] },
-      { dir: "northeast", coord: [1, 1, 0] },
-      { dir: "northwest", coord: [-1, 1, 0] },
-      { dir: "southeast", coord: [1, -1, 0] },
-      { dir: "southwest", coord: [-1, -1, 0] },
+    let adjacents = [
+      { dir: 'west', coord: [-1, 0, 0] },
+      { dir: 'east', coord: [1, 0, 0] },
+      { dir: 'north', coord: [0, 1, 0] },
+      { dir: 'south', coord: [0, -1, 0] },
+      { dir: 'up', coord: [0, 0, 1] },
+      { dir: 'down', coord: [0, 0, -1] }
     ];
 
     if (this.checkDiagonalDirections()) {
@@ -411,20 +410,11 @@ export class Room extends GameEntity {
    *
    * @fires Item#spawn
    */
-  spawnItem(state: GameState, entityRef: EntityReference) {
+  spawnItem(state: IGameState, entityRef: EntityReference) {
     Logger.verbose(
       `\tSPAWN: Adding item [${entityRef}] to room [${this.title}]`
     );
-    let newItem = state.ItemFactory.create(this.area, entityRef);
-
-    // HANDLE PROTOTYPING
-    if (newItem.prototype) {
-      const protoItem = state.ItemFactory.create(this.area, newItem.prototype);
-      const toSpawn = newItem.serializeIntoPrototype();
-      state.ItemFactory.modifyDefinition(protoItem, false, toSpawn);
-      newItem = protoItem;
-    }
-
+    const newItem = state.ItemFactory.create(this.area, entityRef);
     newItem.hydrate(state);
     newItem.sourceRoom = this;
     state.ItemManager.add(newItem);
@@ -432,7 +422,7 @@ export class Room extends GameEntity {
     /**
      * @event Item#spawn
      */
-    newItem.emit("spawn", { type: Room });
+    newItem.emit('spawn', { type: Room });
     return newItem;
   }
 
@@ -445,20 +435,11 @@ export class Room extends GameEntity {
    *
    * @fires Npc#spawn
    */
-  spawnNpc(state: GameState, entityRef: EntityReference) {
+  spawnNpc(state: IGameState, entityRef: EntityReference) {
     Logger.verbose(
       `\tSPAWN: Adding npc [${entityRef}] to room [${this.title}]`
     );
-    let newNpc = state.MobFactory.create(this.area, entityRef);
-
-    // HANDLE PROTOTYPING -> move to GameEntity?
-    if (newNpc.prototype) {
-      const protoNpc = state.MobFactory.create(this.area, newNpc.prototype);
-      const toSpawn = newNpc.serializeIntoPrototype();
-      state.MobFactory.modifyDefinition(protoNpc, false, toSpawn);
-      newNpc = protoNpc;
-    }
-
+    const newNpc = state.MobFactory.create(this.area, entityRef);
     newNpc.hydrate(state);
     newNpc.sourceRoom = this;
     this.area.addNpc(newNpc);
@@ -476,7 +457,7 @@ export class Room extends GameEntity {
    *
    * @param {GameState} state
    */
-  hydrate(state: GameState) {
+  hydrate(state: IGameState) {
     super.hydrate(state);
     this.setupBehaviors(state.RoomBehaviorManager);
 
@@ -493,33 +474,18 @@ export class Room extends GameEntity {
     // persist through reboot unless they're stored on a player.
     // If you would like to change that functionality this is the place
 
-    // LOAD ROOMS'S DEFAULT ITEMS (ARRAY)
-    if (Array.isArray(this.defaultItems)) {
-      this.defaultItems.forEach((defaultItem) => {
-        if (typeof defaultItem === "string") {
-          defaultItem = { id: defaultItem };
-        }
+    this.defaultItems.forEach((defaultItem) => {
+      if (typeof defaultItem === "string") {
+        defaultItem = { id: defaultItem };
+      }
 
-        this.spawnItem(state, defaultItem.id);
-      });
-      // SUPPORT COMPOSING ITEMS WITHIN ROOM IN ROOMS.YML (OBJECT)
-    } else {
-      Object.keys(this.defaultItems).forEach((defaultItem) => {
-        if (this.defaultItems[defaultItem] === false) return;
-        const newItem = this.spawnItem(state, defaultItem.replace(/%.*$/g, ""));
-
-        state.ItemFactory.modifyDefinition(
-          newItem,
-          false,
-          this.defaultItems[defaultItem]
-        );
-      });
-    }
+      this.spawnItem(state, defaultItem.id);
+    });
 
     // LOAD ROOMS'S DEFAULT NPCS (ARRAY)
     if (Array.isArray(this.defaultNpcs)) {
-      this.defaultNpcs.forEach((defaultNpc) => {
-        if (typeof defaultNpc === "string") {
+      this.defaultNpcs.forEach((defaultNpc: IRoomNpcDef | string) => {
+        if (typeof defaultNpc === 'string') {
           defaultNpc = { id: defaultNpc };
         }
 
@@ -529,18 +495,17 @@ export class Room extends GameEntity {
           Logger.error(err);
         }
       });
-      // SUPPORT COMPOSING NPCS WITHIN ROOM IN ROOMS.YML (OBJECT)
+    // Support composing Npcs in room using an object.
     } else {
-      Object.keys(this.defaultNpcs).forEach((defaultNpc) => {
-        if (this.defaultNpcs[defaultNpc] === false) return;
-        const newNpc = this.spawnNpc(state, defaultNpc.replace(/%.*$/g, ""));
+      Object.keys(this.defaultNpcs).forEach((defaultNpc: EntityReference) => {
+        const npc: Partial<IRoomNpcDef> | boolean = (
+          this.defaultNpcs as ComposableDef<IRoomNpcDef>
+        )[defaultNpc];
+        if (npc === false) return;
+        const newNpc = this.spawnNpc(state, defaultNpc.replace(/%.*$/g, ''));
 
-        if (this.defaultNpcs[defaultNpc] !== true) {
-          state.MobFactory.modifyDefinition(
-            newNpc,
-            false,
-            this.defaultNpcs[defaultNpc]
-          );
+        if (npc !== true) {
+          state.MobFactory.modifyDefinition(newNpc, false, npc);
         }
       });
     }

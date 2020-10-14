@@ -1,17 +1,16 @@
 import { EntityReference } from "./EntityReference";
-import { GameState } from "./GameState";
+import { IGameState } from "./GameState";
 import { Player } from "./Player";
 import { ISerializedQuestDef, Quest } from "./Quest";
 
 export interface IQuestTrackerActiveDef {
-  qid: EntityReference;
+  started?: string;
+  state?: Record<string, any>;
 }
 
 export interface IQuestTrackerCompletedDef {
-  key: {
-    started: string;
-    completedAt: string;
-  };
+  started: string;
+  completedAt: string;
 }
 
 export type SerializedQuestTracker =  ISerializedQuestDef[];
@@ -34,8 +33,8 @@ export class QuestTracker {
    */
   constructor(
     player: Player,
-    active: IQuestTrackerActiveDef[],
-    completed: IQuestTrackerCompletedDef[]
+    active: Iterable<readonly [string, IQuestTrackerActiveDef]>,
+    completed: Iterable<readonly [string, IQuestTrackerCompletedDef]>
   ) {
     this.player = player;
 
@@ -50,7 +49,10 @@ export class QuestTracker {
    */
   emit(event: string, ...args: any[]) {
     for (const [qid, quest] of this.activeQuests) {
-      quest.emit(event, ...args);
+      if (!(quest as Quest).emit) {
+        throw new Error('Attempting to emit to a non-hydrated quest: ' + qid);
+      }
+      (quest as Quest).emit(event, ...args);
     }
   }
 
@@ -79,15 +81,11 @@ export class QuestTracker {
    */
   complete(qid: EntityReference) {
     if (!this.isActive(qid)) {
-<<<<<<< HEAD:src/QuestTracker.js
       throw new Error(`Quest ${qid} not started, cannot complete.`);
-=======
-      throw new Error("Quest not started");
->>>>>>> dbed62e779b0f8b1a67e608675c81cf0fe2b173d:src/QuestTracker.ts
     }
 
     this.completedQuests.set(qid, {
-      started: this.activeQuests.get(qid).started,
+      started: this.activeQuests.get(qid)?.started || new Date().toJSON(),
       completedAt: new Date().toJSON(),
     });
 
@@ -112,7 +110,7 @@ export class QuestTracker {
    * @param {GameState} state
    * @param {object}    questData Data pulled from the pfile
    */
-  hydrate(state: GameState) {
+  hydrate(state: IGameState) {
     for (const [qid, data] of this.activeQuests) {
       const quest = state.QuestFactory.create(
         state,
@@ -135,7 +133,7 @@ export class QuestTracker {
       completed: [...this.completedQuests],
       active: [...this.activeQuests].map(([qid, quest]) => [
         qid,
-        quest.serialize(),
+        (quest as Quest).serialize(),
       ]),
     };
   }

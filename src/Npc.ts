@@ -2,7 +2,7 @@ import { Area } from "./Area";
 import { Character } from "./Character";
 import { CommandQueue } from "./CommandQueue";
 import { EntityReference } from "./EntityReference";
-import { GameState } from "./GameState";
+import { IGameState } from "./GameState";
 import { Logger } from "./Logger";
 import { Room } from "./Room";
 import { Scriptable } from "./Scriptable";
@@ -56,24 +56,10 @@ export class Npc extends Scriptable(Character) {
     this.entityReference = data.entityReference;
     this.id = data.id;
 
-    if (data.keywords && data.keywords.value) {
-      this.keywordsInherited = true;
-      this.keywords = [...new Set([...(data.keywords.value || []), ...this.name.split(' ')])];
-    } else {
-      this.keywords = [...new Set([...(data.keywords || []), ...this.name.split(' ')])];
-    }
-
     this.quests = data.quests;
-    if (data.quests && data.quests.value) {
-      this.questsInherited = true;
-      this.quests = [...new Set((data.quests.value || []))];
-    } else {
-      this.quests = [...new Set((data.quests || []))];
-    }
 
     this.uuid = data.uuid || uuid();
     this.commandQueue = new CommandQueue();
-    this.prototype = data.prototype || null;
   }
 
   /**
@@ -114,12 +100,7 @@ export class Npc extends Scriptable(Character) {
     this.emit("enterRoom", nextRoom);
   }
 
-  /**
-   * Initialize the NPC from storage
-   * 
-   * @param {GameState} state
-   */
-  hydrate(state: GameState) {
+  hydrate(state: IGameState) {
     super.hydrate(state);
     state.MobManager.addMob(this);
 
@@ -167,12 +148,12 @@ export class Npc extends Scriptable(Character) {
       /**
        * @event Item#spawn
        */
-      newItem.emit('spawn', {type: Npc});
+      newItem.emit('spawn', { type: Npc });
     }
 
     return Object.assign({}, {
       script: this.script,
-      behaviors: new Map(this.behaviors || {}),
+      behaviors: new Map(this.behaviors as Iterable<readonly [unknown, unknown]> || {}),
       defaultEquipment: this.defaultEquipment || {},
       defaultItems: this.defaultItems || [],
       keywords: this.keywords,

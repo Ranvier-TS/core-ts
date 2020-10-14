@@ -1,11 +1,14 @@
-import { EventEmitter } from "events";
-import { Account } from "./Account";
-import { Data } from "./Data";
-import { EntityLoader } from "./EntityLoader";
-import { EventManager } from "./EventManager";
-import { GameState } from "./GameState";
-import { Logger } from "./Logger";
-import { Player } from "./Player";
+import { EventEmitter } from 'events';
+import { Account } from './Account';
+import { Data } from './Data';
+import { EffectableEntity } from './EffectableEntity';
+import { EntityLoader } from './EntityLoader';
+import { EventManager } from './EventManager';
+import { IGameState } from './GameState';
+import { Logger } from './Logger';
+import { Player } from './Player';
+
+
 
 /**
  * Keeps track of all active players in game
@@ -93,16 +96,24 @@ export class PlayerManager extends EventEmitter {
    * @param {string}   behaviorName
    * @param {Function} listener
    */
-  addListener(event: string | symbol, listener: (...args: any[]) => void){
+  addListener(
+    event: string,
+    listener: (...args: any[]) => void
+  ): this {
     this.events.add(event, listener);
+    return this;
   }
 
   /**
    * @param {Function} predicate Filter function
    * @return {array},
    */
-  filter(fn: Function) {
-    return this.getPlayersAsArray().filter(fn);
+  filter(
+    predicate: (player: Player, index: number, array: Player[]) => Player[]
+  ) {
+    return this
+      .getPlayersAsArray()
+      .filter(predicate);
   }
 
   /**
@@ -113,7 +124,12 @@ export class PlayerManager extends EventEmitter {
    * @param {boolean} force true to force reload from storage
    * @return {Player}
    */
-  async loadPlayer(state: GameState, account: Account, username: string, force: boolean) {
+  async loadPlayer(
+    state: IGameState,
+    account: Account,
+    username: string,
+    force: boolean
+  ) {
     if (this.players.has(username) && !force) {
       return this.getPlayer(username);
     }
@@ -128,7 +144,7 @@ export class PlayerManager extends EventEmitter {
     let player = new Player(data);
     player.account = account;
 
-    this.events.attach(player);
+    this.events.attach(player as EffectableEntity);
 
     this.addPlayer(player);
     return player;
