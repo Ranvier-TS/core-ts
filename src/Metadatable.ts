@@ -6,17 +6,17 @@ import { EventEmitter } from "events";
  * @param {*} parentClass
  * @return {module:MetadatableFn~Metadatable}
  */
-type Constructor = new (...args: any[]) => Pick<EventEmitter, 'emit'>;
+type Constructor<T = {}> = new (...args: any[]) => T;
 export type Metadata = Record<string, any>;
 
-export function Metadatable<TBase extends Constructor>(parentClass: TBase) {
+export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 
   /**
    * Mixin for objects which have a `metadata` property
    * @mixin
    * @alias module:MetadatableFn~Metadatable
    */
-  return class extends parentClass {
+  return class extends ParentClass {
     metadata?: Metadata;
     /**
      * Set a metadata value.

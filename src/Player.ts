@@ -1,5 +1,6 @@
 "use strict";
 
+import { EventEmitter } from "events";
 import { Character, ICharacterConfig, ISerializedCharacter } from "./Character";
 import { CommandQueue } from "./CommandQueue";
 import { Config } from "./Config";
@@ -17,9 +18,9 @@ export interface IPlayerDef extends ICharacterConfig {
   experience: number;
   password: string;
   prompt: string;
-  socket: any | null; // TODO: Socket Definition
+  socket: EventEmitter | null;
   quests: SerializedQuestTracker;
-  role: string; // TODO: PlayerRole
+  role: PlayerRoles | number;
 }
 
 export interface ISerializedPlayer extends ISerializedCharacter {
@@ -30,7 +31,7 @@ export interface ISerializedPlayer extends ISerializedCharacter {
   password: string;
   prompt: string;
   quests: SerializedQuestTracker;
-  role: string;
+  role: PlayerRoles | number;
   equipment?: Record<string, IItemDef> | null;
 }
 
@@ -47,6 +48,18 @@ export interface ISerializedPlayer extends ISerializedCharacter {
  */
 export class Player extends Character {
   account: Account | null;
+  commandQueue: CommandQueue;
+  experience: number;
+  extraPrompts: Map<string, any>;
+  password: string;
+  prompt: string;
+  questTracker: QuestTracker;
+  socket: EventEmitter | null;
+  role: PlayerRoles | number;
+
+  __hydrated?: boolean;
+  __pruned?: boolean;
+
   constructor(data: IPlayerDef) {
     super(data);
 

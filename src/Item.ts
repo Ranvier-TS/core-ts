@@ -9,6 +9,7 @@ import { Npc } from './Npc';
 import { Player } from './Player';
 import { Room } from "./Room";
 import { GameState } from "./GameState";
+import { Character } from "./Character";
 
 const uuid = require("uuid/v4");
 
@@ -95,8 +96,8 @@ export class Item extends GameEntity {
   locked: boolean;
   lockedBy: string | null;
 
-  carriedBy: Npc | Player | Item | null;
-  equippedBy: string | null;
+  carriedBy: Npc | Player | Character |  Item | null;
+  equippedBy: Npc | Player | Character | string | null;
 
   keywords: string[];
   constructor(area: Area, item: IItemDef) {
