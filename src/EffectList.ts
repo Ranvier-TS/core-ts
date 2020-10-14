@@ -14,7 +14,7 @@ export class EffectList {
   effects: Set<Effect>;
   target: EffectableEntity;
   /**
-   * @param {Character} target
+   * @param {GameEntity} target
    * @param {Array<Object|Effect>} effects array of serialized effects (Object) or actual Effect instances
    */
   constructor(target: EffectableEntity, effects: Effect[]) {
@@ -76,13 +76,16 @@ export class EffectList {
         continue;
       }
 
-      if (event === "updateTick" && effect.config.tickInterval) {
-        const sinceLastTick = Date.now() - effect.state.lastTick;
+      if (
+        event === "updateTick" &&
+        typeof effect.config.tickInterval !== "boolean"
+      ) {
+        const sinceLastTick = Date.now() - (effect.state.ticks || 0);
         if (sinceLastTick < effect.config.tickInterval * 1000) {
           continue;
         }
         effect.state.lastTick = Date.now();
-        effect.state.ticks++;
+        effect.state.ticks && effect.state.ticks++;
       }
       effect.emit(event, ...args);
     }
@@ -106,12 +109,12 @@ export class EffectList {
     for (const activeEffect of this.effects) {
       if (effect.config.type === activeEffect.config.type) {
         if (
-          activeEffect.config.maxStacks &&
-          activeEffect.state.stacks < activeEffect.config.maxStacks
+          (activeEffect.config.maxStacks && activeEffect.state.stacks) ||
+          0 < activeEffect.config.maxStacks
         ) {
           activeEffect.state.stacks = Math.min(
             activeEffect.config.maxStacks,
-            activeEffect.state.stacks + 1
+            activeEffect.state.stacks || 0 + 1
           );
 
           /**

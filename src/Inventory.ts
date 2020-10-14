@@ -1,26 +1,27 @@
 import { Character } from "./Character";
 import { IGameState } from "./GameState";
-import { Item, ItemDef } from "./Item";
+import { Item, IItemDef } from "./Item";
 import { Npc } from "./Npc";
 import { Player } from "./Player";
 
-export declare interface IInventoryDef {
-  items?: [string, ItemDef | Item][];
+export interface IInventoryDef {
+  items?: [string, IItemDef | Item][];
   max?: number;
 }
 
-export declare interface ISerializedInventory {
-  items?: [string, ItemDef][];
+export interface ISerializedInventory {
+  items?: [string, IItemDef][];
   max?: number;
 }
 
+export type InventoryEntityType = Npc | Player | Item;
 /**
  * Representation of a `Character` or container `Item` inventory
  * @extends Map
  */
-export class Inventory extends Map<string, ItemDef | Item> {
+export class Inventory extends Map<string, IItemDef | Item> {
   maxSize: number;
-
+  __hydated: boolean;
   /**
    * @param {object} init
    * @param {Array<Item>} init.items
@@ -37,6 +38,7 @@ export class Inventory extends Map<string, ItemDef | Item> {
 
     super(init.items);
     this.maxSize = init.max || Infinity;
+    this.__hydated = false;
   }
 
   /**
@@ -127,8 +129,10 @@ export class Inventory extends Map<string, ItemDef | Item> {
       /**
        * @event Item#spawn
        */
-      newItem.emit('spawn', {type: Inventory});
+      newItem.emit("spawn", { type: Inventory });
     }
+    this.__hydated = true;
+
   }
 }
 

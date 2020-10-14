@@ -51,7 +51,7 @@ export interface IGameState {
   RoomFactory: RoomFactory;
   RoomManager: RoomManager;
   SkillManager: SkillManager;
-  SpellManager?: SkillManager;
+  SpellManager: SkillManager;
   ServerEventManager: EventManager;
   GameServer: GameServer;
   EntityLoaderRegistry: EntityLoaderRegistry;

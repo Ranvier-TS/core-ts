@@ -1,3 +1,4 @@
+import { EventEmitter } from "events";
 import { Area } from "./Area";
 import { EntityFactory } from "./EntityFactory";
 import { EntityReference } from "./EntityReference";
@@ -25,7 +26,7 @@ export class AreaFactory extends EntityFactory {
     const area = new Area(definition.bundle, entityRef, definition.manifest);
 
     if (this.scripts.has(entityRef)) {
-      this.scripts.get(entityRef).attach(area);
+      this.scripts?.get(entityRef)?.attach(area);
     }
 
     return area;

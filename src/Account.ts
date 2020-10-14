@@ -1,4 +1,5 @@
 import { EventEmitter } from "events";
+import { AccountManager } from "./AccountManager";
 import { Data } from "./Data";
 import { Metadatable } from "./Metadatable";
 
@@ -55,6 +56,7 @@ export class Account extends Metadatable(EventEmitter) {
   deleted: boolean;
   /** @property {object} metadata */
   metadata: Record<string, unknown>;
+  __manager?: AccountManager;
 
   /**
    * @param {Object} data Account save data
@@ -131,17 +133,8 @@ export class Account extends Metadatable(EventEmitter) {
     return bcrypt.compareSync(pass, this.password);
   }
 
-  /**
-   * @param {function} callback after-save callback
-   */
-  save(callback?: Function) {
-    this.__manager.loader
-      .update(this.username, this.serialize())
-      .then((data: any) => {
-        if (typeof callback === "function") {
-          callback();
-        }
-      });
+  save() {
+    this.__manager?.loader?.update(this.username, this.serialize());
   }
 
   /**

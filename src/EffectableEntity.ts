@@ -2,10 +2,15 @@ import { EventEmitter } from "events";
 import { Attribute } from "./Attribute";
 import { Attributes } from "./Attributes";
 import { Damage } from "./Damage";
-import { Effect } from "./Effect";
+import { Effect, ISerializedEffect } from "./Effect";
 import { EffectList } from "./EffectList";
 import { IGameState } from "./GameState";
 import { Logger } from "./Logger";
+
+export interface ISerializedEffectableEntity {
+  attributes: Record<string, unknown>;
+  effects: ISerializedEffect[];
+}
 
 /**
  * @ignore
@@ -18,11 +23,13 @@ import { Logger } from "./Logger";
 export class EffectableEntity extends EventEmitter {
   effects: EffectList;
   attributes: Attributes;
-  constructor(data) {
+  __hydrated: boolean;
+  constructor(data: ISerializedEffectableEntity) {
     super();
 
     this.attributes = Object.assign({}, data.attributes) || new Attributes();
     this.effects = new EffectList(this, data.effects);
+    this.__hydrated = false;
   }
 
   /**
@@ -34,6 +41,8 @@ export class EffectableEntity extends EventEmitter {
     super.emit(event, ...args);
 
     this.effects.emit(event, ...args);
+
+    return true;
   }
 
   /**

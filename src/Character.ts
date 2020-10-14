@@ -1,4 +1,7 @@
-import { EffectableEntity } from "./EffectableEntity";
+import {
+  EffectableEntity,
+  ISerializedEffectableEntity,
+} from "./EffectableEntity";
 import { IItemDef, Item } from "./Item";
 import { IInventoryDef, Inventory, InventoryFullError } from "./Inventory";
 import { Metadatable } from "./Metadatable";
@@ -21,12 +24,10 @@ export interface ICharacterConfig {
   metadata: object;
 }
 
-export interface ISerializedCharacter {
-  attributes: Record<string, unknown>;
+export interface ISerializedCharacter extends ISerializedEffectableEntity {
   level: number;
   name: string;
   room: string;
-  effects: ISerializedEffect[];
 }
 
 /**
@@ -240,7 +241,7 @@ export class Character extends Metadatable(EffectableEntity) {
     if (!(this.equipment instanceof Map)) {
       throw new Error(`Character ${this.name} equipment is not hydrated.`);
     }
-  
+
     if (this.isInventoryFull()) {
       throw new InventoryFullError();
     }
@@ -294,9 +295,13 @@ export class Character extends Metadatable(EffectableEntity) {
    * @return {Item|boolean}
    */
   hasItem(itemReference: string): Item | boolean {
+    if (!this.inventory.__hydated) {
+      return false;
+    }
+
     for (const [uuid, item] of this.inventory) {
       if (item.entityReference === itemReference) {
-        return item;
+        return item as Item;
       }
     }
 

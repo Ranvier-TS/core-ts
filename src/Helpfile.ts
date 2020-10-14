@@ -50,7 +50,6 @@ export class Helpfile {
     this.channel = options.channel;
     this.related = options.related || [];
     this.body = options.body;
-    this.tooltip = options.tooltip;
     this.aliases = options.aliases || [];
   }
 }

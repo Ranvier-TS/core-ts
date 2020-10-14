@@ -33,7 +33,11 @@ export class AreaManager {
    */
   getAreaByReference(entityRef: EntityReference) {
     const [name] = entityRef.split(":");
-    return this.getArea(name);
+    const area = this.getArea(name);
+    if (!area) {
+      throw new Error(`AreaManager did not find Area [${entityRef}]`);
+    }
+    return area;
   }
 
   /**

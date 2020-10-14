@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 import { Damage } from "./Damage";
-import { PlayerOrNpc } from "./GameEntity";
+import { EffectableEntity } from "./EffectableEntity";
 import { IGameState } from "./GameState";
 import { Skill } from "./Skill";
 
@@ -13,6 +13,7 @@ export declare interface IEffectDef {
   flags?: string[];
   /** @property {EffectModifiers} modifiers Attribute modifier functions */
   modifiers: EffectModifiers;
+  state: IEffectState;
 }
 
 export interface ISerializedEffect {
@@ -21,8 +22,16 @@ export interface ISerializedEffect {
   id: string;
   remaining: number;
   skill?: string;
-  state: Record<string, unknown>;
-}[]
+  state: IEffectState
+}
+
+export interface IEffectState {
+  stacks: number;
+  maxStacks: number;
+  ticks: number;
+  lastTick: number;
+  [key: string]: unknown;
+}
 
 export declare interface IEffectConfig {
   /** @property {boolean} autoActivate If this effect immediately activates itself when added to the target */
@@ -50,7 +59,7 @@ export declare interface IEffectConfig {
   duration: number;
   /** @property {number}    elapsed     Get elapsed time in _milliseconds_ */
   elapsed: number;
-  paused: number | null;
+  paused: number;
 }
 
 /** @typedef EffectModifiers {{attributes: !Object<string,function>}} */
@@ -91,11 +100,11 @@ export class Effect extends EventEmitter {
   /** @property {number}    startedAt Date.now() time this effect became active */
   startedAt: number;
   /** @property {object}    state  Configuration of this _type_ of effect (magnitude, element, stat, etc.) */
-  state: object;
+  state: IEffectState;
   /** @property {Character} target Character this effect is... effecting */
-  target?: PlayerOrNpc;
+  target?: EffectableEntity;
   flags: string[];
-  paused: number | null;
+  paused: number;
   /** @property {EffectModifiers} modifiers Attribute modifier functions */
   modifiers: EffectModifiers;
   active?: boolean;
@@ -122,7 +131,7 @@ export class Effect extends EventEmitter {
       },
       def.config
     );
-
+    
     this.startedAt = 0;
     this.paused = 0;
     this.modifiers = Object.assign(
@@ -132,11 +141,19 @@ export class Effect extends EventEmitter {
         outgoingDamage: (damage: Damage, current: number) => current,
       },
       def.modifiers
-    );
-
-    // internal state saved across player load e.g., stacks, amount of damage shield remaining, whatever
-    // Default state can be found in config.state
-    this.state = Object.assign({}, def.state);
+      );
+      
+      // internal state saved across player load e.g., stacks, amount of damage shield remaining, whatever
+      // Default state can be found in config.state
+    this.state = Object.assign(
+        {
+          stacks: 0,
+          maxStacks: 0,
+          ticks: 0,
+          lastTick: -Infinity
+        },
+        def.state
+    )
 
     if (this.config.maxStacks) {
       this.state.stacks = 1;
@@ -184,7 +201,7 @@ export class Effect extends EventEmitter {
    */
   get elapsed() {
     if (!this.startedAt) {
-      return null;
+      return 0;
     }
 
     return this.paused || Date.now() - this.startedAt;
@@ -268,7 +285,7 @@ export class Effect extends EventEmitter {
    */
   resume() {
     this.startedAt = Date.now() - this.paused;
-    this.paused = null;
+    this.paused = 0;
   }
 
   /**

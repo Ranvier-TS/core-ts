@@ -1,12 +1,12 @@
 import uuid from "uuid/v4";
 
-import { Area } from './Area';
+import { Area } from "./Area";
 import { GameEntity } from "./GameEntity";
-import { IInventoryDef, Inventory } from "./Inventory";
+import { IInventoryDef, Inventory, InventoryEntityType } from "./Inventory";
 import { Logger } from "./Logger";
 import { ItemType } from "./ItemType";
-import { Npc } from './Npc';
-import { Player } from './Player';
+import { Npc } from "./Npc";
+import { Player } from "./Player";
 import { Room } from "./Room";
 import { IGameState } from "./GameState";
 import { Character } from "./Character";
@@ -34,6 +34,7 @@ export declare interface IItemDef {
   closed?: boolean;
   locked?: boolean;
   lockedBy?: string | null;
+  carriedBy?: InventoryEntityType;
 
   keywords: string[];
 }
@@ -96,8 +97,8 @@ export class Item extends GameEntity {
   locked: boolean;
   lockedBy: string | null;
 
-  carriedBy: Npc | Player | Character |  Item | null;
-  equippedBy: Npc | Player | Character | string | null;
+  carriedBy: InventoryEntityType | null;
+  equippedBy: InventoryEntityType | string | null;
 
   keywords: string[];
   constructor(area: Area, item: IItemDef) {
@@ -121,7 +122,7 @@ export class Item extends GameEntity {
     this.id = item.id;
 
     this.maxItems = item.maxItems || Infinity;
-    this.initializeInventory(item.inventory, this.maxItems);
+    this.initializeInventory(item.inventory);
 
     this.isEquipped = item.isEquipped || false;
     this.keywords = item.keywords;
