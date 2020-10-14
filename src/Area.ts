@@ -1,6 +1,7 @@
 import { AreaFloor } from "./AreaFloor";
+import { IBehavior } from "./BehaviorManager";
 import { GameEntity } from "./GameEntity";
-import { GameState } from "./GameState";
+import { IGameState } from "./GameState";
 import { Metadata } from "./Metadatable";
 import { Npc } from "./Npc";
 import { Player } from './Player';
@@ -61,7 +62,7 @@ export class Area extends GameEntity {
     this.script = manifest.script;
     this.behaviors = new Map(Object.entries(manifest.behaviors || {}));
 
-    this.on("updateTick", (state: GameState) => {
+    this.on("updateTick", (state: IGameState) => {
       this.update(state);
     });
   }
@@ -201,7 +202,7 @@ export class Area extends GameEntity {
    * @fires Room#updateTick
    * @fires Npc#updateTick
    */
-  update(state: GameState) {
+  update(state: IGameState) {
     for (const [id, room] of this.rooms) {
       /**
        * @see Area#update
@@ -219,7 +220,7 @@ export class Area extends GameEntity {
     }
   }
 
-  hydrate(state: GameState) {
+  hydrate(state: IGameState) {
     this.setupBehaviors(state.AreaBehaviorManager);
     const { rooms } = state.AreaFactory.getDefinition(this.name);
     for (const roomRef of rooms) {

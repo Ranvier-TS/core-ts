@@ -1,6 +1,6 @@
 import { Effect, IEffectDef } from "./Effect";
 import { EventManager } from "./EventManager";
-import { GameState } from "./GameState";
+import { IGameState } from "./GameState";
 
 export interface IEffectFactoryDef {
   definition: IEffectDef;
@@ -24,7 +24,7 @@ export class EffectFactory {
    * @param {EffectConfig} config
    * @param {GameState} state
    */
-  add(id: string, config: IEffectDef, state: GameState) {
+  add(id: string, config: IEffectDef, state: IGameState) {
     if (this.effects.has(id)) {
       return;
     }

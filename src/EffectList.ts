@@ -2,7 +2,7 @@ import { Attribute } from "./Attribute";
 import { Damage } from "./Damage";
 import { Effect } from "./Effect";
 import { EffectableEntity } from "./EffectableEntity";
-import { GameState } from "./GameState";
+import { IGameState } from "./GameState";
 
 /**
  * Self-managing list of effects for a target
@@ -276,7 +276,7 @@ export class EffectList {
     return serialized;
   }
 
-  hydrate(state: GameState) {
+  hydrate(state: IGameState) {
     const effects = this.effects;
     this.effects = new Set();
     for (const newEffect of effects) {

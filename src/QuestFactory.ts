@@ -78,7 +78,7 @@ export class QuestFactory {
    * @return {Quest}
    */
   create(
-    GameState: GameState,
+    GameState: IGameState,
     qid: EntityReference,
     player: Player,
     state: any[] = []

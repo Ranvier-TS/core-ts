@@ -1,7 +1,7 @@
 import { Area } from "./Area";
 import { BehaviorManager } from "./BehaviorManager";
 import { EntityReference } from "./EntityReference";
-import { GameState } from "./GameState";
+import { IGameState } from "./GameState";
 import { Room } from "./Room";
 
 /**
@@ -55,7 +55,7 @@ export class AreaManager {
    * @param {GameState} state
    * @fires Area#updateTick
    */
-  tickAll(state: GameState) {
+  tickAll(state: IGameState) {
     for (const [name, area] of this.areas) {
       /**
        * @see Area#update

@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import { Damage } from "./Damage";
 import { PlayerOrNpc } from "./GameEntity";
-import { GameState } from "./GameState";
+import { IGameState } from "./GameState";
 import { Skill } from "./Skill";
 
 /** @typedef EffectModifiers {{attributes: !Object<string,function>}} */
@@ -297,7 +297,7 @@ export class Effect extends EventEmitter {
    * @param {*} currentValue
    * @return {*} property value modified by effect
    */
-  modifyProperty(propertyName, currentValue) {
+  modifyProperty(propertyName: string, currentValue: number) {
     let modifier = _ => _;
     if (typeof this.modifiers.properties === 'function') {
       modifier = (current) => {
@@ -358,7 +358,7 @@ export class Effect extends EventEmitter {
    * @param {GameState}
    * @param {Object} data
    */
-  hydrate(state: GameState, data) {
+  hydrate(state: IGameState, data) {
     if (data.config) {
       data.config.duration = data.config.duration === 'inf' ? Infinity : data.config.duration;
       this.config = data.config;

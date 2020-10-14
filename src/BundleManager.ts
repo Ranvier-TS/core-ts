@@ -2,7 +2,6 @@ import fs from "fs";
 import path from "path";
 import { IAreaDef } from "./Area";
 import { Attribute, AttributeFormula } from "./Attribute";
-import { Attributes } from "./Attributes";
 import { BehaviorManager } from "./BehaviorManager";
 import { Channel } from "./Channel";
 import { Command } from "./Command";
@@ -12,11 +11,10 @@ import { EntityFactoryType } from "./EntityFactory";
 import { EntityLoaderRegistry } from "./EntityLoaderRegistry";
 import { EntityReference } from "./EntityReference";
 import { GameEntities } from "./GameEntity";
-import { GameState } from "./GameState";
+import { IGameState } from "./GameState";
 import { Helpfile } from "./Helpfile";
 import { Logger } from "./Logger";
 import { IQuestDef } from "./Quest";
-import { IQuestFactoryDef } from "./QuestFactory";
 import { QuestGoal } from "./QuestGoal";
 import { QuestReward } from "./QuestReward";
 import { Skill } from "./Skill";
@@ -27,7 +25,7 @@ const srcPath = __dirname + "/";
  * Handles loading/parsing/initializing all bundles. AKA where the magic happens
  */
 export class BundleManager {
-  state: GameState;
+  state: IGameState;
   bundlesPath: string;
   areas: string[];
   loaderRegistry: EntityLoaderRegistry;
@@ -35,7 +33,7 @@ export class BundleManager {
    * @param {string} path
    * @param {GameState} state
    */
-  constructor(path: string, state: GameState) {
+  constructor(path: string, state: IGameState) {
     if (!path || !fs.existsSync(path)) {
       throw new Error("Invalid bundle path");
     }
@@ -596,7 +594,7 @@ export class BundleManager {
     const loadEntityBehaviors = (
       type: string,
       manager: BehaviorManager,
-      state: GameState
+      state: IGameState
     ) => {
       let typeDir = behaviorsDir + type + "/";
 

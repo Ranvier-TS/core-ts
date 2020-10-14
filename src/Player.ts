@@ -219,7 +219,7 @@ export class Player extends Character {
     this.emit("save", callback);
   }
 
-  hydrate(state: GameState) {
+  hydrate(state: IGameState) {
     super.hydrate(state);
 
     // QuestTracker has to be hydrated before the rest otherwise events fired by the subsequent

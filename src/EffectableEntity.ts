@@ -1,8 +1,10 @@
 import { EventEmitter } from "events";
+import { Attribute } from "./Attribute";
 import { Attributes } from "./Attributes";
 import { Damage } from "./Damage";
+import { Effect } from "./Effect";
 import { EffectList } from "./EffectList";
-import { GameState } from "./GameState";
+import { IGameState } from "./GameState";
 import { Logger } from "./Logger";
 
 /**
@@ -76,8 +78,8 @@ export class EffectableEntity extends EventEmitter {
   /**
    * @see {@link Attributes#add}
    */
-  addAttribute(attrString: string) {
-    this.attributes.add(attrString);
+  addAttribute(attr: Attribute) {
+    this.attributes.add(attr);
   }
 
   /**
@@ -255,7 +257,7 @@ export class EffectableEntity extends EventEmitter {
    * Initialize the entity from storage
    * @param {GameState} state
    */
-  hydrate(state: GameState, serialized = {}) {
+  hydrate(state: IGameState, serialized = {}) {
     if (this.__hydrated) {
       Logger.warn("Attempted to hydrate already hydrated entity.");
       return false;
