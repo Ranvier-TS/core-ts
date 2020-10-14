@@ -1,4 +1,8 @@
-'use strict';
+import { Attribute } from "./Attribute";
+import { Damage } from "./Damage";
+import { Effect } from "./Effect";
+import { EffectableEntity } from "./EffectableEntity";
+import { GameState } from "./GameState";
 
 /**
  * Self-managing list of effects for a target
@@ -6,12 +10,14 @@
  * @property {number} size Number of currently active effects
  * @property {Character} target
  */
-class EffectList {
+export class EffectList {
+  effects: Set<Effect>;
+  target: EffectableEntity;
   /**
    * @param {Character} target
    * @param {Array<Object|Effect>} effects array of serialized effects (Object) or actual Effect instances
    */
-  constructor(target, effects) {
+  constructor(target: EffectableEntity, effects: Effect[]) {
     this.effects = new Set(effects);
     this.target = target;
   }
@@ -37,7 +43,7 @@ class EffectList {
    * @param {string} type
    * @return {boolean}
    */
-  hasEffectType(type) {
+  hasEffectType(type: string) {
     return !!this.getByType(type);
   }
 
@@ -45,8 +51,8 @@ class EffectList {
    * @param {string} type
    * @return {Effect}
    */
-  getByType(type) {
-    return [...this.effects].find(effect => {
+  getByType(type: string) {
+    return [...this.effects].find((effect) => {
       return effect.config.type === type;
     });
   }
@@ -56,9 +62,9 @@ class EffectList {
    * @param {string} event
    * @param {...*}   args
    */
-  emit(event, ...args) {
+  emit(event: string, ...args: any[]) {
     this.validateEffects();
-    if (event === 'effectAdded' || event === 'effectRemoved') {
+    if (event === "effectAdded" || event === "effectRemoved") {
       // don't forward these events on from the player as it would cause confusion between Character#effectAdded
       // and Effect#effectAdded. The former being when any effect gets added to a character, the later is fired on
       // an effect when it is added to a character
@@ -70,7 +76,7 @@ class EffectList {
         continue;
       }
 
-      if (event === 'updateTick' && effect.config.tickInterval) {
+      if (event === "updateTick" && effect.config.tickInterval) {
         const sinceLastTick = Date.now() - effect.state.lastTick;
         if (sinceLastTick < effect.config.tickInterval * 1000) {
           continue;
@@ -89,9 +95,9 @@ class EffectList {
    * @fires Effect#effectRefreshed
    * @fires Character#effectAdded
    */
-  add(effect) {
+  add(effect: Effect) {
     if (effect.target) {
-      throw new Error('Cannot add effect, already has a target.');
+      throw new Error("Cannot add effect, already has a target.");
     }
 
     // create deep clone of state before proceeding
@@ -99,14 +105,20 @@ class EffectList {
 
     for (const activeEffect of this.effects) {
       if (effect.config.type === activeEffect.config.type) {
-        if (activeEffect.config.maxStacks && activeEffect.state.stacks < activeEffect.config.maxStacks) {
-          activeEffect.state.stacks = Math.min(activeEffect.config.maxStacks, activeEffect.state.stacks + 1);
+        if (
+          activeEffect.config.maxStacks &&
+          activeEffect.state.stacks < activeEffect.config.maxStacks
+        ) {
+          activeEffect.state.stacks = Math.min(
+            activeEffect.config.maxStacks,
+            activeEffect.state.stacks + 1
+          );
 
           /**
            * @event Effect#effectStackAdded
            * @param {Effect} effect The new effect that is trying to be added
            */
-          activeEffect.emit('effectStackAdded', effect);
+          activeEffect.emit("effectStackAdded", effect);
           return true;
         }
 
@@ -115,7 +127,7 @@ class EffectList {
            * @event Effect#effectRefreshed
            * @param {Effect} effect The new effect that is trying to be added
            */
-          activeEffect.emit('effectRefreshed', effect);
+          activeEffect.emit("effectRefreshed", effect);
           return true;
         }
 
@@ -131,12 +143,12 @@ class EffectList {
     /**
      * @event Effect#effectAdded
      */
-    effect.emit('effectAdded');
+    effect.emit("effectAdded");
     /**
      * @event Character#effectAdded
      */
-    this.target.emit('effectAdded', effect);
-    effect.on('remove', () => this.remove(effect));
+    this.target.emit("effectAdded", effect);
+    effect.on("remove", () => this.remove(effect));
     return true;
   }
 
@@ -146,7 +158,7 @@ class EffectList {
    * @throws ReferenceError
    * @fires Character#effectRemoved
    */
-  remove(effect) {
+  remove(effect: Effect) {
     if (!this.effects.has(effect)) {
       throw new ReferenceError("Trying to remove effect that was never added");
     }
@@ -156,7 +168,7 @@ class EffectList {
     /**
      * @event Character#effectRemoved
      */
-    this.target.emit('effectRemoved', effect);
+    this.target.emit("effectRemoved", effect);
   }
 
   /**
@@ -183,10 +195,10 @@ class EffectList {
    * @param {Atrribute} attr
    * @return {number}
    */
-  evaluateAttribute(attr) {
+  evaluateAttribute(attr: Attribute) {
     this.validateEffects();
 
-    let attrName  = attr.name;
+    let attrName = attr.name;
     let attrValue = attr.base || 0;
 
     for (const effect of this.effects) {
@@ -204,7 +216,7 @@ class EffectList {
    * @param {string} propertyName
    * @return {number}
    */
-  evaluateProperty(propertyName, propertyValue) {
+  evaluateProperty(propertyName: string, propertyValue: number) {
     this.validateEffects();
 
     for (const effect of this.effects) {
@@ -222,7 +234,7 @@ class EffectList {
    * @param {number} currentAmount
    * @return {number}
    */
-  evaluateIncomingDamage(damage, currentAmount) {
+  evaluateIncomingDamage(damage: Damage, currentAmount: number) {
     this.validateEffects();
 
     for (const effect of this.effects) {
@@ -239,7 +251,7 @@ class EffectList {
    * @param {number} currentAmount
    * @return {number}
    */
-  evaluateOutgoingDamage(damage, currentAmount) {
+  evaluateOutgoingDamage(damage: Damage, currentAmount: number) {
     this.validateEffects();
 
     for (const effect of this.effects) {
@@ -264,7 +276,7 @@ class EffectList {
     return serialized;
   }
 
-  hydrate(state) {
+  hydrate(state: GameState) {
     const effects = this.effects;
     this.effects = new Set();
     for (const newEffect of effects) {
@@ -274,5 +286,3 @@ class EffectList {
     }
   }
 }
-
-module.exports = EffectList;

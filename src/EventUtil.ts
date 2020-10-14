@@ -1,4 +1,4 @@
-'use strict';
+import { TransportStream } from "./TransportStream";
 
 const sty = require('sty');
 
@@ -11,8 +11,8 @@ class EventUtil {
    * @param {net.Socket} socket
    * @return {function (string)}
    */
-  static genWrite(socket) {
-    return string => socket.write(sty.parse(string));
+  static genWrite(socket: TransportStream) {
+    return (string: string) => socket.write(sty.parse(string));
   }
 
   /**
@@ -20,9 +20,7 @@ class EventUtil {
    * @param {net.Socket} socket
    * @return {function (string)}
    */
-  static genSay(socket) {
-    return string => socket.write(sty.parse(string + '\r\n'));
+  static genSay(socket: TransportStream) {
+    return (string: string) => socket.write(sty.parse(string + '\r\n'));
   }
 }
-
-module.exports = EventUtil;

@@ -1,6 +1,8 @@
 import { EventEmitter } from "events";
 import { Attributes } from "./Attributes";
 import { Damage } from "./Damage";
+import { EffectList } from "./EffectList";
+import { GameState } from "./GameState";
 import { Logger } from "./Logger";
 
 /**
@@ -245,7 +247,7 @@ export class EffectableEntity extends EventEmitter {
    * @param {number} currentAmount
    * @return {number}
    */
-  evaluateOutgoingDamage(damage: Damage, currentAmount: amount) {
+  evaluateOutgoingDamage(damage: Damage, currentAmount: number) {
     return this.effects.evaluateOutgoingDamage(damage, currentAmount);
   }
 
@@ -253,7 +255,7 @@ export class EffectableEntity extends EventEmitter {
    * Initialize the entity from storage
    * @param {GameState} state
    */
-  hydrate(state: GameStaet, serialized = {}) {
+  hydrate(state: GameState, serialized = {}) {
     if (this.__hydrated) {
       Logger.warn("Attempted to hydrate already hydrated entity.");
       return false;
