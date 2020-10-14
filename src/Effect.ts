@@ -1,18 +1,26 @@
 import { EventEmitter } from "events";
 import { Damage } from "./Damage";
 import { PlayerOrNpc } from "./GameEntity";
-import { GameState } from "./GameState";
+import { IGameState } from "./GameState";
 import { Skill } from "./Skill";
 
 /** @typedef EffectModifiers {{attributes: !Object<string,function>}} */
-export declare type EffectModifiers = { attributes: !object<string, Function> };
+export type EffectModifiers = {
+  attributes: Record<string, (...args: any[]) => any>
+  incomingDamage: (...args: any[]) => any;
+  outgoingDamage: (...args: any[]) => any;
+  properties: (...args: any[]) => any | Record<string, (...args: any[]) => any>
+};
 
-export declare interface IEffectDef {
+export interface IEffectDef {
   /** @property {EffectConfig}  config Effect configuration (name/desc/duration/etc.) */
   config: IEffectConfig;
+  elapsed?: number;
   flags?: string[];
+  skill?: string;
   /** @property {EffectModifiers} modifiers Attribute modifier functions */
   modifiers: EffectModifiers;
+  state: Record<string, unknown>;
 }
 
 export interface ISerializedEffect {
@@ -24,7 +32,7 @@ export interface ISerializedEffect {
   state: Record<string, unknown>;
 }[]
 
-export declare interface IEffectConfig {
+export interface IEffectConfig {
   /** @property {boolean} autoActivate If this effect immediately activates itself when added to the target */
   autoActivate: boolean;
   /** @property {boolean} hidden       If this effect is shown in the character's effect list */
@@ -47,14 +55,11 @@ export declare interface IEffectConfig {
   /** @property {string}    description */
   description: string;
   /** @property {number}    duration    Total duration of effect in _milliseconds_ */
-  duration: number;
+  duration: number | 'inf';
   /** @property {number}    elapsed     Get elapsed time in _milliseconds_ */
   elapsed: number;
   paused: number | null;
 }
-
-/** @typedef EffectModifiers {{attributes: !Object<string,function>}} */
-var EffectModifiers;
 
 /**
  * See the {@link http://ranviermud.com/extending/effects/|Effect guide} for usage.
@@ -91,7 +96,7 @@ export class Effect extends EventEmitter {
   /** @property {number}    startedAt Date.now() time this effect became active */
   startedAt: number;
   /** @property {object}    state  Configuration of this _type_ of effect (magnitude, element, stat, etc.) */
-  state: object;
+  state: Record<string, unknown>;
   /** @property {Character} target Character this effect is... effecting */
   target?: PlayerOrNpc;
   flags: string[];
@@ -195,7 +200,7 @@ export class Effect extends EventEmitter {
    * @type {number}
    */
   get remaining() {
-    return this.config.duration - this.elapsed;
+    return (this.config.duration as number) - (this.elapsed || 0);
   }
 
   /**
@@ -203,7 +208,7 @@ export class Effect extends EventEmitter {
    * @return {boolean}
    */
   isCurrent() {
-    return this.elapsed < this.config.duration;
+    return (this.elapsed || 0) < this.config.duration;
   }
 
   /**
@@ -219,7 +224,7 @@ export class Effect extends EventEmitter {
       return;
     }
 
-    this.startedAt = Date.now() - this.elapsed;
+    this.startedAt = Date.now() - (this.elapsed || 0);
     this.active = true;
 
     /**
@@ -267,7 +272,7 @@ export class Effect extends EventEmitter {
    * Resume a paused effect
    */
   resume() {
-    this.startedAt = Date.now() - this.paused;
+    this.startedAt = Date.now() - (this.paused || 0);
     this.paused = null;
   }
 
@@ -297,8 +302,8 @@ export class Effect extends EventEmitter {
    * @param {*} currentValue
    * @return {*} property value modified by effect
    */
-  modifyProperty(propertyName, currentValue) {
-    let modifier = _ => _;
+  modifyProperty(propertyName: string, currentValue: number) {
+    let modifier = (_: any) => _;
     if (typeof this.modifiers.properties === 'function') {
       modifier = (current) => {
         return this.modifiers.properties.bind(this)(propertyName, current);
@@ -339,8 +344,8 @@ export class Effect extends EventEmitter {
 
     let state = Object.assign({}, this.state);
     // store lastTick as a difference so we can make sure to start where we left off when we hydrate
-    if (state.lastTick && isFinite(state.lastTick)) {
-      state.lastTick = Date.now() - state.lastTick;
+    if (state.lastTick && isFinite(state.lastTick as number)) {
+      state.lastTick = Date.now() - (state.lastTick as number || 0);
     }
 
     return {
@@ -358,25 +363,25 @@ export class Effect extends EventEmitter {
    * @param {GameState}
    * @param {Object} data
    */
-  hydrate(state: GameState, data) {
+  hydrate(state: IGameState, data: IEffectDef) {
     if (data.config) {
       data.config.duration = data.config.duration === 'inf' ? Infinity : data.config.duration;
       this.config = data.config;
     }
 
-    if (!isNaN(data.elapsed)) {
-      this.startedAt = Date.now() - data.elapsed;
+    if (!isNaN(data.elapsed as number)) {
+      this.startedAt = Date.now() - (data?.elapsed || 0);
     }
 
-    if (data.state && !isNaN(data.state.lastTick)) {
-      data.state.lastTick = Date.now() - data.state.lastTick;
+    if (data.state && !isNaN(data.state.lastTick as number)) {
+      data.state.lastTick = Date.now() - (data.state.lastTick as number || 0);
       this.state = data.state;
     }
 
     if (data.skill) {
       this.skill =
         state.SkillManager.get(data.skill) ||
-        state.SpellManager.get(data.skill);
+        state?.SpellManager?.get(data.skill);
     }
   }
 }
