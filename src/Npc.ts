@@ -2,7 +2,7 @@ import { Area } from "./Area";
 import { Character } from "./Character";
 import { CommandQueue } from "./CommandQueue";
 import { EntityReference } from "./EntityReference";
-import { IgsGameState } from "./GameState";
+import { IGameState } from "./GameState";
 import { Logger } from "./Logger";
 import { Room } from "./Room";
 import { Scriptable } from "./Scriptable";
