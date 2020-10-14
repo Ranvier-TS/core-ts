@@ -1,4 +1,5 @@
 import { Area } from './Area';
+import { AreaFactory } from './AreaFactory';
 import { Attributes } from './Attributes';
 import { BehaviorManager } from './BehaviorManager';
 import { EntityReference } from './EntityReference';
@@ -11,7 +12,7 @@ import { Npc } from './Npc';
 import { Room } from './Room';
 import { RoomFactory } from './RoomFactory';
 
-export type EntityFactoryType = ItemFactory | MobFactory | RoomFactory;
+export type EntityFactoryType = ItemFactory | MobFactory | RoomFactory | AreaFactory;
 /**
  * Stores definitions of entities to allow for easy creation/cloning
  */

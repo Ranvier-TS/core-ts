@@ -96,30 +96,28 @@ export class BundleManager {
 	 * @param {string} bundlePath Path to bundle directory
 	 */
 	async loadBundle(bundle: string, bundlePath: string) {
+		// prettier-ignore
 		const features = [
 			// quest goals/rewards have to be loaded before areas that have quests which use those goals
-			{ path: 'quest-goals/', fn: 'loadQuestGoals' },
-			{ path: 'quest-rewards/', fn: 'loadQuestRewards' },
-
-			{ path: 'attributes.js', fn: 'loadAttributes' },
-
+			{ path: 'quest-goals/',      fn: this.loadQuestGoals },
+			{ path: 'quest-rewards/',    fn: this.loadQuestRewards },
+			{ path: 'attributes.js',     fn: this.loadAttributes },
 			// any entity in an area, including the area itself, can have behaviors so load them first
-			{ path: 'behaviors/', fn: 'loadBehaviors' },
-
-			{ path: 'channels.js', fn: 'loadChannels' },
-			{ path: 'commands/', fn: 'loadCommands' },
-			{ path: 'effects/', fn: 'loadEffects' },
-			{ path: 'input-events/', fn: 'loadInputEvents' },
-			{ path: 'server-events/', fn: 'loadServerEvents' },
-			{ path: 'player-events.js', fn: 'loadPlayerEvents' },
-			{ path: 'skills/', fn: 'loadSkills' },
+			{ path: 'behaviors/',        fn: this.loadBehaviors },
+			{ path: 'channels.js',       fn: this.loadChannels },
+			{ path: 'commands/',         fn: this.loadCommands },
+			{ path: 'effects/',          fn: this.loadEffects },
+			{ path: 'input-events/',     fn: this.loadInputEvents },
+			{ path: 'server-events/',    fn: this.loadServerEvents },
+			{ path: 'player-events.js',  fn: this.loadPlayerEvents },
+			{ path: 'skills/',           fn: this.loadSkills },
 		];
 
 		Logger.verbose(`LOAD: BUNDLE [\x1B[1;33m${bundle}\x1B[0m] START`);
 		for (const feature of features) {
 			const path = bundlePath + '/' + feature.path;
 			if (fs.existsSync(path)) {
-				this[feature.fn](bundle, path);
+				feature.fn(bundle, path);
 			}
 		}
 

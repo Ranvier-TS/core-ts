@@ -121,7 +121,6 @@ export class AttributeFormula {
 	evaluate(attribute: string, ...args: any) {
 		if (typeof this.formula !== 'function') {
 			throw new Error(`Formula is not callable ${this.formula}`);
-			return;
 		}
 
 		return this.formula.bind(attribute)(...args);
