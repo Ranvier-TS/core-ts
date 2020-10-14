@@ -1,83 +1,83 @@
 export interface IEntityLoaderConfig {
-  area?: string;
-  bundle?: string;
+	area?: string;
+	bundle?: string;
 }
 
 export interface IDataSource {
-  name: string;
-  hasData(config: IEntityLoaderConfig): Promise<any>;
-  fetchAll(config: IEntityLoaderConfig): Promise<any>;
-  fetch(config: IEntityLoaderConfig, id: string | number): any;
-  replace(config: IEntityLoaderConfig, data: any): void;
-  update(config: IEntityLoaderConfig, id: string | number, data: any): void;
-  delete(config: IEntityLoaderConfig, id: string | number): void;
+	name: string;
+	hasData(config: IEntityLoaderConfig): Promise<any>;
+	fetchAll(config: IEntityLoaderConfig): Promise<any>;
+	fetch(config: IEntityLoaderConfig, id: string | number): any;
+	replace(config: IEntityLoaderConfig, data: any): void;
+	update(config: IEntityLoaderConfig, id: string | number, data: any): void;
+	delete(config: IEntityLoaderConfig, id: string | number): void;
 }
 
 /**
  * Used to CRUD an entity from a configured DataSource
  */
 export class EntityLoader {
-  dataSource: IDataSource;
-  config: IEntityLoaderConfig;
+	dataSource: IDataSource;
+	config: IEntityLoaderConfig;
 
-  /**
-   * @param {DataSource}
-   * @param {object} config
-   */
-  constructor(dataSource: IDataSource, config: IEntityLoaderConfig = {}) {
-    this.dataSource = dataSource;
-    this.config = config;
-  }
+	/**
+	 * @param {DataSource}
+	 * @param {object} config
+	 */
+	constructor(dataSource: IDataSource, config: IEntityLoaderConfig = {}) {
+		this.dataSource = dataSource;
+		this.config = config;
+	}
 
-  setArea(name: string) {
-    this.config.area = name;
-  }
+	setArea(name: string) {
+		this.config.area = name;
+	}
 
-  setBundle(name: string) {
-    this.config.bundle = name;
-  }
+	setBundle(name: string) {
+		this.config.bundle = name;
+	}
 
-  hasData(): Promise<any> {
-    return this.dataSource.hasData(this.config);
-  }
+	hasData(): Promise<any> {
+		return this.dataSource.hasData(this.config);
+	}
 
-  fetchAll(): Promise<any> {
-    if (!("fetchAll" in this.dataSource)) {
-      throw new Error(`fetchAll not supported by ${this.dataSource.name}`);
-    }
+	fetchAll(): Promise<any> {
+		if (!('fetchAll' in this.dataSource)) {
+			throw new Error(`fetchAll not supported by ${this.dataSource.name}`);
+		}
 
-    return this.dataSource.fetchAll(this.config);
-  }
+		return this.dataSource.fetchAll(this.config);
+	}
 
-  fetch(id: string | number) {
-    if (!("fetch" in this.dataSource)) {
-      throw new Error(`fetch not supported by ${this.dataSource.name}`);
-    }
+	fetch(id: string | number) {
+		if (!('fetch' in this.dataSource)) {
+			throw new Error(`fetch not supported by ${this.dataSource.name}`);
+		}
 
-    return this.dataSource.fetch(this.config, id);
-  }
+		return this.dataSource.fetch(this.config, id);
+	}
 
-  replace(data: any) {
-    if (!("replace" in this.dataSource)) {
-      throw new Error(`replace not supported by ${this.dataSource.name}`);
-    }
+	replace(data: any) {
+		if (!('replace' in this.dataSource)) {
+			throw new Error(`replace not supported by ${this.dataSource.name}`);
+		}
 
-    return this.dataSource.replace(this.config, data);
-  }
+		return this.dataSource.replace(this.config, data);
+	}
 
-  update(id: string | number, data: any) {
-    if (!("update" in this.dataSource)) {
-      throw new Error(`update not supported by ${this.dataSource.name}`);
-    }
+	update(id: string | number, data: any) {
+		if (!('update' in this.dataSource)) {
+			throw new Error(`update not supported by ${this.dataSource.name}`);
+		}
 
-    return this.dataSource.update(this.config, id, data);
-  }
+		return this.dataSource.update(this.config, id, data);
+	}
 
-  delete(id: string | number) {
-    if (!("delete" in this.dataSource)) {
-      throw new Error(`delete not supported by ${this.dataSource.name}`);
-    }
+	delete(id: string | number) {
+		if (!('delete' in this.dataSource)) {
+			throw new Error(`delete not supported by ${this.dataSource.name}`);
+		}
 
-    return this.dataSource.delete(this.config, id);
-  }
+		return this.dataSource.delete(this.config, id);
+	}
 }

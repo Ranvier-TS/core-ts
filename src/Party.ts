@@ -1,48 +1,48 @@
-import { PlayerOrNpc } from "./GameEntity";
+import { PlayerOrNpc } from './GameEntity';
 
 /**
  * Representation of an adventuring party
  */
 export class Party extends Set {
-  invited: Set<PlayerOrNpc>;
-  leader: PlayerOrNpc;
-  constructor(leader: PlayerOrNpc) {
-    super();
-    this.invited = new Set();
-    this.leader = leader;
-    this.add(leader);
-  }
+	invited: Set<PlayerOrNpc>;
+	leader: PlayerOrNpc;
+	constructor(leader: PlayerOrNpc) {
+		super();
+		this.invited = new Set();
+		this.leader = leader;
+		this.add(leader);
+	}
 
-  delete(member: PlayerOrNpc) {
-    super.delete(member);
-    member.party = null;
-  }
+	delete(member: PlayerOrNpc) {
+		super.delete(member);
+		member.party = null;
+	}
 
-  add(member: PlayerOrNpc) {
-    super.add(member);
-    member.party = this;
-    this.invited.delete(member);
-  }
+	add(member: PlayerOrNpc) {
+		super.add(member);
+		member.party = this;
+		this.invited.delete(member);
+	}
 
-  disband() {
-    for (const member of this) {
-      this.delete(member);
-    }
-  }
+	disband() {
+		for (const member of this) {
+			this.delete(member);
+		}
+	}
 
-  invite(target: PlayerOrNpc) {
-    this.invited.add(target);
-  }
+	invite(target: PlayerOrNpc) {
+		this.invited.add(target);
+	}
 
-  isInvited(target: PlayerOrNpc) {
-    return this.invited.has(target);
-  }
+	isInvited(target: PlayerOrNpc) {
+		return this.invited.has(target);
+	}
 
-  removeInvite(target: PlayerOrNpc) {
-    this.invited.delete(target);
-  }
+	removeInvite(target: PlayerOrNpc) {
+		this.invited.delete(target);
+	}
 
-  getBroadcastTargets() {
-    return [...this];
-  }
+	getBroadcastTargets() {
+		return [...this];
+	}
 }

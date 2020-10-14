@@ -1,7 +1,7 @@
-import { EventManager } from "./EventManager";
+import { EventManager } from './EventManager';
 
 export interface IBehavior {
-  [key: string]: unknown;
+	[key: string]: unknown;
 }
 
 /**
@@ -9,43 +9,43 @@ export interface IBehavior {
  * during Item and NPC hydrate() methods to attach events
  */
 export class BehaviorManager {
-  behaviors: Map<string, EventManager>;
+	behaviors: Map<string, EventManager>;
 
-  constructor() {
-    this.behaviors = new Map();
-  }
+	constructor() {
+		this.behaviors = new Map();
+	}
 
-  /**
-   * Get EventManager for a given behavior
-   * @param {string} name
-   * @return {EventManager}
-   */
-  get(name: string) {
-    return this.behaviors.get(name);
-  }
+	/**
+	 * Get EventManager for a given behavior
+	 * @param {string} name
+	 * @return {EventManager}
+	 */
+	get(name: string) {
+		return this.behaviors.get(name);
+	}
 
-  /**
-   * Check to see if a behavior exists
-   * @param {string} name
-   * @return {boolean}
-   */
-  has(name: string) {
-    return this.behaviors.has(name);
-  }
+	/**
+	 * Check to see if a behavior exists
+	 * @param {string} name
+	 * @return {boolean}
+	 */
+	has(name: string) {
+		return this.behaviors.has(name);
+	}
 
-  /**
-   * @param {string}   behaviorName
-   * @param {string}   event
-   * @param {Function} listener
-   */
-  addListener(behaviorName: string, event: string, listener: Function) {
-    if (!this.behaviors.has(behaviorName)) {
-      this.behaviors.set(behaviorName, new EventManager());
-    }
+	/**
+	 * @param {string}   behaviorName
+	 * @param {string}   event
+	 * @param {Function} listener
+	 */
+	addListener(behaviorName: string, event: string, listener: Function) {
+		if (!this.behaviors.has(behaviorName)) {
+			this.behaviors.set(behaviorName, new EventManager());
+		}
 
-    const behavior = this.behaviors.get(behaviorName);
-    if (behavior) {
-      behavior.add(event, listener);
-    }
-  }
+		const behavior = this.behaviors.get(behaviorName);
+		if (behavior) {
+			behavior.add(event, listener);
+		}
+	}
 }

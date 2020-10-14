@@ -1,5 +1,5 @@
-import { ChannelAudience } from "./ChannelAudience";
-import { PlayerOrNpc } from "./GameEntity";
+import { ChannelAudience } from './ChannelAudience';
+import { PlayerOrNpc } from './GameEntity';
 
 /**
  * Audience class representing other players in the same room as the sender
@@ -10,8 +10,9 @@ import { PlayerOrNpc } from "./GameEntity";
  * @extends ChannelAudience
  */
 export class RoomAudience extends ChannelAudience {
-  getBroadcastTargets() {
-    return this.sender.room.getBroadcastTargets()
-      .filter((target: PlayerOrNpc) => target !== this.sender);
-  }
+	getBroadcastTargets() {
+		return this.sender.room
+			.getBroadcastTargets()
+			.filter((target: PlayerOrNpc) => target !== this.sender);
+	}
 }

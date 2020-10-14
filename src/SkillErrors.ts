@@ -1,4 +1,4 @@
-import { Effect } from "./Effect";
+import { Effect } from './Effect';
 
 /**
  * Error used when trying to execute a skill and the player doesn't have enough resources
@@ -18,13 +18,13 @@ export class PassiveError extends Error {}
  * @extends Error
  */
 export class CooldownError extends Error {
-  effect: Effect;
-  /**
-   * @param {Effect} effect Cooldown effect that triggered this error
-   */
-  constructor(effect: Effect) {
-    super();
+	effect: Effect;
+	/**
+	 * @param {Effect} effect Cooldown effect that triggered this error
+	 */
+	constructor(effect: Effect) {
+		super();
 
-    this.effect = effect;
-  }
+		this.effect = effect;
+	}
 }

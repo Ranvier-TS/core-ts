@@ -1,4 +1,4 @@
-import { ChannelAudience } from "./ChannelAudience";
+import { ChannelAudience } from './ChannelAudience';
 
 /**
  * Audience class representing a specific targeted player.
@@ -7,23 +7,27 @@ import { ChannelAudience } from "./ChannelAudience";
  * @extends ChannelAudience
  */
 export class PrivateAudience extends ChannelAudience {
-  getBroadcastTargets() {
-    const targetPlayerName = this.message.split(' ')[0];
-    const targetPlayer = this.state.PlayerManager.getPlayer(targetPlayerName);
+	getBroadcastTargets() {
+		const targetPlayerName = this.message.split(' ')[0];
+		const targetPlayer = this.state.PlayerManager.getPlayer(targetPlayerName);
 
-    // return token '_self' if player targeted themselves
-    if ((targetPlayer === this.sender) || (targetPlayerName === 'me') || (targetPlayerName === 'self')) {
-      return ['_self']
-    } else {
-      if (targetPlayer) {
-        return [targetPlayer];
-      }
-      return []
-    }
-  }
+		// return token '_self' if player targeted themselves
+		if (
+			targetPlayer === this.sender ||
+			targetPlayerName === 'me' ||
+			targetPlayerName === 'self'
+		) {
+			return ['_self'];
+		} else {
+			if (targetPlayer) {
+				return [targetPlayer];
+			}
+			return [];
+		}
+	}
 
-  alterMessage(message: string) {
-    // Strips target name from message
-    return message.split(' ').slice(1).join(' ');
-  }
+	alterMessage(message: string) {
+		// Strips target name from message
+		return message.split(' ').slice(1).join(' ');
+	}
 }

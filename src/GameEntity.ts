@@ -1,10 +1,10 @@
-import { EffectableEntity } from "./EffectableEntity";
-import { Item } from "./Item";
-import { Metadatable } from "./Metadatable";
-import { Npc } from "./Npc";
-import { Player } from "./Player";
-import { Room } from "./Room";
-import { Scriptable } from "./Scriptable";
+import { EffectableEntity } from './EffectableEntity';
+import { Item } from './Item';
+import { Metadatable } from './Metadatable';
+import { Npc } from './Npc';
+import { Player } from './Player';
+import { Room } from './Room';
+import { Scriptable } from './Scriptable';
 
 /**
  * @extends EventEmitter
@@ -14,5 +14,4 @@ import { Scriptable } from "./Scriptable";
 export class GameEntity extends Scriptable(Metadatable(EffectableEntity)) {}
 
 export type PlayerOrNpc = Player | Npc;
-export type GameEntities =  Item | Npc | Room;
-
+export type GameEntities = Item | Npc | Room;

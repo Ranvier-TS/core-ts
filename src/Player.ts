@@ -1,38 +1,38 @@
-"use strict";
+'use strict';
 
-import { EventEmitter } from "events";
-import { Character, ICharacterConfig, ISerializedCharacter } from "./Character";
-import { CommandQueue } from "./CommandQueue";
-import { Config } from "./Config";
-import { IGameState } from "./GameState";
-import { IInventoryDef } from "./Inventory";
-import { IItemDef } from "./Item";
-import { Logger } from "./Logger";
-import { Metadata } from "./Metadatable";
-import { PlayerRoles } from "./PlayerRoles";
-import { QuestTracker, SerializedQuestTracker } from "./QuestTracker";
-import { Room } from "./Room";
+import { EventEmitter } from 'events';
+import { Character, ICharacterConfig, ISerializedCharacter } from './Character';
+import { CommandQueue } from './CommandQueue';
+import { Config } from './Config';
+import { IGameState } from './GameState';
+import { IInventoryDef } from './Inventory';
+import { IItemDef } from './Item';
+import { Logger } from './Logger';
+import { Metadata } from './Metadatable';
+import { PlayerRoles } from './PlayerRoles';
+import { QuestTracker, SerializedQuestTracker } from './QuestTracker';
+import { Room } from './Room';
 
 export interface IPlayerDef extends ICharacterConfig {
-  account: Account | null;
-  experience: number;
-  password: string;
-  prompt: string;
-  socket: EventEmitter | null;
-  quests: SerializedQuestTracker;
-  role: PlayerRoles | number;
+	account: Account | null;
+	experience: number;
+	password: string;
+	prompt: string;
+	socket: EventEmitter | null;
+	quests: SerializedQuestTracker;
+	role: PlayerRoles | number;
 }
 
 export interface ISerializedPlayer extends ISerializedCharacter {
-  account: string;
-  experience: number;
-  inventory: IInventoryDef;
-  metadata: Metadata;
-  password: string;
-  prompt: string;
-  quests: SerializedQuestTracker;
-  role: PlayerRoles | number;
-  equipment?: Record<string, IItemDef> | null;
+	account: string;
+	experience: number;
+	inventory: IInventoryDef;
+	metadata: Metadata;
+	password: string;
+	prompt: string;
+	quests: SerializedQuestTracker;
+	role: PlayerRoles | number;
+	equipment?: Record<string, IItemDef> | null;
 }
 
 /**
@@ -47,266 +47,272 @@ export interface ISerializedPlayer extends ISerializedCharacter {
  * @extends Character
  */
 export class Player extends Character {
-  account: Account | null;
-  commandQueue: CommandQueue;
-  experience: number;
-  extraPrompts: Map<string, any>;
-  password: string;
-  prompt: string;
-  questTracker: QuestTracker;
-  socket: EventEmitter | null;
-  role: PlayerRoles | number;
+	account: Account | null;
+	commandQueue: CommandQueue;
+	experience: number;
+	extraPrompts: Map<string, any>;
+	password: string;
+	prompt: string;
+	questTracker: QuestTracker;
+	socket: EventEmitter | null;
+	role: PlayerRoles | number;
 
-  __hydrated: boolean = false;
-  __pruned: boolean = false;
+	__hydrated: boolean = false;
+	__pruned: boolean = false;
 
-  constructor(data: IPlayerDef) {
-    super(data);
+	constructor(data: IPlayerDef) {
+		super(data);
 
-    this.account = data.account || null;
-    this.experience = data.experience || 0;
-    this.extraPrompts = new Map();
-    this.password = data.password;
-    this.prompt = data.prompt || "> ";
-    this.socket = data.socket || null;
-    const questData = Object.assign(
-      {
-        completed: [],
-        active: [],
-      },
-      data.quests
-    );
+		this.account = data.account || null;
+		this.experience = data.experience || 0;
+		this.extraPrompts = new Map();
+		this.password = data.password;
+		this.prompt = data.prompt || '> ';
+		this.socket = data.socket || null;
+		const questData = Object.assign(
+			{
+				completed: [],
+				active: [],
+			},
+			data.quests
+		);
 
-    this.questTracker = new QuestTracker(
-      this,
-      questData.active,
-      questData.completed
-    );
-    this.commandQueue = new CommandQueue();
-    this.role = data.role || PlayerRoles.PLAYER;
+		this.questTracker = new QuestTracker(
+			this,
+			questData.active,
+			questData.completed
+		);
+		this.commandQueue = new CommandQueue();
+		this.role = data.role || PlayerRoles.PLAYER;
 
-    // Default max inventory size config
-    if (!isFinite(this.inventory.getMax())) {
-      this.inventory.setMax(Config.get("defaultMaxPlayerInventory", 20));
-    }
-  }
+		// Default max inventory size config
+		if (!isFinite(this.inventory.getMax())) {
+			this.inventory.setMax(Config.get('defaultMaxPlayerInventory', 20));
+		}
+	}
 
-  /**
-   * @see CommandQueue::enqueue
-   */
-  queueCommand(executable: Function, lag: number) {
-    const index = this.commandQueue.enqueue(executable, lag);
-    this.emit("commandQueued", index);
-  }
+	/**
+	 * @see CommandQueue::enqueue
+	 */
+	queueCommand(executable: Function, lag: number) {
+		const index = this.commandQueue.enqueue(executable, lag);
+		this.emit('commandQueued', index);
+	}
 
-  /**
-   * Proxy all events on the player to the quest tracker
-   * @param {string} event
-   * @param {...*}   args
-   */
-  emit(event: string, ...args: any) {
-    if (this.__pruned || !this.__hydrated) {
-      return false;
-    }
+	/**
+	 * Proxy all events on the player to the quest tracker
+	 * @param {string} event
+	 * @param {...*}   args
+	 */
+	emit(event: string, ...args: any) {
+		if (this.__pruned || !this.__hydrated) {
+			return false;
+		}
 
-    const result = super.emit(event, ...args);
+		const result = super.emit(event, ...args);
 
-    this.questTracker.emit(event, ...args);
-    return result;
-  }
+		this.questTracker.emit(event, ...args);
+		return result;
+	}
 
-  /**
-   * Convert prompt tokens into actual data
-   * @param {string} promptStr
-   * @param {object} extraData Any extra data to give the prompt access to
-   */
-  interpolatePrompt(promptStr: string, extraData: Record<string, unknown> = {}) {
-    let attributeData: Record<string, unknown> = {};
-    for (const [attr, value] of this.attributes) {
-      attributeData[attr] = {
-        current: this.getAttribute(attr),
-        max: this.getMaxAttribute(attr),
-        base: this.getBaseAttribute(attr),
-      };
-    }
-    const promptData = Object.assign(attributeData, extraData);
+	/**
+	 * Convert prompt tokens into actual data
+	 * @param {string} promptStr
+	 * @param {object} extraData Any extra data to give the prompt access to
+	 */
+	interpolatePrompt(
+		promptStr: string,
+		extraData: Record<string, unknown> = {}
+	) {
+		let attributeData: Record<string, unknown> = {};
+		for (const [attr, value] of this.attributes) {
+			attributeData[attr] = {
+				current: this.getAttribute(attr),
+				max: this.getMaxAttribute(attr),
+				base: this.getBaseAttribute(attr),
+			};
+		}
+		const promptData = Object.assign(attributeData, extraData);
 
-    let matches = null;
-    while ((matches = promptStr.match(/%([a-z\.]+)%/))) {
-      const token = matches[1];
-      let promptValue: any = token
-        .split(".")
-        .reduce((obj, index) => obj && obj[index] as typeof promptData, promptData);
-      
-      if (promptValue === null || promptValue === undefined) {
-        (promptValue as string) = "invalid-token";
-      }
-      promptStr = promptStr.replace(matches[0], promptValue as string);
-    }
+		let matches = null;
+		while ((matches = promptStr.match(/%([a-z\.]+)%/))) {
+			const token = matches[1];
+			let promptValue: any = token
+				.split('.')
+				.reduce(
+					(obj, index) => obj && (obj[index] as typeof promptData),
+					promptData
+				);
 
-    return promptStr;
-  }
+			if (promptValue === null || promptValue === undefined) {
+				(promptValue as string) = 'invalid-token';
+			}
+			promptStr = promptStr.replace(matches[0], promptValue as string);
+		}
 
-  /**
-   * Add a line of text to be displayed immediately after the prompt when the prompt is displayed
-   * @param {string}      id       Unique prompt id
-   * @param {function ()} renderer Function to call to render the prompt string
-   * @param {?boolean}    removeOnRender When true prompt will remove itself once rendered
-   *    otherwise prompt will continue to be rendered until removed.
-   */
-  addPrompt(id: string, renderer: Function, removeOnRender: boolean = false) {
-    this.extraPrompts.set(id, { removeOnRender, renderer });
-  }
+		return promptStr;
+	}
 
-  /**
-   * @param {string} id
-   */
-  removePrompt(id: string) {
-    this.extraPrompts.delete(id);
-  }
+	/**
+	 * Add a line of text to be displayed immediately after the prompt when the prompt is displayed
+	 * @param {string}      id       Unique prompt id
+	 * @param {function ()} renderer Function to call to render the prompt string
+	 * @param {?boolean}    removeOnRender When true prompt will remove itself once rendered
+	 *    otherwise prompt will continue to be rendered until removed.
+	 */
+	addPrompt(id: string, renderer: Function, removeOnRender: boolean = false) {
+		this.extraPrompts.set(id, { removeOnRender, renderer });
+	}
 
-  /**
-   * @param {string} id
-   * @return {boolean}
-   */
-  hasPrompt(id: string) {
-    return this.extraPrompts.has(id);
-  }
+	/**
+	 * @param {string} id
+	 */
+	removePrompt(id: string) {
+		this.extraPrompts.delete(id);
+	}
 
-  /**
-   * Move the player to the given room, emitting events appropriately
-   * @param {Room} nextRoom
-   * @param {function} onMoved Function to run after the player is moved to the next room but before enter events are fired
-   * @fires Room#playerLeave
-   * @fires Room#playerEnter
-   * @fires Player#enterRoom
-   */
-  moveTo(nextRoom: Room, onMoved = (_?: any) => _) {
-    const prevRoom = this.room;
-    if (this.room && this.room !== nextRoom) {
-      /**
-       * @event Room#playerLeave
-       * @param {Player} player
-       * @param {Room} nextRoom
-       */
-      this.room.emit("playerLeave", this, nextRoom);
-      this.room.removePlayer(this);
-    }
+	/**
+	 * @param {string} id
+	 * @return {boolean}
+	 */
+	hasPrompt(id: string) {
+		return this.extraPrompts.has(id);
+	}
 
-    this.room = nextRoom;
-    nextRoom.addPlayer(this);
+	/**
+	 * Move the player to the given room, emitting events appropriately
+	 * @param {Room} nextRoom
+	 * @param {function} onMoved Function to run after the player is moved to the next room but before enter events are fired
+	 * @fires Room#playerLeave
+	 * @fires Room#playerEnter
+	 * @fires Player#enterRoom
+	 */
+	moveTo(nextRoom: Room, onMoved = (_?: any) => _) {
+		const prevRoom = this.room;
+		if (this.room && this.room !== nextRoom) {
+			/**
+			 * @event Room#playerLeave
+			 * @param {Player} player
+			 * @param {Room} nextRoom
+			 */
+			this.room.emit('playerLeave', this, nextRoom);
+			this.room.removePlayer(this);
+		}
 
-    onMoved();
+		this.room = nextRoom;
+		nextRoom.addPlayer(this);
 
-    /**
-     * @event Room#playerEnter
-     * @param {Player} player
-     * @param {Room} prevRoom
-     */
-    nextRoom.emit("playerEnter", this, prevRoom);
-    /**
-     * @event Player#enterRoom
-     * @param {Room} room
-     */
-    this.emit("enterRoom", nextRoom);
-  }
+		onMoved();
 
-  save(callback?: Function) {
-    if (!this.__hydrated) {
-      return;
-    }
+		/**
+		 * @event Room#playerEnter
+		 * @param {Player} player
+		 * @param {Room} prevRoom
+		 */
+		nextRoom.emit('playerEnter', this, prevRoom);
+		/**
+		 * @event Player#enterRoom
+		 * @param {Room} room
+		 */
+		this.emit('enterRoom', nextRoom);
+	}
 
-    this.emit("save", callback);
-  }
+	save(callback?: Function) {
+		if (!this.__hydrated) {
+			return;
+		}
 
-  hydrate(state: IGameState) {
-    super.hydrate(state);
+		this.emit('save', callback);
+	}
 
-    // QuestTracker has to be hydrated before the rest otherwise events fired by the subsequent
-    // hydration will be emitted onto unhydrated quest objects and error
-    this.questTracker.hydrate(state);
+	hydrate(state: IGameState) {
+		super.hydrate(state);
 
-    if (typeof this.account === "string") {
-      this.account = state.AccountManager.getAccount(this.account);
-    }
+		// QuestTracker has to be hydrated before the rest otherwise events fired by the subsequent
+		// hydration will be emitted onto unhydrated quest objects and error
+		this.questTracker.hydrate(state);
 
-    // Hydrate inventory
-    this.inventory.hydrate(state, this);
-    // Hydrate equipment
-    // maybe refactor Equipment to be an object like Inventory?
-    if (this.equipment && !(this.equipment instanceof Map)) {
-      const eqDefs = this.equipment;
-      this.equipment = new Map();
-      for (const slot in eqDefs) {
-        const itemDef = eqDefs[slot];
-        try {
-          let newItem = state.ItemFactory.create(
-            state.AreaManager.getArea(itemDef.area),
-            itemDef.entityReference
-          );
-          newItem.initializeInventory(itemDef.inventory);
-          newItem.hydrate(state, itemDef);
-          state.ItemManager.add(newItem);
-          this.equip(newItem, slot);
-          /**
-           * @event Item#spawn
-           */
-          newItem.emit('spawn', {type: Player});
-        } catch (e) {
-          Logger.error(e.message);
-        }
-      }
-    } else {
-      this.equipment = new Map();
-    }
+		if (typeof this.account === 'string') {
+			this.account = state.AccountManager.getAccount(this.account);
+		}
 
-    if (typeof this.room === "string") {
-      let room = state.RoomManager.getRoom(this.room);
-      if (!room) {
-        Logger.error(
-          `ERROR: Player ${this.name} was saved to invalid room ${this.room}.`
-        );
-        room = state.AreaManager.getPlaceholderArea().getRoomById(
-          "placeholder"
-        );
-      }
+		// Hydrate inventory
+		this.inventory.hydrate(state, this);
+		// Hydrate equipment
+		// maybe refactor Equipment to be an object like Inventory?
+		if (this.equipment && !(this.equipment instanceof Map)) {
+			const eqDefs = this.equipment;
+			this.equipment = new Map();
+			for (const slot in eqDefs) {
+				const itemDef = eqDefs[slot];
+				try {
+					let newItem = state.ItemFactory.create(
+						state.AreaManager.getArea(itemDef.area),
+						itemDef.entityReference
+					);
+					newItem.initializeInventory(itemDef.inventory);
+					newItem.hydrate(state, itemDef);
+					state.ItemManager.add(newItem);
+					this.equip(newItem, slot);
+					/**
+					 * @event Item#spawn
+					 */
+					newItem.emit('spawn', { type: Player });
+				} catch (e) {
+					Logger.error(e.message);
+				}
+			}
+		} else {
+			this.equipment = new Map();
+		}
 
-      this.room = room;
-      this.moveTo(room);
-    }
-  }
+		if (typeof this.room === 'string') {
+			let room = state.RoomManager.getRoom(this.room);
+			if (!room) {
+				Logger.error(
+					`ERROR: Player ${this.name} was saved to invalid room ${this.room}.`
+				);
+				room = state.AreaManager.getPlaceholderArea().getRoomById(
+					'placeholder'
+				);
+			}
 
-  serialize(): ISerializedPlayer {
-    const account = this.account?.name;
-    const experience = this.experience;
-    const inventory = this.inventory && this.inventory.serialize();
-    const metadata = this.metadata;
-    const password = this.password;
-    const prompt = this.prompt;
-    const quests = this.questTracker.serialize();
-    const role = this.role;
-    let data: ISerializedPlayer = Object.assign(super.serialize(), {
-      account,
-      experience,
-      inventory,
-      metadata,
-      password,
-      prompt,
-      quests,
-      role,
-      _id: this.name,
-    });
+			this.room = room;
+			this.moveTo(room);
+		}
+	}
 
-    if (this.equipment instanceof Map) {
-      let eq: Record<string, IItemDef> = {};
-      for (let [slot, item] of this.equipment) {
-        eq[slot] = item.serialize();
-      }
-      data.equipment = eq;
-    } else {
-      data.equipment = null;
-    }
+	serialize(): ISerializedPlayer {
+		const account = this.account?.name;
+		const experience = this.experience;
+		const inventory = this.inventory && this.inventory.serialize();
+		const metadata = this.metadata;
+		const password = this.password;
+		const prompt = this.prompt;
+		const quests = this.questTracker.serialize();
+		const role = this.role;
+		let data: ISerializedPlayer = Object.assign(super.serialize(), {
+			account,
+			experience,
+			inventory,
+			metadata,
+			password,
+			prompt,
+			quests,
+			role,
+			_id: this.name,
+		});
 
-    return data;
-  }
+		if (this.equipment instanceof Map) {
+			let eq: Record<string, IItemDef> = {};
+			for (let [slot, item] of this.equipment) {
+				eq[slot] = item.serialize();
+			}
+			data.equipment = eq;
+		} else {
+			data.equipment = null;
+		}
+
+		return data;
+	}
 }
