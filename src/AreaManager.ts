@@ -24,7 +24,11 @@ export class AreaManager {
    * @return Area
    */
   getArea(name: string) {
-    return this.areas.get(name);
+    const area = this.areas.get(name);
+    if (!area) {
+      throw new Error(`AreaManager can't find the Area [${name}]`);
+    }
+    return area;
   }
 
   /**
@@ -35,7 +39,7 @@ export class AreaManager {
     const [name] = entityRef.split(":");
     const area = this.getArea(name);
     if (!area) {
-      throw new Error(`AreaManager did not find Area [${entityRef}]`);
+      throw new Error(`AreaManager did not find Area [${entityRef}] with name [${name}]`);
     }
     return area;
   }

@@ -7,10 +7,10 @@ import { EntityLoader } from "./EntityLoader";
  * @property {EntityLoader} loader
  */
 export class AccountManager {
-      /** @property {Map<string,Account>} accounts */
-      accounts: Map<string,Account>;
-      /** @property {EntityLoader} loader */
-      loader: EntityLoader | null;
+  /** @property {Map<string,Account>} accounts */
+  accounts: Map<string, Account>;
+  /** @property {EntityLoader} loader */
+  loader: EntityLoader | null;
 
   constructor() {
     this.accounts = new Map();
@@ -37,7 +37,11 @@ export class AccountManager {
    * @return {Account|undefined}
    */
   getAccount(username: string) {
-    return this.accounts.get(username);
+    const account = this.accounts.get(username);
+    if (!account) {
+      throw new Error(`AccountManager can't find the Account [${username}]`);
+    }
+    return account;
   }
 
   /**
@@ -50,7 +54,7 @@ export class AccountManager {
     }
 
     if (!this.loader) {
-      throw new Error('No entity loader configured for accounts');
+      throw new Error("No entity loader configured for accounts");
     }
 
     const data = await this.loader.fetch(username);

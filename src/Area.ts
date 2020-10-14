@@ -4,7 +4,7 @@ import { GameEntity } from "./GameEntity";
 import { IGameState } from "./GameState";
 import { Metadata } from "./Metadatable";
 import { Npc } from "./Npc";
-import { Player } from './Player';
+import { Player } from "./Player";
 import { Room } from "./Room";
 
 export interface IAreaDef {
@@ -88,7 +88,11 @@ export class Area extends GameEntity {
    * @return {Room|undefined}
    */
   getRoomById(id: string) {
-    return this.rooms.get(id);
+    const room = this.rooms.get(id);
+    if (!room) {
+      throw new Error(`Area did not find Room with id: [${id}]`);
+    }
+    return room;
   }
 
   /**
@@ -149,10 +153,10 @@ export class Area extends GameEntity {
    */
   removeRoomFromMap(room: Room) {
     if (!room.coordinates) {
-      throw new Error('Room does not have coordinates');
+      throw new Error("Room does not have coordinates");
     }
 
-    const {x, y, z} = room.coordinates;
+    const { x, y, z } = room.coordinates;
 
     if (!this.map.has(z)) {
       throw new Error(`Floor ${z} doesn't exist`);
@@ -160,9 +164,9 @@ export class Area extends GameEntity {
 
     const floor = this.map.get(z);
     if (!floor) {
-      throw new Error(`Floor ${z} is undefined or null.`)
+      throw new Error(`Floor ${z} is undefined or null.`);
     }
-  
+
     floor.removeRoom(x, y);
   }
 

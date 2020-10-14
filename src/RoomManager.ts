@@ -15,7 +15,11 @@ export class RoomManager {
    * @return {Room}
    */
   getRoom(entityRef: EntityReference) {
-    return this.rooms.get(entityRef);
+    const room = this.rooms.get(entityRef);;
+    if (!room) {
+      throw new Error(`RoomManager can't find the Room [${entityRef}]`);
+    }
+    return room;
   }
 
   /**

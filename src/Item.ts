@@ -1,15 +1,12 @@
-import uuid from "uuid/v4";
+// import uuid from "uuid/v4";
 
 import { Area } from "./Area";
 import { GameEntity } from "./GameEntity";
 import { IInventoryDef, Inventory, InventoryEntityType } from "./Inventory";
 import { Logger } from "./Logger";
 import { ItemType } from "./ItemType";
-import { Npc } from "./Npc";
-import { Player } from "./Player";
 import { Room } from "./Room";
 import { IGameState } from "./GameState";
-import { Character } from "./Character";
 
 const uuid = require("uuid/v4");
 
@@ -35,7 +32,7 @@ export declare interface IItemDef {
   locked?: boolean;
   lockedBy?: string | null;
   carriedBy?: InventoryEntityType;
-
+  area: string;
   keywords: string[];
 }
 
@@ -50,6 +47,8 @@ export interface ISerializedItem {
   closed: boolean;
   locked: boolean;
   behaviors: Record<string, any>;
+  area: string;
+  id: string;
 }
 
 /**
@@ -264,7 +263,7 @@ export class Item extends GameEntity {
     this.locked = false;
   }
 
-  hydrate(state: IGameState, serialized?: IItemDef = {}) {
+  hydrate(state: IGameState, serialized?: IItemDef) {
     if (this.__hydrated) {
       Logger.warn("Attempted to hydrate already hydrated item.");
       return false;
@@ -275,27 +274,27 @@ export class Item extends GameEntity {
     state.ItemManager.add(this);
 
     // deep copy behaviors to prevent sharing of the object between item instances
-    if (serialized.behaviors) {
+    if (serialized?.behaviors) {
       const behaviors = JSON.parse(JSON.stringify(serialized.behaviors));
       this.behaviors = new Map(Object.entries(behaviors));
     }
 
     this.setupBehaviors(state.ItemBehaviorManager);
 
-    this.description = serialized.description || this.description;
-    this.keywords = serialized.keywords || this.keywords;
-    this.name = serialized.name || this.name;
-    this.roomDesc = serialized.roomDesc || this.roomDesc;
+    this.description = serialized?.description || this.description;
+    this.keywords = serialized?.keywords || this.keywords;
+    this.name = serialized?.name || this.name;
+    this.roomDesc = serialized?.roomDesc || this.roomDesc;
     this.metadata = JSON.parse(
-      JSON.stringify(serialized.metadata || this.metadata)
+      JSON.stringify(serialized?.metadata || this.metadata)
     );
 
     this.closed = Boolean(
-      "closed" in serialized ? serialized.closed : this.closed
+      serialized && "closed" in serialized ? serialized.closed : this.closed
     );
 
     this.locked = Boolean(
-      "locked" in serialized ? serialized.locked : this.locked
+      serialized && "locked" in serialized ? serialized.locked : this.locked
     );
 
     if (typeof this.area === "string") {
@@ -307,14 +306,16 @@ export class Item extends GameEntity {
       this.inventory.hydrate(state, this);
     } else {
       // otherwise load its default inv
-      this.defaultItems.forEach((defaultItemId: string) => {
-        Logger.verbose(
-          `\tDIST: Adding item [${defaultItemId}] to item [${this.name}]`
-        );
-        const newItem = state.ItemFactory.create(this.area, defaultItemId);
-        newItem.hydrate(state);
-        state.ItemManager.add(newItem);
-        this.addItem(newItem);
+      this.defaultItems.forEach((defaultItemId: string | Item | IItemDef) => {
+        if (typeof defaultItemId == "string") {
+          Logger.verbose(
+            `\tDIST: Adding item [${defaultItemId}] to item [${this.name}]`
+          );
+          const newItem = state.ItemFactory.create(this.area, defaultItemId);
+          newItem.hydrate(state);
+          state.ItemManager.add(newItem);
+          this.addItem(newItem);
+        }
       });
     }
   }

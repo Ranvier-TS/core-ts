@@ -104,7 +104,7 @@ export class Inventory extends Map<string, IItemDef | Item> {
    * @param {GameState} state
    * @param {Character|Item} carriedBy
    */
-  hydrate(state: IGameState, carriedBy: Player | Npc | Item) {
+  hydrate(state: IGameState, carriedBy: InventoryEntityType) {
     // Item is imported here to prevent circular dependency with Item having an Inventory
     const Item = require("./Item");
 
@@ -132,7 +132,6 @@ export class Inventory extends Map<string, IItemDef | Item> {
       newItem.emit("spawn", { type: Inventory });
     }
     this.__hydated = true;
-
   }
 }
 

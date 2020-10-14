@@ -10,6 +10,7 @@ import { Config } from "./Config";
 import { Party } from "./Party";
 import { EquipSlotTakenError, EquipAlreadyEquippedError } from "./EquipErrors";
 import { IEffectConfig, ISerializedEffect } from "./Effect";
+import { IGameState } from "./GameState";
 
 export interface ICharacterConfig {
   /** @property {string}     name       Name shown on look/who/login */

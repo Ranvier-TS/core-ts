@@ -269,7 +269,7 @@ export class EffectableEntity extends EventEmitter {
   hydrate(state: IGameState, serialized = {}) {
     if (this.__hydrated) {
       Logger.warn("Attempted to hydrate already hydrated entity.");
-      return false;
+      return;
     }
 
     if (!(this.attributes instanceof Attributes)) {

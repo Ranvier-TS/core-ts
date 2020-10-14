@@ -57,8 +57,8 @@ export class Player extends Character {
   socket: EventEmitter | null;
   role: PlayerRoles | number;
 
-  __hydrated?: boolean;
-  __pruned?: boolean;
+  __hydrated: boolean = false;
+  __pruned: boolean = false;
 
   constructor(data: IPlayerDef) {
     super(data);
@@ -277,7 +277,7 @@ export class Player extends Character {
   }
 
   serialize(): ISerializedPlayer {
-    const account = this.account.name;
+    const account = this.account?.name;
     const experience = this.experience;
     const inventory = this.inventory && this.inventory.serialize();
     const metadata = this.metadata;
