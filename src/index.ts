@@ -22,7 +22,7 @@ export {
 } from "./Channel";
 export { AudienceOptions, ChannelAudience } from "./ChannelAudience";
 export { ChannelManager } from "./ChannelManager";
-export { Character, CharacterConfig } from "./Character";
+export { Character } from "./Character";
 export { CommandManager } from "./CommandManager";
 export { CommandQueue } from "./CommandQueue";
 export { CommandType } from "./CommandType";
@@ -31,7 +31,7 @@ export { Command } from "./Command";
 export { Damage } from "./Damage";
 export { Data } from "./Data";
 // export { DataSource } from "./DataSource";
-export { Effect, EffectConfig, EffectModifiers } from "./Effect";
+export { Effect, EffectModifiers } from "./Effect";
 // export { EffectableEntity } from "./EffectableEntity";
 export { EffectList } from "./EffectList";
 export { EntityFactory } from "./EntityFactory";
@@ -44,13 +44,13 @@ export { Heal } from "./Heal";
 export { Item } from "./Item";
 export { Inventory, InventoryFullError } from "./Inventory";
 export { Logger } from "./Logger";
-export { Metadatable, MetadatableClass } from "./Metadatable";
+export { Metadatable } from "./Metadatable";
 export { Npc } from "./Npc";
 export { Player } from "./Player";
 export { PlayerManager } from "./PlayerManager";
 export { PlayerRoles } from "./PlayerRoles";
-export { Room, Door, Exit } from "./Room";
-export { Scriptable, ScriptableClass } from "./Scriptable";
+export { Room } from "./Room";
+export { Scriptable } from "./Scriptable";
 export {
   CooldownError,
   NotEnoughResourcesError,

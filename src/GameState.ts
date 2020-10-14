@@ -1,33 +1,29 @@
-import {
-  AccountManager,
-  AreaFactory,
-  AreaManager,
-  AttributeFactory,
-  BehaviorManager,
-  BundleManager,
-  ChannelManager,
-  CommandManager,
-  Config,
-  Data,
-  DataSourceRegistry,
-  EffectFactory,
-  EntityLoaderRegistry,
-  EventManager,
-  GameServer,
-  HelpManager,
-  ItemFactory,
-  ItemManager,
-  MobFactory,
-  MobManager,
-  PartyManager,
-  PlayerManager,
-  QuestFactory,
-  QuestGoalManager,
-  QuestRewardManager,
-  RoomFactory,
-  RoomManager,
-  SkillManager,
-} from '.';
+import { AccountManager } from "./AccountManager";
+import { AreaFactory } from "./AreaFactory";
+import { AreaManager } from "./AreaManager";
+import { AttributeFactory } from "./AttributeFactory";
+import { BehaviorManager } from "./BehaviorManager";
+import { BundleManager } from "./BundleManager";
+import { ChannelManager } from "./ChannelManager";
+import { CommandManager } from "./CommandManager";
+import { DataSourceRegistry } from "./DataSourceRegistry";
+import { EffectFactory } from "./EffectFactory";
+import { EntityLoaderRegistry } from "./EntityLoaderRegistry";
+import { EventManager } from "./EventManager";
+import { GameServer } from "./GameServer";
+import { HelpManager } from "./HelpManager";
+import { ItemFactory } from "./ItemFactory";
+import { ItemManager } from "./ItemManager";
+import { MobFactory } from "./MobFactory";
+import { MobManager } from "./MobManager";
+import { PartyManager } from "./PartyManager";
+import { PlayerManager } from "./PlayerManager";
+import { QuestFactory } from "./QuestFactory";
+import { QuestGoalManager } from "./QuestGoalManager";
+import { QuestRewardManager } from "./QuestRewardManager";
+import { RoomFactory } from "./RoomFactory";
+import { RoomManager } from "./RoomManager";
+import { SkillManager } from "./SkillManager";
 
 export interface IGameState {
   AccountManager: AccountManager;
@@ -35,10 +31,8 @@ export interface IGameState {
   AreaFactory: AreaFactory;
   AreaManager: AreaManager;
   AttributeFactory: AttributeFactory;
-  BundleManager: BundleManager;
   ChannelManager: ChannelManager;
   CommandManager: CommandManager;
-  Config: Config,
   EffectFactory: EffectFactory;
   HelpManager: HelpManager;
   InputEventManager: EventManager;
@@ -57,10 +51,11 @@ export interface IGameState {
   RoomFactory: RoomFactory;
   RoomManager: RoomManager;
   SkillManager: SkillManager;
+  SpellManager?: SkillManager;
   ServerEventManager: EventManager;
   GameServer: GameServer;
-  DataLoader: Data,
   EntityLoaderRegistry: EntityLoaderRegistry;
   DataSourceRegistry: DataSourceRegistry;
-  [key: string]: any; // Not ideal, but fields can be dynamically added.
+  BundleManager: BundleManager;
+  [key: string]: unknown;
 }

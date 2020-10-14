@@ -1,8 +1,50 @@
-'use strict';
+import { EventEmitter } from "events";
+import { Damage } from "./Damage";
+import { PlayerOrNpc } from "./GameEntity";
+import { GameState } from "./GameState";
+import { Skill } from "./Skill";
 
-const EventEmitter = require('events');
+/** @typedef EffectModifiers {{attributes: !Object<string,function>}} */
+export declare type EffectModifiers = { attributes: !object<string, Function> };
 
- /** @typedef EffectModifiers {{attributes: !Object<string,function>}} */
+export declare interface IEffectDef {
+  /** @property {EffectConfig}  config Effect configuration (name/desc/duration/etc.) */
+  config: IEffectConfig;
+  flags?: string[];
+  /** @property {EffectModifiers} modifiers Attribute modifier functions */
+  modifiers: EffectModifiers;
+}
+
+export declare interface IEffectConfig {
+  /** @property {boolean} autoActivate If this effect immediately activates itself when added to the target */
+  autoActivate: boolean;
+  /** @property {boolean} hidden       If this effect is shown in the character's effect list */
+  hidden: boolean;
+  /** @property {boolean} refreshes    If an effect with the same type is applied it will trigger an effectRefresh  event instead of applying the additional effect. */
+  refreshes: boolean;
+  /** @property {boolean} unique       If multiple effects with the same `config.type` can be applied at once */
+  unique: boolean;
+  /** @property {number}  maxStacks    When adding an effect of the same type it adds a stack to the current */
+  /**     effect up to maxStacks instead of adding the effect. Implies `config.unique` */
+  maxStacks: number;
+  /** @property {boolean} persists     If false the effect will not save to the player */
+  persists: boolean;
+  /** @property {string}  type         The effect category, mainly used when disallowing stacking */
+  type: string;
+  /** @property {boolean|number} tickInterval Number of seconds between calls to the `updateTick` listener */
+  tickInterval: boolean | number;
+  /** @property {string}    name */
+  name: string;
+  /** @property {string}    description */
+  description: string;
+  /** @property {number}    duration    Total duration of effect in _milliseconds_ */
+  duration: number;
+  /** @property {number}    elapsed     Get elapsed time in _milliseconds_ */
+  elapsed: number;
+  paused: number | null;
+}
+
+/** @typedef EffectModifiers {{attributes: !Object<string,function>}} */
 var EffectModifiers;
 
 /**
@@ -32,34 +74,56 @@ var EffectModifiers;
  *
  * @listens Effect#effectAdded
  */
-class Effect extends EventEmitter {
-  constructor(id, def) {
+export class Effect extends EventEmitter {
+  /** @property {string}    id     filename minus .js */
+  id: string;
+  /** @property {EffectConfig}  config Effect configuration (name/desc/duration/etc.) */
+  config: IEffectConfig;
+  /** @property {number}    startedAt Date.now() time this effect became active */
+  startedAt: number;
+  /** @property {object}    state  Configuration of this _type_ of effect (magnitude, element, stat, etc.) */
+  state: object;
+  /** @property {Character} target Character this effect is... effecting */
+  target?: PlayerOrNpc;
+  flags: string[];
+  paused: number | null;
+  /** @property {EffectModifiers} modifiers Attribute modifier functions */
+  modifiers: EffectModifiers;
+  active?: boolean;
+  skill?: Skill;
+
+  constructor(id: string, def: IEffectDef) {
     super();
 
     this.id = id;
     this.flags = def.flags || [];
-    this.config = Object.assign({
-      autoActivate: true,
-      description: '',
-      duration: Infinity,
-      hidden: false,
-      maxStacks: 0,
-      name: 'Unnamed Effect',
-      persists: true,
-      refreshes: false,
-      tickInterval: false,
-      type: 'undef',
-      unique: true,
-    }, def.config);
+    this.config = Object.assign(
+      {
+        autoActivate: true,
+        description: "",
+        duration: Infinity,
+        hidden: false,
+        maxStacks: 0,
+        name: "Unnamed Effect",
+        persists: true,
+        refreshes: false,
+        tickInterval: false,
+        type: "undef",
+        unique: true,
+      },
+      def.config
+    );
 
     this.startedAt = 0;
     this.paused = 0;
-    this.modifiers = Object.assign({
-      attributes: {},
-      properties: {},
-      incomingDamage: (damage, current) => current,
-      outgoingDamage: (damage, current) => current,
-    }, def.modifiers);
+    this.modifiers = Object.assign(
+      {
+        attributes: {},
+        incomingDamage: (damage: Damage, current: number) => current,
+        outgoingDamage: (damage: Damage, current: number) => current,
+      },
+      def.modifiers
+    );
 
     // internal state saved across player load e.g., stacks, amount of damage shield remaining, whatever
     // Default state can be found in config.state
@@ -76,7 +140,7 @@ class Effect extends EventEmitter {
     }
 
     if (this.config.autoActivate) {
-      this.on('effectAdded', this.activate);
+      this.on("effectAdded", this.activate);
     }
   }
 
@@ -114,7 +178,7 @@ class Effect extends EventEmitter {
       return null;
     }
 
-    return this.paused || (Date.now() - this.startedAt);
+    return this.paused || Date.now() - this.startedAt;
   }
 
   /**
@@ -139,7 +203,7 @@ class Effect extends EventEmitter {
    */
   activate() {
     if (!this.target) {
-      throw new Error('Cannot activate an effect without a target');
+      throw new Error("Cannot activate an effect without a target");
     }
 
     if (this.active) {
@@ -180,7 +244,7 @@ class Effect extends EventEmitter {
     /**
      * @event Effect#remove
      */
-    this.emit('remove');
+    this.emit("remove");
   }
 
   /**
@@ -205,9 +269,9 @@ class Effect extends EventEmitter {
    * @param {number} currentValue
    * @return {number} attribute value modified by effect
    */
-  modifyAttribute(attrName, currentValue) {
-    let modifier = _ => _;
-    if (typeof this.modifiers.attributes === 'function') {
+  modifyAttribute(attrName: string, currentValue: number) {
+    let modifier = (_?: any) => _;
+    if (typeof this.modifiers.attributes === "function") {
       modifier = (current) => {
         return this.modifiers.attributes.bind(this)(attrName, current);
       };
@@ -241,7 +305,7 @@ class Effect extends EventEmitter {
    * @param {number} currentAmount
    * @return {Damage}
    */
-  modifyIncomingDamage(damage, currentAmount) {
+  modifyIncomingDamage(damage: Damage, currentAmount: number) {
     const modifier = this.modifiers.incomingDamage.bind(this);
     return modifier(damage, currentAmount);
   }
@@ -251,7 +315,7 @@ class Effect extends EventEmitter {
    * @param {number} currentAmount
    * @return {Damage}
    */
-  modifyOutgoingDamage(damage, currentAmount) {
+  modifyOutgoingDamage(damage: Damage, currentAmount: number) {
     const modifier = this.modifiers.outgoingDamage.bind(this);
     return modifier(damage, currentAmount);
   }
@@ -262,11 +326,11 @@ class Effect extends EventEmitter {
    */
   serialize() {
     let config = Object.assign({}, this.config);
-    config.duration = config.duration === Infinity ? 'inf' : config.duration;
+    config.duration = config.duration === Infinity ? "inf" : config.duration;
 
     let state = Object.assign({}, this.state);
     // store lastTick as a difference so we can make sure to start where we left off when we hydrate
-    if (state.lastTick && isFinite(state.lastTick))  {
+    if (state.lastTick && isFinite(state.lastTick)) {
       state.lastTick = Date.now() - state.lastTick;
     }
 
@@ -285,7 +349,7 @@ class Effect extends EventEmitter {
    * @param {GameState}
    * @param {Object} data
    */
-  hydrate(state, data) {
+  hydrate(state: GameState, data) {
     if (data.config) {
       data.config.duration = data.config.duration === 'inf' ? Infinity : data.config.duration;
       this.config = data.config;
@@ -301,9 +365,9 @@ class Effect extends EventEmitter {
     }
 
     if (data.skill) {
-      this.skill = state.SkillManager.get(data.skill) || state.SpellManager.get(data.skill);
+      this.skill =
+        state.SkillManager.get(data.skill) ||
+        state.SpellManager.get(data.skill);
     }
   }
 }
-
-module.exports = Effect;

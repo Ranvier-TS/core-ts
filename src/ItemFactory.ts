@@ -20,6 +20,6 @@ export class ItemFactory extends EntityFactory {
   create(area: Area, entityRef: EntityReference) {
     const item = this.createByType(area, entityRef, Item);
     item.area = area;
-    return item;
+    return item as Item;
   }
 }

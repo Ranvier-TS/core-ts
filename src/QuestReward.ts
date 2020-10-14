@@ -1,3 +1,4 @@
+import { GameState } from "./GameState";
 import { Player } from "./Player";
 import { Quest } from "./Quest";
 
@@ -22,7 +23,7 @@ export class QuestReward {
    * @param {Player} player
    */
   static reward(
-    GameState: IGameState,
+    GameState: GameState,
     quest: Quest,
     config: IQuestRewardDef,
     player: Player
@@ -35,7 +36,7 @@ export class QuestReward {
    * @return string
    */
   static display(
-    GameState: IGameState,
+    GameState: GameState,
     quest: Quest,
     config: IQuestRewardDef,
     player: Player

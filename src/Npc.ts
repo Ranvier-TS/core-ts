@@ -2,6 +2,7 @@ import { Area } from "./Area";
 import { Character } from "./Character";
 import { CommandQueue } from "./CommandQueue";
 import { EntityReference } from "./EntityReference";
+import { IgsGameState } from "./GameState";
 import { Logger } from "./Logger";
 import { Room } from "./Room";
 import { Scriptable } from "./Scriptable";
@@ -35,7 +36,7 @@ export class Npc extends Scriptable(Character) {
 
   constructor(area: Area, data: INpcDef) {
     super(data);
-    const validate = ["keywords", "name", "id"];
+    const validate = ['name', 'id'];
 
     for (const prop of validate) {
       if (!(prop in data)) {

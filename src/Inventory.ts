@@ -1,3 +1,5 @@
+import { Character } from "./Character";
+import { GameState } from "./GameState";
 import { Item, ItemDef } from "./Item";
 import { Npc } from "./Npc";
 import { Player } from "./Player";
@@ -100,7 +102,7 @@ export class Inventory extends Map<string, ItemDef | Item> {
    * @param {GameState} state
    * @param {Character|Item} carriedBy
    */
-  hydrate(state: IGameState, carriedBy: Player | Npc | Item) {
+  hydrate(state: GameState, carriedBy: Player | Npc | Item) {
     // Item is imported here to prevent circular dependency with Item having an Inventory
     const Item = require("./Item");
 

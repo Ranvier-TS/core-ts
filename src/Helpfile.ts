@@ -9,6 +9,7 @@ export interface IHelpOptionsDef {
   command?: string;
   channel?: string;
   related?: string[];
+  aliases?: string[];
   body: string;
 }
 
@@ -21,9 +22,10 @@ export class Helpfile {
   keywords: string[];
   command?: string;
   channel?: string;
-  related?: string[];
+  related: string[];
   body: string;
-  
+  aliases: string[];
+
   /**
    * @param {string} bundle Bundle the helpfile comes from
    * @param {string} name
@@ -49,5 +51,6 @@ export class Helpfile {
     this.related = options.related || [];
     this.body = options.body;
     this.tooltip = options.tooltip;
+    this.aliases = options.aliases || [];
   }
 }

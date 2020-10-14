@@ -1,10 +1,11 @@
 import { EventEmitter } from "events";
-
+import { TelnetStream } from "../types/TelnetStream";
+import { WebsocketStream } from "../types/WebsocketStream";
 /**
  * Base class for anything that should be sending or receiving data from the player
  */
 export class TransportStream extends EventEmitter {
-  socket?: object;
+  socket?: TelnetStream;
 
   get readable() {
     return true;
@@ -14,7 +15,7 @@ export class TransportStream extends EventEmitter {
     return true;
   }
 
-  write() {
+  write(message: string, encoding: string) {
     /* noop */
   }
 
@@ -35,27 +36,27 @@ export class TransportStream extends EventEmitter {
     }
   }
 
-  address() {
+  address(...args: [any]) {
     return null;
   }
 
-  end() {
+  end(...args: [any]) {
     /* noop */
   }
 
-  setEncoding() {
+  setEncoding(...args: [any]) {
     /* noop */
   }
 
-  pause() {
+  pause(...args: [any]) {
     /* noop */
   }
 
-  resume() {
+  resume(...args: [any]) {
     /* noop */
   }
 
-  destroy() {
+  destroy(...args: [any]) {
     /* noop */
   }
 
@@ -63,7 +64,7 @@ export class TransportStream extends EventEmitter {
    * Attach a socket to this stream
    * @param {*} socket
    */
-  attach(socket: object) {
+  attach(socket: TelnetStream | WebsocketStream) {
     this.socket = socket;
 
     this.socket.on("close", (_?: any) => {

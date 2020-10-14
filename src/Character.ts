@@ -1,19 +1,9 @@
-import { Damage } from "./Damage";
-import { EffectableEntity } from './EffectableEntity';
+import { EffectableEntity } from "./EffectableEntity";
 import { Item } from "./Item";
 import { IInventoryDef, Inventory, InventoryFullError } from "./Inventory";
-import { Logger } from "./Logger";
 import { Metadatable } from "./Metadatable";
-import { EventEmitter } from "events";
 import { Room } from "./Room";
-import { Attributes } from "./Attributes";
 import { Config } from "./Config";
-
-const EffectList = require("./EffectList");
-const {
-  EquipSlotTakenError,
-  EquipAlreadyEquippedError,
-} = require("./EquipErrors");
 
 export interface ICharacterConfig {
   /** @property {string}     name       Name shown on look/who/login */
@@ -58,8 +48,6 @@ export class Character extends Metadatable(EffectableEntity) {
   combatants: Set<any>;
   /** @property {number}     level */
   level: number;
-  /** @property {EffectList} effects    List of current effects applied to the character */
-  effects: EffectList;
   /** @property {Room}       room       Room the character is currently in */
   room: Room;
 
@@ -336,7 +324,7 @@ export class Character extends Metadatable(EffectableEntity) {
    */
   unfollow() {
     if (!this.following) {
-      return
+      return;
     }
 
     this.following.removeFollower(this);
@@ -394,26 +382,15 @@ export class Character extends Metadatable(EffectableEntity) {
 
   /**
    * Gather data to be persisted
-   * 
+   *
    * @return {Object}
    */
   serialize(): ISerializedCharacter {
-    const toReturn = {
+    return Object.assign(super.serialize(), {
       level: this.level,
       name: this.name,
-      room: this.room?.entityReference || 'void',
-      attributes: this.attributes,
-      effects: this.effects,
-    };
-
-    if (this.__hydrated) {
-      return Object.assign(toReturn, {
-        attributes: this.attributes.serialize(),
-        effects: this.effects.serialize(),
-      });
-    } else {
-      return toReturn;
-    }
+      room: this.room.entityReference || "void",
+    });
   }
 
   /**

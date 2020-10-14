@@ -8,6 +8,9 @@ import { ItemType } from "./ItemType";
 import { Npc } from './Npc';
 import { Player } from './Player';
 import { Room } from "./Room";
+import { GameState } from "./GameState";
+
+const uuid = require("uuid/v4");
 
 export declare interface IItemDef {
   name: string;
@@ -259,7 +262,7 @@ export class Item extends GameEntity {
     this.locked = false;
   }
 
-  hydrate(state: IGameState, serialized?: IItemDef = {}) {
+  hydrate(state: GameState, serialized?: IItemDef = {}) {
     if (this.__hydrated) {
       Logger.warn("Attempted to hydrate already hydrated item.");
       return false;

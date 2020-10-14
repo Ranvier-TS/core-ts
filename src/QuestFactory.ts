@@ -8,6 +8,7 @@ export interface IQuestFactoryDef {
   area: string;
   id: string;
   config: IQuestDef;
+  npc?: EntityReference;
 }
 
 /**
@@ -77,7 +78,7 @@ export class QuestFactory {
    * @return {Quest}
    */
   create(
-    GameState: IGameState,
+    GameState: GameState,
     qid: EntityReference,
     player: Player,
     state: any[] = []

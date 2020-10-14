@@ -3,6 +3,7 @@
 import { Character, ICharacterConfig, ISerializedCharacter } from "./Character";
 import { CommandQueue } from "./CommandQueue";
 import { Config } from "./Config";
+import { IGameState } from "./GameState";
 import { IInventoryDef } from "./Inventory";
 import { IItemDef } from "./Item";
 import { Logger } from "./Logger";
@@ -45,6 +46,7 @@ export interface ISerializedPlayer extends ISerializedCharacter {
  * @extends Character
  */
 export class Player extends Character {
+  account: Account | null;
   constructor(data: IPlayerDef) {
     super(data);
 
@@ -91,12 +93,13 @@ export class Player extends Character {
    */
   emit(event: string, ...args: any) {
     if (this.__pruned || !this.__hydrated) {
-      return;
+      return false;
     }
 
-    super.emit(event, ...args);
+    const result = super.emit(event, ...args);
 
     this.questTracker.emit(event, ...args);
+    return result;
   }
 
   /**
@@ -203,7 +206,7 @@ export class Player extends Character {
     this.emit("save", callback);
   }
 
-  hydrate(state: IGameState) {
+  hydrate(state: GameState) {
     super.hydrate(state);
 
     // QuestTracker has to be hydrated before the rest otherwise events fired by the subsequent

@@ -8,7 +8,7 @@ import { Player } from "./Player";
  */
 export class WorldAudience extends ChannelAudience {
   getBroadcastTargets() {
-    return this.state.PlayerManager.filter(
+    return this.state?.PlayerManager.filter(
       (player: Player) => player !== this.sender
     );
   }

@@ -1,6 +1,8 @@
 import { Broadcast } from "./Broadcast";
 import { Damage } from "./Damage";
+import { Effect } from "./Effect";
 import { PlayerOrNpc } from "./GameEntity";
+import { GameState } from "./GameState";
 import {
   CooldownError,
   NotEnoughResourcesError,
@@ -52,14 +54,14 @@ export class Skill {
   effect: string | null;
   flags: any[];
   id: string;
-  info: Skill;
+  info: Function;
   initiatesCombat: boolean;
   name: string;
   options: object;
   requiresTarget: boolean;
   resource: ISkillResource | ISkillResource[];
   run: Function;
-  state: IGameState;
+  state: GameState;
   targetSelf: boolean;
   type: SkillType;
   /**
@@ -67,7 +69,7 @@ export class Skill {
    * @param {object} config
    * @param {GameState} state
    */
-  constructor(id: string, config: ISkillOptions, state: IGameState) {
+  constructor(id: string, config: ISkillOptions, state: GameState) {
     const {
       configureEffect = (_: any) => _,
       cooldown = null,
@@ -251,7 +253,7 @@ export class Skill {
     return effect;
   }
 
-  getDefaultCooldownConfig() {
+  getDefaultCooldownConfig() : Effect{
     return {
       config: {
         name: "Cooldown",

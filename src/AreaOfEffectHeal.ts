@@ -1,25 +1,25 @@
-'use strict';
-
-const Heal = require('./Heal');
-const Room = require('./Room');
-const Character = require('./Character');
+import { Character } from "./Character";
+import { PlayerOrNpc } from "./GameEntity";
+import { Heal } from "./Heal";
+import { Room } from "./Room";
 
 /**
  * Heal class used for applying healing to multiple entities in a room. By
  * default it will target all players in the room. To customize this behavior you
  * can extend this class and override the `getValidTargets` method
  */
-class AreaOfEffectHeal extends Heal
-{
+export class AreaOfEffectHeal extends Heal {
   /**
    * @param {Room|Character} target
    * @throws RangeError
    * @fires Room#areaHeal
    */
-  commit(room) {
+  commit(room: Room | PlayerOrNpc) {
     if (!(room instanceof Room)) {
       if (!(room instanceof Character)) {
-        throw new RangeError('AreaOfEffectHeal commit target must be an instance of Room or Character');
+        throw new RangeError(
+          "AreaOfEffectHeal commit target must be an instance of Room or Character"
+        );
       }
 
       super.commit(room);
@@ -31,13 +31,12 @@ class AreaOfEffectHeal extends Heal
       super.commit(target);
     }
 
-
     /**
      * @event Room#areaHeal
      * @param {Heal} heal
      * @param {Array<Character>} targets
      */
-    room.emit('areaHeal', this, targets);
+    room.emit("areaHeal", this, targets);
   }
 
   /**
@@ -46,10 +45,8 @@ class AreaOfEffectHeal extends Heal
    * @param {Room} room
    * @return {Array<Character>}
    */
-  getValidTargets(room) {
+  getValidTargets(room: Room) {
     const targets = [...room.players];
-    return targets.filter(t => t.hasAttribute(this.attribute));
+    return targets.filter((t) => t.hasAttribute(this.attribute));
   }
 }
-
-module.exports = AreaOfEffectHeal;

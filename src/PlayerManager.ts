@@ -1,12 +1,14 @@
-import { EventEmitter } from "events";
-import { Account } from "./Account";
-import { Data } from "./Data";
+import { EventEmitter } from 'events';
+import { Account } from './Account';
+import { Data } from './Data';
 import { EffectableEntity } from './EffectableEntity';
-import { EntityLoader } from "./EntityLoader";
+import { EntityLoader } from './EntityLoader';
+import { EventManager } from './EventManager';
+import { IGameState } from './GameState';
 import { Logger } from './Logger';
-import { Player } from "./Player";
+import { Player } from './Player';
 
-import { EventManager } from "./EventManager";
+
 
 /**
  * Keeps track of all active players in game

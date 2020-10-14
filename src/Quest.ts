@@ -1,11 +1,12 @@
 import { EventEmitter } from "events";
 import { EntityReference } from "./EntityReference";
 import { IGameState } from './GameState';
-import { ISerializedPlayer, Player } from "./Player";
+import { Player } from "./Player";
 import { IQuestGoalDef, QuestGoal } from "./QuestGoal";
 import { IQuestRewardDef } from "./QuestReward";
 
 export interface IQuestDef {
+  id: string;
   entityReference: EntityReference;
   title: string;
   description: string;

@@ -220,10 +220,9 @@ export class Room extends GameEntity {
     if (this.metadata.diagonalDirections !== undefined) {
       return this.metadata.diagonalDirections;
     }
-    if (Config.get('diagonalDirections') !== undefined) {
-      return Config.get('diagonalDirections')
-    }
-    else return true
+    if (Config.get("diagonalDirections") !== undefined) {
+      return Config.get("diagonalDirections");
+    } else return true;
   }
 
   /**
@@ -254,10 +253,10 @@ export class Room extends GameEntity {
     if (this.checkDiagonalDirections()) {
       adjacents = [
         ...adjacents,
-        { dir: 'northeast', coord: [1, 1, 0] },
-        { dir: 'northwest', coord: [-1, 1, 0] },
-        { dir: 'southeast', coord: [1, -1, 0] },
-        { dir: 'southwest', coord: [-1, -1, 0] }
+        { dir: "northeast", coord: [1, 1, 0] },
+        { dir: "northwest", coord: [-1, 1, 0] },
+        { dir: "southeast", coord: [1, -1, 0] },
+        { dir: "southwest", coord: [-1, -1, 0] },
       ];
     }
 
@@ -404,11 +403,11 @@ export class Room extends GameEntity {
 
   /**
    * Spawn an Item in the Room
-   * 
+   *
    * @param {GameState} state
    * @param {string} entityRef
    * @return {Item}
-   * 
+   *
    * @fires Item#spawn
    */
   spawnItem(state: IGameState, entityRef: EntityReference) {
@@ -429,11 +428,11 @@ export class Room extends GameEntity {
 
   /**
    * Spawn an Npc in the Room
-   * 
+   *
    * @param {GameState} state
    * @param {string} entityRef
    * @return {Npc}
-   * 
+   *
    * @fires Npc#spawn
    */
   spawnNpc(state: IGameState, entityRef: EntityReference) {
@@ -455,7 +454,7 @@ export class Room extends GameEntity {
 
   /**
    * Initialize the Room
-   * 
+   *
    * @param {GameState} state
    */
   hydrate(state: IGameState) {
@@ -489,7 +488,7 @@ export class Room extends GameEntity {
         if (typeof defaultNpc === 'string') {
           defaultNpc = { id: defaultNpc };
         }
-  
+
         try {
           this.spawnNpc(state, defaultNpc.id);
         } catch (err) {
@@ -499,7 +498,9 @@ export class Room extends GameEntity {
     // Support composing Npcs in room using an object.
     } else {
       Object.keys(this.defaultNpcs).forEach((defaultNpc: EntityReference) => {
-        const npc: Partial<IRoomNpcDef> | boolean = (this.defaultNpcs[defaultNpc] as ComposableDef<IRoomNpcDef>);
+        const npc: Partial<IRoomNpcDef> | boolean = (
+          this.defaultNpcs as ComposableDef<IRoomNpcDef>
+        )[defaultNpc];
         if (npc === false) return;
         const newNpc = this.spawnNpc(state, defaultNpc.replace(/%.*$/g, ''));
 
