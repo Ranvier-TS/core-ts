@@ -31,7 +31,7 @@ export class Data {
 			'.json': JSON.parse,
 		};
 
-		const ext = path.extname(filepath);
+		const ext: keyof typeof parsers = path.extname(filepath);
 		if (!(ext in parsers)) {
 			throw new Error(`File [${filepath}] does not have a valid parser!`);
 		}
@@ -63,7 +63,7 @@ export class Data {
 			},
 		};
 
-		const ext = path.extname(filepath);
+		const ext: keyof typeof serializers = path.extname(filepath);
 		if (!(ext in serializers)) {
 			throw new Error(`File [${filepath}] does not have a valid serializer!`);
 		}
@@ -128,6 +128,10 @@ export class Data {
 			case 'account': {
 				return dataPath + `account/${id}.json`;
 			}
+			default:
+				throw new Error(
+					`Data getDataFilePath cannot find the data path for type [${type}]`
+				);
 		}
 	}
 
