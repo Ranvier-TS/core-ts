@@ -1,6 +1,8 @@
 'use strict';
 
 import { EventEmitter } from 'events';
+import { TelnetStream } from '../types/TelnetStream';
+import { WebsocketStream } from '../types/WebsocketStream';
 import { Character, ICharacterConfig, ISerializedCharacter } from './Character';
 import { CommandQueue, ICommandExecutable } from './CommandQueue';
 import { Config } from './Config';
@@ -14,11 +16,11 @@ import { QuestTracker, SerializedQuestTracker } from './QuestTracker';
 import { Room } from './Room';
 
 export interface IPlayerDef extends ICharacterConfig {
-	account: Account | null;
+	account: Account;
 	experience: number;
 	password: string;
 	prompt: string;
-	socket: EventEmitter | null;
+	socket: TelnetStream | WebsocketStream | null;
 	quests: SerializedQuestTracker;
 	role: PlayerRoles | number;
 }
@@ -54,7 +56,7 @@ export class Player extends Character {
 	password: string;
 	prompt: string;
 	questTracker: QuestTracker;
-	socket: EventEmitter | null;
+	socket: TelnetStream | WebsocketStream | null;
 	role: PlayerRoles | number;
 
 	__hydrated: boolean = false;

@@ -1,6 +1,6 @@
 import { Broadcast } from './Broadcast';
 import { Damage } from './Damage';
-import { Effect } from './Effect';
+import { Effect, IEffectDef } from './Effect';
 import { PlayerOrNpc } from './GameEntity';
 import { IGameState } from './GameState';
 import {
@@ -237,7 +237,7 @@ export class Skill {
 	 */
 	createCooldownEffect() {
 		if (!this.state.EffectFactory.has('cooldown')) {
-			this.state.EffectFactory.add('cooldown', this.getDefaultCooldownConfig());
+			this.state.EffectFactory.add('cooldown', this.getDefaultCooldownConfig(), this.state);
 		}
 
 		const effect = this.state.EffectFactory.create(
@@ -253,7 +253,7 @@ export class Skill {
 		return effect;
 	}
 
-	getDefaultCooldownConfig(): Effect {
+	getDefaultCooldownConfig(): IEffectDef {
 		return {
 			config: {
 				name: 'Cooldown',

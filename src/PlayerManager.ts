@@ -5,6 +5,7 @@ import { EffectableEntity } from './EffectableEntity';
 import { EntityLoader } from './EntityLoader';
 import { EventManager } from './EventManager';
 import { IGameState } from './GameState';
+import { Item } from './Item';
 import { Logger } from './Logger';
 import { Player } from './Player';
 
@@ -61,7 +62,7 @@ export class PlayerManager extends EventEmitter {
 	 */
 	removePlayer(player: Player, killSocket: boolean = false) {
 		if (killSocket) {
-			player.socket.end();
+			player.socket?.end();
 		}
 
 		player.removeAllListeners();
@@ -71,12 +72,23 @@ export class PlayerManager extends EventEmitter {
 			player.room.removePlayer(player);
 		}
 
-		if (player.equipment && player.equipment.size) {
-			player.equipment.forEach((item, slot) => player.unequip(slot));
+		if (
+			player.equipment &&
+			player.equipment instanceof Map &&
+			player.equipment.size
+		) {
+			player.equipment.forEach((item: Item, slot: string) =>
+				player.unequip(slot)
+			);
 		}
 
-		if (player.inventory && player.inventory.size) {
-			player.inventory.forEach((item) => item.__manager.remove(item));
+		if (
+			player.inventory &&
+			player.inventory.size
+		) {
+			(player.inventory as Map<string, Item>).forEach((item: Item) =>
+				item.__manager.remove(item)
+			);
 		}
 
 		player.__pruned = true;
@@ -104,7 +116,7 @@ export class PlayerManager extends EventEmitter {
 	 * @return {array},
 	 */
 	filter(
-		predicate: (player: Player, index: number, array: Player[]) => Player[]
+		predicate: (player: Player, index: number, array: Player[]) => boolean
 	) {
 		return this.getPlayersAsArray().filter(predicate);
 	}
@@ -134,7 +146,7 @@ export class PlayerManager extends EventEmitter {
 		const data = await this.loader.fetch(username);
 		data.name = username;
 
-		let player = new Player(data);
+		const player = new Player(data);
 		player.account = account;
 
 		this.events.attach(player as EffectableEntity);

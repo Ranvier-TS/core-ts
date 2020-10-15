@@ -8,7 +8,7 @@ const wrap = require('wrap-ansi');
 
 /** @typedef {{getBroadcastTargets: function(): Array}} */
 // var Broadcastable;
-export declare type Broadcastable =
+export type Broadcastable =
 	| PlayerOrNpc
 	| {
 			getBroadcastTargets: () => Broadcastable[];

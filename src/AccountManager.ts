@@ -34,7 +34,7 @@ export class AccountManager {
 
 	/**
 	 * @param {string} username
-	 * @return {Account|undefined}
+	 * @return {Account}
 	 */
 	getAccount(username: string) {
 		const account = this.accounts.get(username);
