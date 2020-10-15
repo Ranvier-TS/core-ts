@@ -79,6 +79,7 @@ export class Item extends GameEntity {
 	name: string;
 	id: string;
 
+	area: Area;
 	description: string;
 	metadata: Record<string, unknown>;
 	behaviors: Map<string, any>;
@@ -208,11 +209,11 @@ export class Item extends GameEntity {
 		let owner = this.carriedBy;
 
 		while (owner) {
-			if (!owner.carriedBy) {
+			if (!(owner as Item).carriedBy) {
 				return owner;
+			} else {
+				owner = (owner as Item).carriedBy;
 			}
-
-			owner = owner.carriedBy;
 		}
 
 		return null;
