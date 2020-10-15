@@ -1,6 +1,6 @@
 import { Character } from './Character';
 import { IGameState } from './GameState';
-import { Item, IItemDef } from './Item';
+import { Item, IItemDef, ISerializedItem } from './Item';
 import { Npc } from './Npc';
 import { Player } from './Player';
 
@@ -83,7 +83,10 @@ export class Inventory extends Map<string, IItemDef | Item> {
 		// Item is imported here to prevent circular dependency with Item having an Inventory
 		const Item = require('./Item');
 
-		let data = {
+		let data: {
+			items: [string, ISerializedItem][],
+			max: number;
+		} = {
 			items: [],
 			max: this.maxSize,
 		};
@@ -94,7 +97,7 @@ export class Inventory extends Map<string, IItemDef | Item> {
 				continue;
 			}
 
-			data.items.push([uuid, item.serialize()]);
+			data.items.push([uuid, (item as Item).serialize()]);
 		}
 
 		return data;
@@ -123,7 +126,7 @@ export class Inventory extends Map<string, IItemDef | Item> {
 			newItem.uuid = uuid;
 			newItem.carriedBy = carriedBy;
 			newItem.initializeInventory(def.inventory);
-			newItem.hydrate(state, def);
+			newItem.hydrate(state, def as IItemDef);
 			this.set(uuid, newItem);
 			state.ItemManager.add(newItem);
 			/**
