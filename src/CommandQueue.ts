@@ -2,12 +2,17 @@ import { Command } from './Command';
 
 /** @typedef {{ execute: function (), label: string, lag: number= }} */
 var CommandExecutable;
+export interface ICommandExecutable {
+	execute(): void;
+	label: string;
+	lag?: number;
+}
 
 /**
  * Keeps track of the queue off commands to execute for a player
  */
 export class CommandQueue {
-	commands: Command[];
+	commands: ICommandExecutable[];
 	lag: number;
 	lastRun: number;
 
@@ -32,7 +37,7 @@ export class CommandQueue {
 	 * @param {number} lag Amount of lag to apply to the queue after the command is run
 	 * @returns {number}
 	 */
-	enqueue(executable: CommandExecutable, lag: number) {
+	enqueue(executable: ICommandExecutable, lag: number) {
 		let newIndex = this.commands.push(Object.assign(executable, { lag })) - 1;
 		return newIndex;
 	}
@@ -56,7 +61,7 @@ export class CommandQueue {
 			return false;
 		}
 		this.lastRun = Date.now();
-		this.lag = command.lag;
+		this.lag = command.lag || 0;
 		command.execute();
 		return true;
 	}
@@ -130,7 +135,7 @@ export class CommandQueue {
 				return lagTotal;
 			}
 
-			lagTotal += this.commands[i].lag;
+			lagTotal += this.commands[i].lag || 0;
 		}
 		throw new RangeError('Invalid command index');
 	}

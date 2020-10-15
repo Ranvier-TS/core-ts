@@ -2,7 +2,7 @@
 
 import { EventEmitter } from 'events';
 import { Character, ICharacterConfig, ISerializedCharacter } from './Character';
-import { CommandQueue } from './CommandQueue';
+import { CommandQueue, ICommandExecutable } from './CommandQueue';
 import { Config } from './Config';
 import { IGameState } from './GameState';
 import { IInventoryDef } from './Inventory';
@@ -94,7 +94,7 @@ export class Player extends Character {
 	/**
 	 * @see CommandQueue::enqueue
 	 */
-	queueCommand(executable: Function, lag: number) {
+	queueCommand(executable: ICommandExecutable, lag: number) {
 		const index = this.commandQueue.enqueue(executable, lag);
 		this.emit('commandQueued', index);
 	}
