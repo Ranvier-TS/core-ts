@@ -15,7 +15,7 @@ export class TransportStream extends EventEmitter {
 		return true;
 	}
 
-	write(message: string, encoding: string) {
+	write(message: string, encoding?: string) {
 		/* noop */
 	}
 
