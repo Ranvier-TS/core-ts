@@ -1,4 +1,4 @@
 export declare enum SkillFlag {
-  PASSIVE = "PASSIVE",
-  ACTIVE = "ACTIVE",
+	PASSIVE = 'PASSIVE',
+	ACTIVE = 'ACTIVE',
 }

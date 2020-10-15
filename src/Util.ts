@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /** @module Util */
 /**
@@ -7,5 +7,5 @@
  * @return {boolean}
  */
 export function isIterable(obj: object) {
-  return obj && typeof obj[Symbol.iterator] === "function";
+	return obj && typeof obj[Symbol.iterator] === 'function';
 }

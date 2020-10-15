@@ -1,18 +1,18 @@
-import { TransportStream } from "../src/TransportStream";
+import { TransportStream } from '../src/TransportStream';
 
 /**
  * Thin wrapper around a ranvier-telnet `TelnetSocket`
  */
 export declare class TelnetStream extends TransportStream {
-  attach(socket: TelnetStream): void;
+	attach(socket: TelnetStream): void;
 
-  write(message: string, encoding: string): void;
+	write(message: string, encoding: string): void;
 
-  pause(): void;
+	pause(): void;
 
-  resume(): void;
+	resume(): void;
 
-  end(): void;
+	end(): void;
 
-  executeToggleEcho(): void;
+	executeToggleEcho(): void;
 }

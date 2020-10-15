@@ -1,4 +1,4 @@
 export enum EffectFlag {
-  BUFF = "BUFF",
-  DEBUFF = "DEBUFF",
+	BUFF = 'BUFF',
+	DEBUFF = 'DEBUFF',
 }

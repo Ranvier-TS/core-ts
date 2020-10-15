@@ -1,4 +1,4 @@
-import { Room } from "./Room";
+import { Room } from './Room';
 
 /**
  * IF you absolutely need to iterate over a floor in a tight (nested) loop you
@@ -26,68 +26,68 @@ import { Room } from "./Room";
  * @property {number} z This floor's z index
  */
 export class AreaFloor {
-  /** @property {number} lowX The lowest x value */
-  lowX: number;
-  /** @property {number} highX The highest x value */
-  highX: number;
-  /** @property {number} lowY The lowest y value */
-  lowY: number;
-  /** @property {number} highY The highest y value */
-  highY: number;
-  /** @property {number} z This floor's z index */
-  z: number;
-  map: Room | undefined[][];
+	/** @property {number} lowX The lowest x value */
+	lowX: number;
+	/** @property {number} highX The highest x value */
+	highX: number;
+	/** @property {number} lowY The lowest y value */
+	lowY: number;
+	/** @property {number} highY The highest y value */
+	highY: number;
+	/** @property {number} z This floor's z index */
+	z: number;
+	map: Room | undefined[][];
 
-  constructor(z: number) {
-    this.z = z;
-    this.lowX = this.highX = this.lowY = this.highY = 0;
-    this.map = [];
-  }
+	constructor(z: number) {
+		this.z = z;
+		this.lowX = this.highX = this.lowY = this.highY = 0;
+		this.map = [];
+	}
 
-  addRoom(x: number, y: number, room: Room) {
-    if (!room) {
-      throw new Error("Invalid room given to AreaFloor.addRoom");
-    }
+	addRoom(x: number, y: number, room: Room) {
+		if (!room) {
+			throw new Error('Invalid room given to AreaFloor.addRoom');
+		}
 
-    if (this.getRoom(x, y)) {
-      throw new Error(
-        `AreaFloor.addRoom: trying to add room at filled coordinates: ${x}, ${y}`
-      );
-    }
+		if (this.getRoom(x, y)) {
+			throw new Error(
+				`AreaFloor.addRoom: trying to add room at filled coordinates: ${x}, ${y}`
+			);
+		}
 
-    if (x < this.lowX) {
-      this.lowX = x;
-    } else if (x > this.highX) {
-      this.highX = x;
-    }
+		if (x < this.lowX) {
+			this.lowX = x;
+		} else if (x > this.highX) {
+			this.highX = x;
+		}
 
-    if (y < this.lowY) {
-      this.lowY = y;
-    } else if (y > this.highY) {
-      this.highY = y;
-    }
+		if (y < this.lowY) {
+			this.lowY = y;
+		} else if (y > this.highY) {
+			this.highY = y;
+		}
 
-    if (!Array.isArray(this.map[x])) {
-      this.map[x] = [];
-    }
+		if (!Array.isArray(this.map[x])) {
+			this.map[x] = [];
+		}
 
-    this.map[x][y] = room;
-  }
+		this.map[x][y] = room;
+	}
 
-  /**
-   * @return {Room|boolean}
-   */
-  getRoom(x: number, y: number) {
-    return this.map[x] && this.map[x][y];
-  }
+	/**
+	 * @return {Room|boolean}
+	 */
+	getRoom(x: number, y: number) {
+		return this.map[x] && this.map[x][y];
+	}
 
-  removeRoom(x: number, y: number) {
-    if (!this.map[x] || !this.map[x][y]) {
-      throw new Error(
-        "AreaFloor.removeRoom: trying to remove non-existent room"
-      );
-    }
+	removeRoom(x: number, y: number) {
+		if (!this.map[x] || !this.map[x][y]) {
+			throw new Error(
+				'AreaFloor.removeRoom: trying to remove non-existent room'
+			);
+		}
 
-    this.map[x][y] = undefined;
-  }
+		this.map[x][y] = undefined;
+	}
 }

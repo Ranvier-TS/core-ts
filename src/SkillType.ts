@@ -1,4 +1,4 @@
 export declare enum SkillType {
-  SKILL = 'SKILL',
-  SPELL = 'SPELL',
+	SKILL = 'SKILL',
+	SPELL = 'SPELL',
 }

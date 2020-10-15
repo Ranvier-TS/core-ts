@@ -1,20 +1,20 @@
-import { TransportStream } from "../src/TransportStream";
+import { TransportStream } from '../src/TransportStream';
 
 /**
  * Essentially we want to look at the methods of WebSocket and match them to the appropriate methods on TransportStream
  */
 export declare class WebsocketStream extends TransportStream {
-  attach(socket: WebsocketStream): void;
+	attach(socket: WebsocketStream): void;
 
-  write(message: string): void;
+	write(message: string): void;
 
-  pause(): void;
+	pause(): void;
 
-  resume(): void;
+	resume(): void;
 
-  end(): void;
+	end(): void;
 
-  executeToggleEcho(): void;
+	executeToggleEcho(): void;
 
-  executeSendData(group: string, data: any): void;
+	executeSendData(group: string, data: any): void;
 }

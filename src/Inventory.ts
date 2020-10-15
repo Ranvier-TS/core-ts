@@ -1,135 +1,138 @@
-import { Character } from "./Character";
-import { GameState } from "./GameState";
-import { Item, ItemDef } from "./Item";
-import { Npc } from "./Npc";
-import { Player } from "./Player";
+import { Character } from './Character';
+import { IGameState } from './GameState';
+import { Item, IItemDef } from './Item';
+import { Npc } from './Npc';
+import { Player } from './Player';
 
-export declare interface IInventoryDef {
-  items?: [string, ItemDef | Item][];
-  max?: number;
+export interface IInventoryDef {
+	items?: [string, IItemDef | Item][];
+	max?: number;
 }
 
-export declare interface ISerializedInventory {
-  items?: [string, ItemDef][];
-  max?: number;
+export interface ISerializedInventory {
+	items?: [string, IItemDef][];
+	max?: number;
 }
 
+export type InventoryEntityType = Npc | Player | Item;
 /**
  * Representation of a `Character` or container `Item` inventory
  * @extends Map
  */
-export class Inventory extends Map<string, ItemDef | Item> {
-  maxSize: number;
+export class Inventory extends Map<string, IItemDef | Item> {
+	maxSize: number;
+	__hydated: boolean;
+	/**
+	 * @param {object} init
+	 * @param {Array<Item>} init.items
+	 * @param {number} init.max Max number of items this inventory can hold
+	 */
+	constructor(init: IInventoryDef = {}) {
+		init = Object.assign(
+			{
+				items: [],
+				max: Infinity,
+			},
+			init
+		);
 
-  /**
-   * @param {object} init
-   * @param {Array<Item>} init.items
-   * @param {number} init.max Max number of items this inventory can hold
-   */
-  constructor(init: IInventoryDef = {}) {
-    init = Object.assign(
-      {
-        items: [],
-        max: Infinity,
-      },
-      init
-    );
+		super(init.items);
+		this.maxSize = init.max || Infinity;
+		this.__hydated = false;
+	}
 
-    super(init.items);
-    this.maxSize = init.max || Infinity;
-  }
+	/**
+	 * @param {number} size
+	 */
+	setMax(size: number) {
+		this.maxSize = size;
+	}
 
-  /**
-   * @param {number} size
-   */
-  setMax(size: number) {
-    this.maxSize = size;
-  }
+	/**
+	 * @return {number}
+	 */
+	getMax() {
+		return this.maxSize;
+	}
 
-  /**
-   * @return {number}
-   */
-  getMax() {
-    return this.maxSize;
-  }
+	/**
+	 * @return {boolean}
+	 */
+	get isFull() {
+		return this.size >= this.maxSize;
+	}
 
-  /**
-   * @return {boolean}
-   */
-  get isFull() {
-    return this.size >= this.maxSize;
-  }
+	/**
+	 * @param {Item} item
+	 */
+	addItem(item: Item) {
+		if (this.isFull) {
+			throw new InventoryFullError();
+		}
+		this.set(item.uuid, item);
+	}
 
-  /**
-   * @param {Item} item
-   */
-  addItem(item: Item) {
-    if (this.isFull) {
-      throw new InventoryFullError();
-    }
-    this.set(item.uuid, item);
-  }
+	/**
+	 * @param {Item} item
+	 */
+	removeItem(item: Item) {
+		this.delete(item.uuid);
+	}
 
-  /**
-   * @param {Item} item
-   */
-  removeItem(item: Item) {
-    this.delete(item.uuid);
-  }
+	serialize() {
+		// Item is imported here to prevent circular dependency with Item having an Inventory
+		const Item = require('./Item');
 
-  serialize() {
-    // Item is imported here to prevent circular dependency with Item having an Inventory
-    const Item = require("./Item");
+		let data = {
+			items: [],
+			max: this.maxSize,
+		};
 
-    let data = {
-      items: [],
-      max: this.maxSize,
-    };
+		for (const [uuid, item] of this) {
+			if (!(item instanceof Item)) {
+				this.delete(uuid);
+				continue;
+			}
 
-    for (const [uuid, item] of this) {
-      if (!(item instanceof Item)) {
-        this.delete(uuid);
-        continue;
-      }
+			data.items.push([uuid, item.serialize()]);
+		}
 
-      data.items.push([uuid, item.serialize()]);
-    }
+		return data;
+	}
 
-    return data;
-  }
+	/**
+	 * @param {GameState} state
+	 * @param {Character|Item} carriedBy
+	 */
+	hydrate(state: IGameState, carriedBy: InventoryEntityType) {
+		// Item is imported here to prevent circular dependency with Item having an Inventory
+		const Item = require('./Item');
 
-  /**
-   * @param {GameState} state
-   * @param {Character|Item} carriedBy
-   */
-  hydrate(state: GameState, carriedBy: Player | Npc | Item) {
-    // Item is imported here to prevent circular dependency with Item having an Inventory
-    const Item = require("./Item");
+		for (const [uuid, def] of this) {
+			if (def instanceof Item) {
+				def.carriedBy = carriedBy;
+				continue;
+			}
 
-    for (const [uuid, def] of this) {
-      if (def instanceof Item) {
-        def.carriedBy = carriedBy;
-        continue;
-      }
+			if (!def.entityReference) {
+				continue;
+			}
 
-      if (!def.entityReference) {
-        continue;
-      }
-
-      const area = state.AreaManager.getAreaByReference(def.entityReference);
-      let newItem = state.ItemFactory.create(area, def.entityReference);
-      newItem.uuid = uuid;
-      newItem.carriedBy = carriedBy;
-      newItem.initializeInventory(def.inventory);
-      newItem.hydrate(state, def);
-      this.set(uuid, newItem);
-      state.ItemManager.add(newItem);
-      /**
-       * @event Item#spawn
-       */
-      newItem.emit('spawn', {type: Inventory});
-    }
-  }
+			const area = state.AreaManager.getAreaByReference(def.entityReference);
+			let newItem = state.ItemFactory.create(area, def.entityReference);
+			newItem.uuid = uuid;
+			newItem.carriedBy = carriedBy;
+			newItem.initializeInventory(def.inventory);
+			newItem.hydrate(state, def);
+			this.set(uuid, newItem);
+			state.ItemManager.add(newItem);
+			/**
+			 * @event Item#spawn
+			 */
+			newItem.emit('spawn', { type: Inventory });
+		}
+		this.__hydated = true;
+	}
 }
 
 /**
