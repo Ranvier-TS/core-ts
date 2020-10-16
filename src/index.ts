@@ -14,7 +14,7 @@ export { BehaviorManager } from './BehaviorManager';
 export { Broadcast, Broadcastable } from './Broadcast';
 export { BundleManager } from './BundleManager';
 export {
-	ChannelConfig,
+	IChannelConfig as ChannelConfig,
 	Channel,
 	NoMessageError,
 	NoPartyError,

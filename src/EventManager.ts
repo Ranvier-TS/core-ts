@@ -1,6 +1,8 @@
 import { EventEmitter } from 'events';
 import { isIterable } from './Util';
 
+export type EventListeners = Record<string, Function>;
+
 /**
  * Generic array hash table to store listener definitions `events` is a `Map`
  * whose keys are event names values are the `Set` of listeners to be attached

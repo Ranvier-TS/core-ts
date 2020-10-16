@@ -7,9 +7,6 @@ export interface IEffectFactoryDef {
 	eventManager: EventManager;
 }
 
-/** @typedef {{config: Object<string,*>, listeners: Object<String,function (...*)>}} */
-var EffectConfig;
-
 /**
  * @property {Map} effects
  */

@@ -1,9 +1,9 @@
 import { EventEmitter } from 'events';
 import { Damage } from './Damage';
-import { PlayerOrNpc } from './GameEntity';
 import { EffectableEntity } from './EffectableEntity';
 import { IGameState } from './GameState';
 import { Skill } from './Skill';
+import { EventListeners } from './EventManager';
 
 /** @typedef EffectModifiers {{attributes: !Object<string,function>}} */
 export type EffectModifiers = {
@@ -21,10 +21,8 @@ export interface IEffectDef {
 	skill?: string;
 	/** @property {EffectModifiers} modifiers Attribute modifier functions */
 	modifiers?: EffectModifiers;
-	state: IEffectState;
-	listeners: {
-		[listener: string]: any;
-	};
+	state?: IEffectState;
+	listeners?: EventListeners;
 }
 
 export interface ISerializedEffect {

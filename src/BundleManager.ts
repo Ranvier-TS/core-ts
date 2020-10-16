@@ -3,13 +3,15 @@ import path from 'path';
 import { IAreaDef } from './Area';
 import { Attribute, AttributeFormula } from './Attribute';
 import { BehaviorManager } from './BehaviorManager';
-import { Channel } from './Channel';
-import { Command } from './Command';
+import { Channel, IChannelLoader } from './Channel';
+import { Command, ICommandDef } from './Command';
 import { Config } from './Config';
 import { Data } from './Data';
+import { IEffectDef } from './Effect';
 import { EntityFactoryType } from './EntityFactory';
-import { EntityLoaderRegistry } from './EntityLoaderRegistry';
+import { EntityLoaderKeys, EntityLoaderRegistry } from './EntityLoaderRegistry';
 import { EntityReference } from './EntityReference';
+import { EventListeners } from './EventManager';
 import { GameEntities } from './GameEntity';
 import { IGameState } from './GameState';
 import { Helpfile } from './Helpfile';
@@ -17,8 +19,16 @@ import { Logger } from './Logger';
 import { IQuestDef } from './Quest';
 import { QuestGoal } from './QuestGoal';
 import { QuestReward } from './QuestReward';
-import { Skill } from './Skill';
+import { ISkillOptions, Skill } from './Skill';
 import { SkillType } from './SkillType';
+
+export interface IListenersLoader {
+	listeners: EventListeners;
+}
+
+export interface IEventLoader {
+	event?: Function | ((state: IGameState) => Function);
+}
 
 const srcPath = __dirname + '/';
 /**
@@ -240,7 +250,8 @@ export class BundleManager {
 		Logger.verbose(`\tLOAD: Player Events...`);
 
 		const loader = require(eventsFile);
-		const playerListeners = this._getLoader(loader, srcPath).listeners;
+		const playerListeners = this._getLoader<IListenersLoader>(loader, srcPath)
+			.listeners;
 
 		for (const [eventName, listener] of Object.entries(playerListeners)) {
 			Logger.verbose(`\t\tEvent: ${eventName}`);
@@ -256,7 +267,7 @@ export class BundleManager {
 	async loadAreas(bundle: string) {
 		Logger.verbose(`\tLOAD: Areas...`);
 
-		const areaLoader = this.loaderRegistry.get('areas');
+		const areaLoader = this.loaderRegistry.get(EntityLoaderKeys.AREAS);
 		areaLoader.setBundle(bundle);
 		let areas: IAreaDef[] = [];
 
@@ -267,7 +278,7 @@ export class BundleManager {
 		areas = await areaLoader.fetchAll();
 
 		for (const name in areas) {
-			const manifest = areas[name].doc;
+			const manifest = areas[name];
 			this.areas.push(name);
 			await this.loadArea(bundle, name, manifest);
 		}
@@ -312,21 +323,21 @@ export class BundleManager {
 		definition.items = await this.loadEntities(
 			bundle,
 			areaName,
-			'items',
+			EntityLoaderKeys.ITEMS,
 			this.state.ItemFactory
 		);
 		Logger.verbose(`\t\tLOAD: NPCs...`);
 		definition.npcs = await this.loadEntities(
 			bundle,
 			areaName,
-			'npcs',
+			EntityLoaderKeys.NPCS,
 			this.state.MobFactory
 		);
 		Logger.verbose(`\t\tLOAD: Rooms...`);
 		definition.rooms = await this.loadEntities(
 			bundle,
 			areaName,
-			'rooms',
+			EntityLoaderKeys.ROOMS,
 			this.state.RoomFactory
 		);
 		Logger.verbose('\t\tDone.');
@@ -366,7 +377,7 @@ export class BundleManager {
 	async loadEntities(
 		bundle: string,
 		areaName: string,
-		type: string,
+		type: EntityLoaderKeys,
 		factory: EntityFactoryType
 	) {
 		const loader = this.loaderRegistry.get(type);
@@ -388,15 +399,15 @@ export class BundleManager {
 			if (entity.script !== undefined) {
 				let scriptPath = '';
 				switch (type) {
-					case 'npcs': {
+					case EntityLoaderKeys.NPCS: {
 						scriptPath = this._getAreaScriptPath(bundle, 'npc');
 						break;
 					}
-					case 'items': {
+					case EntityLoaderKeys.ITEMS: {
 						scriptPath = this._getAreaScriptPath(bundle, 'item');
 						break;
 					}
-					case 'rooms': {
+					case EntityLoaderKeys.ROOMS: {
 						scriptPath = this._getAreaScriptPath(bundle, 'room');
 						break;
 					}
@@ -430,7 +441,8 @@ export class BundleManager {
 		scriptPath: string
 	) {
 		const loader = require(scriptPath);
-		const scriptListeners = this._getLoader(loader, srcPath).listeners;
+		const scriptListeners = this._getLoader<IListenersLoader>(loader, srcPath)
+			.listeners;
 
 		for (const [eventName, listener] of Object.entries(scriptListeners)) {
 			Logger.verbose(`\t\t\t\tEvent: ${eventName}`);
@@ -444,7 +456,7 @@ export class BundleManager {
 	 * @return {Promise<Array<string>>}
 	 */
 	async loadQuests(bundle: string, areaName: string) {
-		const loader = this.loaderRegistry.get('quests');
+		const loader = this.loaderRegistry.get(EntityLoaderKeys.QUESTS);
 		loader.setBundle(bundle);
 		loader.setArea(areaName);
 		let quests = [];
@@ -489,7 +501,11 @@ export class BundleManager {
 	 */
 	createCommand(commandPath: string, commandName: string, bundle: string) {
 		const loader = require(commandPath);
-		let cmdImport = this._getLoader(loader, srcPath, this.bundlesPath);
+		const cmdImport: ICommandDef = this._getLoader(
+			loader,
+			srcPath,
+			this.bundlesPath
+		);
 		cmdImport.command = cmdImport.command(this.state);
 
 		return new Command(bundle, commandName, cmdImport, commandPath);
@@ -503,7 +519,7 @@ export class BundleManager {
 		Logger.verbose(`\tLOAD: Channels...`);
 
 		const loader = require(channelsFile);
-		let channels = this._getLoader(loader, srcPath);
+		let channels = this._getLoader<IChannelLoader>(loader, srcPath);
 
 		if (!Array.isArray(channels)) {
 			channels = [channels];
@@ -522,7 +538,7 @@ export class BundleManager {
 	 */
 	async loadHelp(bundle: string) {
 		Logger.verbose(`\tLOAD: Help...`);
-		const loader = this.loaderRegistry.get('help');
+		const loader = this.loaderRegistry.get(EntityLoaderKeys.HELP);
 		loader.setBundle(bundle);
 
 		if (!(await loader.hasData())) {
@@ -564,9 +580,9 @@ export class BundleManager {
 
 			const eventName = path.basename(eventFile, path.extname(eventFile));
 			const loader = require(eventPath);
-			const eventImport = this._getLoader(loader, srcPath);
+			const eventImport = this._getLoader<IEventLoader>(loader, srcPath);
 
-			if (typeof (eventImport || {}).event !== 'function') {
+			if (typeof eventImport.event !== 'function') {
 				throw new Error(
 					`Bundle ${bundle} has an invalid input event '${eventName}'. Expected a function, got: ` +
 						eventImport.event
@@ -615,7 +631,10 @@ export class BundleManager {
 				);
 				Logger.verbose(`\t\t\tLOAD: BEHAVIORS [${type}] ${behaviorName}...`);
 				const loader = require(behaviorPath);
-				const behaviorListeners = this._getLoader(loader, srcPath).listeners;
+				const behaviorListeners = this._getLoader<IListenersLoader>(
+					loader,
+					srcPath
+				).listeners;
 
 				for (const [eventName, listener] of Object.entries(behaviorListeners)) {
 					manager.addListener(behaviorName, eventName, listener(state));
@@ -647,13 +666,10 @@ export class BundleManager {
 
 			const effectName = path.basename(effectFile, path.extname(effectFile));
 			const loader = require(effectPath);
+			const efectImport: IEffectDef = this._getLoader(loader, srcPath);
 
 			Logger.verbose(`\t\t${effectName}`);
-			this.state.EffectFactory.add(
-				effectName,
-				this._getLoader(loader, srcPath),
-				this.state
-			);
+			this.state.EffectFactory.add(effectName, efectImport, this.state);
 		}
 
 		Logger.verbose(`\tENDLOAD: Effects...`);
@@ -675,7 +691,7 @@ export class BundleManager {
 
 			const skillName = path.basename(skillFile, path.extname(skillFile));
 			const loader = require(skillPath);
-			let skillImport = this._getLoader(loader, srcPath);
+			const skillImport = this._getLoader<ISkillOptions>(loader, srcPath);
 			if (skillImport.run) {
 				skillImport.run = skillImport.run(this.state);
 			}
@@ -710,7 +726,11 @@ export class BundleManager {
 			const eventsName = path.basename(eventsFile, path.extname(eventsFile));
 			Logger.verbose(`\t\t\tLOAD: SERVER-EVENTS ${eventsName}...`);
 			const loader = require(eventsPath);
-			const eventsListeners = this._getLoader(loader, srcPath).listeners;
+			const eventsListeners = this._getLoader<IListenersLoader>(loader, srcPath)
+				.listeners;
+			if (!eventsListeners) {
+				continue;
+			}
 
 			for (const [eventName, listener] of Object.entries(eventsListeners)) {
 				this.state.ServerEventManager.add(eventName, listener(this.state));
@@ -727,7 +747,7 @@ export class BundleManager {
 	 * @param {function (string)|object|array} loader
 	 * @return {loader}
 	 */
-	_getLoader(loader: Function, ...args: any[]) {
+	_getLoader<T>(loader: Function, ...args: any[]): T {
 		if (typeof loader === 'function') {
 			// backwards compatible for old module loader(srcPath)
 			return loader(...args);

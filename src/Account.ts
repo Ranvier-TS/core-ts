@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 import { AccountManager } from './AccountManager';
 import { Data } from './Data';
-import { Metadatable } from './Metadatable';
+import { Metadata, Metadatable } from './Metadatable';
 
 const bcrypt = require('bcryptjs');
 
@@ -18,14 +18,14 @@ export interface IAccountConfig {
 	deleted?: boolean;
 	// Arbitrary data bundles are free to shove whatever they want in
 	// WARNING: values must be JSON.stringify-able
-	metadata?: Record<string, any>;
+	metadata?: Metadata;
 }
 
 export interface ISerializedAccount {
 	username: string;
 	characters: IAccountCharacter[];
 	password: string;
-	metadata: Record<string, any>;
+	metadata: Metadata;
 	banned: boolean;
 	deleted: boolean;
 }
@@ -55,7 +55,7 @@ export class Account extends Metadatable(EventEmitter) {
 	/** @property {boolean} deleted Whether this account is deleted or not */
 	deleted: boolean;
 	/** @property {object} metadata */
-	metadata: Record<string, unknown>;
+	metadata: Metadata;
 	__manager?: AccountManager;
 
 	/**

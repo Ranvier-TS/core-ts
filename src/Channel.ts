@@ -8,7 +8,9 @@ import { PlayerRoles } from './PlayerRoles';
 import { PrivateAudience } from './PrivateAudience';
 import { WorldAudience } from './WorldAudience';
 
-export declare interface ChannelConfig {
+export interface IChannelLoader extends Array<Channel> {}
+
+export interface IChannelConfig {
 	/** @property {string} name Name of the channel */
 	name: string;
 	/** @property {ChannelAudience} audience */
@@ -63,7 +65,7 @@ export class Channel {
 	 * @param {{sender: function, target: function}} [config.formatter]
 	 * @param {boolean} [config.eventOnly]
 	 */
-	constructor(config: ChannelConfig) {
+	constructor(config: IChannelConfig) {
 		if (!config.name) {
 			throw new Error('Channels must have a name to be usable.');
 		}
