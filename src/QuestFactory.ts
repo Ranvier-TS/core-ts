@@ -92,6 +92,11 @@ export class QuestFactory {
 		instance.state = state;
 		for (const goal of quest.config.goals) {
 			const goalType = GameState.QuestGoalManager.get(goal.type);
+			if (!goalType) {
+				throw new Error(
+					`QuestFactory did not find the goal with the type [${goal.type}]`
+				);
+			}
 			instance.addGoal(new goalType(instance, goal.config, player));
 		}
 

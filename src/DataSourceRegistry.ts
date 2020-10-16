@@ -1,3 +1,5 @@
+import { IDataSource } from "./EntityLoader";
+
 export interface DataSourceConfig {
 	require?: string;
 	config?: object;
@@ -7,7 +9,7 @@ export interface DataSourceConfig {
  * Holds instances of configured DataSources
  * @type {Map<string, DataSource>}
  */
-export class DataSourceRegistry extends Map {
+export class DataSourceRegistry extends Map<string, IDataSource> {
 	/**
 	 * @param {Function} requireFn used to require() the loader
 	 * @param {string} rootPath project root
@@ -37,7 +39,7 @@ export class DataSourceRegistry extends Map {
 				loader = requireFn(moduleName)[exportName];
 			}
 
-			const instance = new loader(sourceConfig, rootPath);
+			const instance: IDataSource = new loader(sourceConfig, rootPath);
 			if (!('hasData' in instance)) {
 				throw new Error(
 					`Data Source ${name} requires at minimum a 'hasData(config): boolean' method`

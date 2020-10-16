@@ -5,12 +5,13 @@ export interface IEntityLoaderConfig {
 
 export interface IDataSource {
 	name: string;
+	resolvePath(config: { path: string; bundle: string; area: string }): string;
 	hasData(config: IEntityLoaderConfig): Promise<any>;
-	fetchAll(config: IEntityLoaderConfig): Promise<any>;
-	fetch(config: IEntityLoaderConfig, id: string | number): any;
-	replace(config: IEntityLoaderConfig, data: any): void;
-	update(config: IEntityLoaderConfig, id: string | number, data: any): void;
-	delete(config: IEntityLoaderConfig, id: string | number): void;
+	fetchAll?(config: IEntityLoaderConfig): Promise<any>;
+	fetch?(config: IEntityLoaderConfig, id: string | number): any;
+	replace?(config: IEntityLoaderConfig, data: any): void;
+	update?(config: IEntityLoaderConfig, id: string | number, data: any): void;
+	delete?(config: IEntityLoaderConfig, id: string | number): void;
 }
 
 /**
@@ -42,7 +43,7 @@ export class EntityLoader {
 	}
 
 	fetchAll(): Promise<any> {
-		if (!('fetchAll' in this.dataSource)) {
+		if (!this.dataSource.fetchAll) {
 			throw new Error(`fetchAll not supported by ${this.dataSource.name}`);
 		}
 
@@ -50,7 +51,7 @@ export class EntityLoader {
 	}
 
 	fetch(id: string | number) {
-		if (!('fetch' in this.dataSource)) {
+		if (!this.dataSource.fetch) {
 			throw new Error(`fetch not supported by ${this.dataSource.name}`);
 		}
 
@@ -58,7 +59,7 @@ export class EntityLoader {
 	}
 
 	replace(data: any) {
-		if (!('replace' in this.dataSource)) {
+		if (!this.dataSource.replace) {
 			throw new Error(`replace not supported by ${this.dataSource.name}`);
 		}
 
@@ -66,7 +67,7 @@ export class EntityLoader {
 	}
 
 	update(id: string | number, data: any) {
-		if (!('update' in this.dataSource)) {
+		if (!this.dataSource.update) {
 			throw new Error(`update not supported by ${this.dataSource.name}`);
 		}
 
@@ -74,7 +75,7 @@ export class EntityLoader {
 	}
 
 	delete(id: string | number) {
-		if (!('delete' in this.dataSource)) {
+		if (!this.dataSource.delete) {
 			throw new Error(`delete not supported by ${this.dataSource.name}`);
 		}
 

@@ -5,7 +5,10 @@ import { Quest } from './Quest';
 export interface IQuestGoalDef {
 	name: string;
 	type: string;
-	config?: Record<string, any>;
+	config: IQuestGoalConfig;
+}
+
+export interface IQuestGoalConfig {
 	[key: string]: any;
 }
 
@@ -16,7 +19,7 @@ export interface IQuestGoalDef {
  * @extends EventEmitter
  */
 export class QuestGoal extends EventEmitter {
-	config: IQuestGoalDef;
+	config: IQuestGoalConfig;
 	quest: Quest;
 	state: object;
 	player: Player;
@@ -25,7 +28,7 @@ export class QuestGoal extends EventEmitter {
 	 * @param {object} config
 	 * @param {Player} player
 	 */
-	constructor(quest: Quest, config: IQuestGoalDef, player: Player) {
+	constructor(quest: Quest, config: IQuestGoalConfig, player: Player) {
 		super();
 
 		this.config = Object.assign(

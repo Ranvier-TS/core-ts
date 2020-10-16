@@ -1,11 +1,11 @@
-import { Attribute } from './Attribute';
+import { Attribute, ISerializedAttribute } from './Attribute';
 
 /**
  * Container for a list of attributes for a {@link Character}
  *
  * @extends Map
  */
-export class Attributes extends Map {
+export class Attributes extends Map<string, Attribute> {
 	/**
 	 * @param {Attribute} attribute
 	 */
@@ -28,7 +28,7 @@ export class Attributes extends Map {
 	 * Clear all deltas for all attributes in the list
 	 */
 	clearDeltas() {
-		for (let [_, attr] of this) {
+		for (const [_, attr] of this) {
 			attr.setDelta(0);
 		}
 	}
@@ -38,7 +38,7 @@ export class Attributes extends Map {
 	 * @return {Object}
 	 */
 	serialize() {
-		let data = {};
+		const data: Record<string, ISerializedAttribute> = {};
 		[...this].forEach((attributeObj: [string, Attribute]) => {
 			const [name, attribute] = attributeObj;
 			data[name] = attribute.serialize();

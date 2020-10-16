@@ -1,3 +1,7 @@
+export interface ISerializedAttribute {
+	delta: number;
+	base: number;
+}
 /**
  * Representation of an "Attribute" which is any value that has a base amount and depleted/restored
  * safely. Where safely means without being destructive to the base value.
@@ -89,7 +93,7 @@ export class Attribute {
 		this.delta = Math.min(amount, 0);
 	}
 
-	serialize() {
+	serialize(): ISerializedAttribute {
 		const { delta, base } = this;
 		return { delta, base };
 	}

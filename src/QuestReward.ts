@@ -5,7 +5,7 @@ import { Quest } from './Quest';
 export interface IQuestRewardDef {
 	name: string;
 	type: string;
-	config?: Record<string, any>;
+	config: IQuestRewardDef;
 	[key: string]: any;
 }
 
