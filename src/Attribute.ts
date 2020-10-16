@@ -1,3 +1,19 @@
+import { EffectableEntity } from './EffectableEntity';
+import { Metadata } from './Metadatable';
+import { Player } from './Player';
+
+export type AttributeName = string;
+
+export interface IAttributeDef {
+	name: AttributeName;
+	base: number;
+	metadata?: Metadata;
+	formula?: {
+		requires?: AttributeName[];
+		fn: (character: EffectableEntity, ...attrs: number[]) => number;
+	};
+}
+
 export interface ISerializedAttribute {
 	delta: number;
 	base: number;
@@ -16,8 +32,8 @@ export interface ISerializedAttribute {
  * @property {object} metadata any custom info for this attribute
  */
 export class Attribute {
-	/** @property {string} name */
-	name: string;
+	/** @property {AttributeName} name */
+	name: AttributeName;
 	/** @property {number} base */
 	base: number;
 	/** @property {number} delta Current difference from the base */
@@ -28,14 +44,14 @@ export class Attribute {
 	metadata: object = {};
 
 	/**
-	 * @param {string} name
+	 * @param {AttributeName} name
 	 * @param {number} base
 	 * @param {number} delta=0
 	 * @param {AttributeFormula} formula=null
 	 * @param {object} metadata={}
 	 */
 	constructor(
-		name: string,
+		name: AttributeName,
 		base: number,
 		delta: number,
 		formula: AttributeFormula,
@@ -99,17 +115,22 @@ export class Attribute {
 	}
 }
 
+export type AttributeFormulaExecutable = (
+	character: EffectableEntity,
+	...attrs: number[]
+) => number;
+
 /**
  * @property {Array<string>} requires Array of attributes required for this formula to run
  * @property {function (...number) : number} formula
  */
 export class AttributeFormula {
 	/** @property {Array<string>} requires Array of attributes required for this formula to run */
-	requires: Array<string>;
+	requires: AttributeName[];
 	/** @property {function (...number) : number} formula */
-	formula: Function;
+	formula: AttributeFormulaExecutable;
 
-	constructor(requires: string[], fn: Function) {
+	constructor(requires: AttributeName[], fn: AttributeFormulaExecutable) {
 		if (!Array.isArray(requires)) {
 			throw new TypeError('requires not an array');
 		}
@@ -122,11 +143,11 @@ export class AttributeFormula {
 		this.formula = fn;
 	}
 
-	evaluate(attribute: string, ...args: any) {
+	evaluate(attribute: Attribute, character: EffectableEntity, ...args: number[]) {
 		if (typeof this.formula !== 'function') {
 			throw new Error(`Formula is not callable ${this.formula}`);
 		}
 
-		return this.formula.bind(attribute)(...args);
+		return this.formula.bind(attribute)(character, ...args);
 	}
 }

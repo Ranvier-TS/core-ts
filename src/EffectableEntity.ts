@@ -64,6 +64,9 @@ export class EffectableEntity extends EventEmitter {
 		}
 
 		const attribute = this.attributes.get(attrString);
+		if (!attribute) {
+			throw new RangeError(`Entity does not have attribute [${attrString}]`);
+		}
 		const currentVal = this.effects.evaluateAttribute(attribute);
 
 		if (!attribute.formula) {
@@ -72,7 +75,7 @@ export class EffectableEntity extends EventEmitter {
 
 		const { formula } = attribute;
 
-		const requiredValues = formula.requires.map((reqAttr: string) =>
+		const requiredValues: number[] = formula.requires.map((reqAttr) =>
 			this.getMaxAttribute(reqAttr)
 		);
 

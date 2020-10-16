@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { IAreaDef } from './Area';
-import { Attribute, AttributeFormula } from './Attribute';
+import { Attribute, AttributeFormula, IAttributeDef } from './Attribute';
 import { BehaviorManager } from './BehaviorManager';
 import { Channel, IChannelLoader } from './Channel';
 import { Command, ICommandDef } from './Command';
@@ -191,7 +191,7 @@ export class BundleManager {
 	loadAttributes(bundle: string, attributesFile: string) {
 		Logger.verbose(`\tLOAD: Attributes...`);
 
-		const attributes = require(attributesFile);
+		const attributes: IAttributeDef[] = require(attributesFile);
 		const errorPrefix = `\tAttributes file [${attributesFile}] from bundle [${bundle}]`;
 		if (!Array.isArray(attributes)) {
 			Logger.error(`${errorPrefix} does not define an array of attributes`);
@@ -208,7 +208,7 @@ export class BundleManager {
 	 * @param {Array<Attribute>} attributes
 	 * @param {string} errorPrefix
 	 */
-	addAttributes(attributes: Attribute[], errorPrefix: string) {
+	addAttributes(attributes: IAttributeDef[], errorPrefix: string) {
 		for (const attribute of attributes) {
 			if (typeof attribute !== 'object') {
 				Logger.error(`${attribute} not an object`);
@@ -225,7 +225,7 @@ export class BundleManager {
 			let formula = null;
 			if (attribute.formula) {
 				formula = new AttributeFormula(
-					attribute.formula.requires,
+					attribute.formula.requires || [],
 					attribute.formula.fn
 				);
 			}

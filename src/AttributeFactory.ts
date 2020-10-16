@@ -1,11 +1,11 @@
-import { Attribute, AttributeFormula } from './Attribute';
+import { Attribute, AttributeFormula, IAttributeDef } from './Attribute';
 
 /**
  * @property {Map} attributes
  */
 export class AttributeFactory {
 	/** @property {Map} attributes */
-	attributes: Map<string, object>;
+	attributes: Map<string, IAttributeDef>;
 
 	constructor() {
 		this.attributes = new Map();
@@ -52,11 +52,12 @@ export class AttributeFactory {
 	 * @return {Attribute}
 	 */
 	create(name: string, base = null, delta = 0) {
-		if (!this.has(name)) {
+    const def = this.attributes.get(name);
+    
+		if (!def) {
 			throw new RangeError(`No attribute definition found for [${name}]`);
 		}
 
-		const def = this.attributes.get(name);
 		return new Attribute(
 			name,
 			base || def.base,

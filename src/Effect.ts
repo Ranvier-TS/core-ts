@@ -115,7 +115,7 @@ export class Effect extends EventEmitter {
 	/** @property {EffectModifiers} modifiers Attribute modifier functions */
 	modifiers: EffectModifiers;
 	active?: boolean;
-	skill?: Skill;
+	skill?: Skill | string;
 
 	constructor(id: string, def: IEffectDef) {
 		super();
@@ -220,7 +220,7 @@ export class Effect extends EventEmitter {
 	 * @type {number}
 	 */
 	get remaining() {
-		return (this.config.duration as number) - (this.elapsed || 0);
+		return (this.config.duration as number) - this.elapsed;
 	}
 
 	/**
@@ -228,7 +228,7 @@ export class Effect extends EventEmitter {
 	 * @return {boolean}
 	 */
 	isCurrent() {
-		return (this.elapsed || 0) < this.config.duration;
+		return this.elapsed < (this.config.duration as number);
 	}
 
 	/**
@@ -360,7 +360,7 @@ export class Effect extends EventEmitter {
 	 */
 	serialize(): ISerializedEffect {
 		let config = Object.assign({}, this.config);
-		config.duration = config.duration === Infinity ? 'inf' : config.duration;
+		config.duration = config.duration === Infinity ? -1 : config.duration;
 
 		let state = Object.assign({}, this.state);
 		// store lastTick as a difference so we can make sure to start where we left off when we hydrate
@@ -373,7 +373,7 @@ export class Effect extends EventEmitter {
 			elapsed: this.elapsed,
 			id: this.id,
 			remaining: this.remaining,
-			skill: this.skill && this.skill.id,
+			skill: this.skill && (this.skill as Skill).id,
 			state,
 		};
 	}
@@ -383,10 +383,10 @@ export class Effect extends EventEmitter {
 	 * @param {GameState}
 	 * @param {Object} data
 	 */
-	hydrate(state: IGameState, data: IEffectDef) {
+	hydrate(state: IGameState, data: Effect) {
 		if (data.config) {
 			data.config.duration =
-				data.config.duration === 'inf' ? Infinity : data.config.duration;
+				data.config.duration === -1 ? Infinity : data.config.duration;
 			this.config = data.config;
 		}
 
@@ -401,8 +401,8 @@ export class Effect extends EventEmitter {
 
 		if (data.skill) {
 			this.skill =
-				state.SkillManager.get(data.skill) ||
-				state?.SpellManager?.get(data.skill);
+				state.SkillManager.get(data.skill as string) ||
+				state?.SpellManager?.get(data.skill as string);
 		}
 	}
 }

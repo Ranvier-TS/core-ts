@@ -1,11 +1,11 @@
-import { Attribute, ISerializedAttribute } from './Attribute';
+import { Attribute, AttributeName, ISerializedAttribute } from './Attribute';
 
 /**
  * Container for a list of attributes for a {@link Character}
  *
  * @extends Map
  */
-export class Attributes extends Map<string, Attribute> {
+export class Attributes extends Map<AttributeName, Attribute> {
 	/**
 	 * @param {Attribute} attribute
 	 */
@@ -38,8 +38,8 @@ export class Attributes extends Map<string, Attribute> {
 	 * @return {Object}
 	 */
 	serialize() {
-		const data: Record<string, ISerializedAttribute> = {};
-		[...this].forEach((attributeObj: [string, Attribute]) => {
+		const data: Record<AttributeName, ISerializedAttribute> = {};
+		[...this].forEach((attributeObj: [AttributeName, Attribute]) => {
 			const [name, attribute] = attributeObj;
 			data[name] = attribute.serialize();
 		});
