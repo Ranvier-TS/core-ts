@@ -10,7 +10,7 @@ export interface IAttributeDef {
 	metadata?: Metadata;
 	formula?: {
 		requires?: AttributeName[];
-		fn: (character: EffectableEntity, ...attrs: number[]) => number;
+		fn: AttributeFormulaExecutable;
 	};
 }
 
@@ -143,7 +143,11 @@ export class AttributeFormula {
 		this.formula = fn;
 	}
 
-	evaluate(attribute: Attribute, character: EffectableEntity, ...args: number[]) {
+	evaluate(
+		attribute: Attribute,
+		character: EffectableEntity,
+		...args: number[]
+	) {
 		if (typeof this.formula !== 'function') {
 			throw new Error(`Formula is not callable ${this.formula}`);
 		}
