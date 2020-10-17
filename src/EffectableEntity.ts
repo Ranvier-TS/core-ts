@@ -8,7 +8,7 @@ import { IGameState } from './GameState';
 import { Logger } from './Logger';
 
 export interface ISerializedEffectableEntity {
-	attributes: Record<string, unknown>;
+	attributes: Attributes;
 	effects: ISerializedEffect[];
 }
 
@@ -100,13 +100,12 @@ export class EffectableEntity extends EventEmitter {
 	 * @return {number}
 	 */
 	getAttribute(attrString: string) {
-		if (!this.hasAttribute(attrString)) {
+		if (!this.attributes || !this.hasAttribute(attrString)) {
 			throw new RangeError(`Entity does not have attribute [${attrString}]`);
 		}
+		const delta = this?.attributes?.get(attrString)?.delta || 0
 
-		return (
-			this.getMaxAttribute(attrString) + this.attributes.get(attrString).delta
-		);
+		return this.getMaxAttribute(attrString) + delta;
 	}
 
 	/**
@@ -121,6 +120,7 @@ export class EffectableEntity extends EventEmitter {
 			);
 		}
 
+		//@ts-ignore
 		let propertyValue = this[propertyName];
 
 		// deep copy non-scalar property values to prevent modifiers from actually
@@ -162,7 +162,7 @@ export class EffectableEntity extends EventEmitter {
 			throw new Error(`Invalid attribute ${attrString}`);
 		}
 
-		this.attributes.get(attrString).setDelta(0);
+		this.attributes.get(attrString)?.setDelta(0);
 		this.emit('attributeUpdate', attrString, this.getAttribute(attrString));
 	}
 
@@ -178,7 +178,7 @@ export class EffectableEntity extends EventEmitter {
 			throw new Error(`Invalid attribute ${attrString}`);
 		}
 
-		this.attributes.get(attrString).raise(amount);
+		this.attributes.get(attrString)?.raise(amount);
 		this.emit('attributeUpdate', attrString, this.getAttribute(attrString));
 	}
 
@@ -194,7 +194,7 @@ export class EffectableEntity extends EventEmitter {
 			throw new Error(`Invalid attribute ${attrString}`);
 		}
 
-		this.attributes.get(attrString).lower(amount);
+		this.attributes.get(attrString)?.lower(amount);
 		this.emit('attributeUpdate', attrString, this.getAttribute(attrString));
 	}
 
@@ -216,7 +216,7 @@ export class EffectableEntity extends EventEmitter {
 			throw new Error(`Invalid attribute ${attrString}`);
 		}
 
-		this.attributes.get(attrString).setBase(newBase);
+		this.attributes.get(attrString)?.setBase(newBase);
 		this.emit('attributeUpdate', attrString, this.getAttribute(attrString));
 	}
 
@@ -276,7 +276,7 @@ export class EffectableEntity extends EventEmitter {
 		}
 
 		if (!(this.attributes instanceof Attributes)) {
-			const attributes = this.attributes;
+			const attributes = (this.attributes as any);
 			this.attributes = new Attributes();
 
 			for (const attr in attributes) {

@@ -1,6 +1,6 @@
 import { Attribute } from './Attribute';
 import { Damage } from './Damage';
-import { Effect } from './Effect';
+import { Effect, ISerializedEffect } from './Effect';
 import { EffectableEntity } from './EffectableEntity';
 import { IGameState } from './GameState';
 
@@ -11,14 +11,14 @@ import { IGameState } from './GameState';
  * @property {Character} target
  */
 export class EffectList {
-	effects: Set<Effect>;
+	effects: Set<Effect | ISerializedEffect>;
 	target: EffectableEntity;
 	/**
 	 * @param {GameEntity} target
 	 * @param {Array<Object|Effect>} effects array of serialized effects (Object) or actual Effect instances
 	 */
-	constructor(target: EffectableEntity, effects: Effect[]) {
-		this.effects = new Set(effects);
+	constructor(target: EffectableEntity, effects: Effect[] | ISerializedEffect[]) {
+		this.effects = new Set([...effects]);
 		this.target = target;
 	}
 
@@ -72,7 +72,11 @@ export class EffectList {
 		}
 
 		for (const effect of this.effects) {
-			if (effect.paused) {
+			if (!effect) {
+				throw new Error('Effect was undefined or null.');
+			}
+
+			if ((effect as Effect).paused) {
 				continue;
 			}
 
@@ -81,13 +85,14 @@ export class EffectList {
 				typeof effect.config.tickInterval !== 'boolean'
 			) {
 				const sinceLastTick = Date.now() - (effect.state.ticks || 0);
-				if (sinceLastTick < effect.config.tickInterval * 1000) {
+				const tickIntervalSeconds = effect.config?.tickInterval || 0;
+				if (sinceLastTick < tickIntervalSeconds * 1000) {
 					continue;
 				}
 				effect.state.lastTick = Date.now();
 				effect.state.ticks && effect.state.ticks++;
 			}
-			effect.emit(event, ...args);
+			(effect as Effect).emit(event, ...args);
 		}
 	}
 
@@ -108,12 +113,11 @@ export class EffectList {
 
 		for (const activeEffect of this.effects) {
 			if (effect.config.type === activeEffect.config.type) {
-				if (
-					(activeEffect.config.maxStacks && activeEffect.state.stacks) ||
-					0 < activeEffect.config.maxStacks
-				) {
+				const maxStacks = activeEffect?.config?.maxStacks || 1;
+				const currentStacks = (activeEffect.config.maxStacks && activeEffect.state.stacks) || 0;
+				if (currentStacks < maxStacks) {
 					activeEffect.state.stacks = Math.min(
-						activeEffect.config.maxStacks,
+						maxStacks,
 						activeEffect.state.stacks || 0 + 1
 					);
 
@@ -121,7 +125,7 @@ export class EffectList {
 					 * @event Effect#effectStackAdded
 					 * @param {Effect} effect The new effect that is trying to be added
 					 */
-					activeEffect.emit('effectStackAdded', effect);
+					(activeEffect as Effect).emit('effectStackAdded', effect);
 					return true;
 				}
 
@@ -130,7 +134,7 @@ export class EffectList {
 					 * @event Effect#effectRefreshed
 					 * @param {Effect} effect The new effect that is trying to be added
 					 */
-					activeEffect.emit('effectRefreshed', effect);
+					(activeEffect as Effect).emit('effectRefreshed', effect);
 					return true;
 				}
 
