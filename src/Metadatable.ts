@@ -1,5 +1,3 @@
-import { EventEmitter } from 'events';
-
 /**
  * @ignore
  * @exports MetadatableFn

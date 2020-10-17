@@ -3,6 +3,7 @@ import { Character } from './Character';
 import { CommandQueue } from './CommandQueue';
 import { EntityReference } from './EntityReference';
 import { IGameState } from './GameState';
+import { Item } from './Item';
 import { Logger } from './Logger';
 import { Room } from './Room';
 import { Scriptable } from './Scriptable';
@@ -12,7 +13,7 @@ const uuid = require('uuid');
 export interface INpcDef {
 	script?: string;
 	behaviors?: Record<string, any>;
-	equipment?: Record<string, { entityRefence: string }>;
+	equipment?: Record<string, { entityRefence: EntityReference }>;
 	items?: EntityReference[];
 	description: string;
 	entityReference: EntityReference;
@@ -33,6 +34,19 @@ export class Npc extends Scriptable(Character) {
 	area: Area;
 	script?: string;
 	behaviors?: Record<string, any>;
+	equipment:
+		| Map<string, Item>
+		| Record<string, { entityRefence: EntityReference }>;
+	defaultEquipment: Record<string, { entityRefence: EntityReference }>;
+	defaultItems: EntityReference[];
+	description: string;
+	entityReference: EntityReference;
+	id: number | string;
+
+	quests: EntityReference[];
+
+	uuid: string;
+	commandQueue: CommandQueue;
 
 	constructor(area: Area, data: INpcDef) {
 		super(data);
@@ -56,7 +70,7 @@ export class Npc extends Scriptable(Character) {
 		this.entityReference = data.entityReference;
 		this.id = data.id;
 
-		this.quests = data.quests;
+		this.quests = data.quests || [];
 
 		this.uuid = data.uuid || uuid();
 		this.commandQueue = new CommandQueue();
@@ -106,56 +120,29 @@ export class Npc extends Scriptable(Character) {
 
 		this.setupBehaviors(state.MobBehaviorManager);
 
-		// Load Npc's default inventory (Array of entityReferences):
-		if (Array.isArray(this.defaultItems)) {
-			for (let defaultItemId of this.defaultItems) {
-				Logger.verbose(
-					`\tDIST: Adding item [${defaultItemId}] to npc [${this.name}]`
-				);
-				const newItem = state.ItemFactory.create(this.area, defaultItemId);
+		for (let defaultItemId of this.defaultItems) {
+			Logger.verbose(
+				`\tDIST: Adding item [${defaultItemId}] to npc [${this.name}]`
+			);
+			const newItem = state.ItemFactory.create(this.area, defaultItemId);
 
-				state.ItemManager.add(newItem);
-				this.addItem(newItem);
-				newItem.hydrate(state);
-				/**
-				 * @event Item#spawn
-				 */
-				newItem.emit('spawn');
-			}
-			// Support composing items within Npc definition (object):
-		} else {
-			Object.keys(this.defaultItems).forEach((defaultItemId) => {
-				if (this.defaultItems[defaultItemId] === false) return;
-				Logger.verbose(
-					`\tDIST: Adding item [${defaultItemId.replace(
-						/%.*$/g,
-						''
-					)}] to npc [${this.name}]`
-				);
-				const newItem = state.ItemFactory.create(
-					this.area,
-					defaultItemId.replace(/%.*$/g, '')
-				);
-				state.ItemFactory.modifyDefinition(
-					newItem,
-					false,
-					this.defaultItems[defaultItemId]
-				);
-				state.ItemManager.add(newItem);
-				this.addItem(newItem);
-				newItem.hydrate(state);
-				/**
-				 * @event Item#spawn
-				 */
-				newItem.emit('spawn');
-			});
+			state.ItemManager.add(newItem);
+			this.addItem(newItem);
+			newItem.hydrate(state);
+			/**
+			 * @event Item#spawn
+			 */
+			newItem.emit('spawn');
 		}
 
 		for (const [slot, defaultEqId] of Object.entries(this.defaultEquipment)) {
 			Logger.verbose(
 				`\tDIST: Equipping item [${defaultEqId}] to npc [${this.name}] in slot [${slot}]`
 			);
-			const newItem = state.ItemFactory.create(this.area, defaultEqId);
+			const newItem = state.ItemFactory.create(
+				this.area,
+				defaultEqId.entityRefence
+			);
 			newItem.hydrate(state);
 			state.ItemManager.add(newItem);
 			this.equip(newItem, slot);
