@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { Attribute } from './Attribute';
+import { Attribute, ISerializedAttribute } from './Attribute';
 import { Attributes } from './Attributes';
 import { Damage } from './Damage';
 import { Effect, ISerializedEffect } from './Effect';
@@ -8,9 +8,11 @@ import { IGameState } from './GameState';
 import { Logger } from './Logger';
 
 export interface ISerializedEffectableEntity {
-	attributes: Record<string, unknown>;
+	attributes: SerializedAttributes;
 	effects: ISerializedEffect[];
 }
+
+type SerializedAttributes = Record<string, ISerializedAttribute>;
 
 /**
  * @ignore
@@ -23,11 +25,13 @@ export interface ISerializedEffectableEntity {
 export class EffectableEntity extends EventEmitter {
 	effects: EffectList;
 	attributes: Attributes;
+	private readonly __attributes: SerializedAttributes;
 	__hydrated: boolean;
 	constructor(data: ISerializedEffectableEntity) {
 		super();
 
-		this.attributes = Object.assign({}, data.attributes) || new Attributes();
+		this.attributes = new Attributes();
+		this.__attributes = Object.assign({}, data.attributes);
 		this.effects = new EffectList(this, data.effects);
 		this.__hydrated = false;
 	}
@@ -99,14 +103,13 @@ export class EffectableEntity extends EventEmitter {
 	 * @param {string} attrString
 	 * @return {number}
 	 */
-	getAttribute(attrString: string) {
-		if (!this.hasAttribute(attrString)) {
-			throw new RangeError(`Entity does not have attribute [${attrString}]`);
+	getAttribute(attrName: string) {
+		const attr = this.attributes.get(attrName);
+		if (!attr || !this.hasAttribute(attrName)) {
+			throw new RangeError(`Entity does not have attribute [${attrName}]`);
 		}
 
-		return (
-			this.getMaxAttribute(attrString) + this.attributes.get(attrString).delta
-		);
+		return this.getMaxAttribute(attrName) + attr.delta;
 	}
 
 	/**
@@ -158,11 +161,12 @@ export class EffectableEntity extends EventEmitter {
 	 * @fires EffectableEntity#attributeUpdate
 	 */
 	setAttributeToMax(attrString: string) {
-		if (!this.hasAttribute(attrString)) {
+		const attr = this.attributes.get(attrString);
+		if (!attr || !this.hasAttribute(attrString)) {
 			throw new Error(`Invalid attribute ${attrString}`);
 		}
 
-		this.attributes.get(attrString).setDelta(0);
+		attr.setDelta(0);
 		this.emit('attributeUpdate', attrString, this.getAttribute(attrString));
 	}
 
@@ -174,11 +178,12 @@ export class EffectableEntity extends EventEmitter {
 	 * @fires EffectableEntity#attributeUpdate
 	 */
 	raiseAttribute(attrString: string, amount: number) {
-		if (!this.hasAttribute(attrString)) {
+		const attr = this.attributes.get(attrString);
+		if (!attr || !this.hasAttribute(attrString)) {
 			throw new Error(`Invalid attribute ${attrString}`);
 		}
 
-		this.attributes.get(attrString).raise(amount);
+		attr.raise(amount);
 		this.emit('attributeUpdate', attrString, this.getAttribute(attrString));
 	}
 
@@ -190,11 +195,12 @@ export class EffectableEntity extends EventEmitter {
 	 * @fires EffectableEntity#attributeUpdate
 	 */
 	lowerAttribute(attrString: string, amount: number) {
-		if (!this.hasAttribute(attrString)) {
+		const attr = this.attributes.get(attrString);
+		if (!attr || !this.hasAttribute(attrString)) {
 			throw new Error(`Invalid attribute ${attrString}`);
 		}
 
-		this.attributes.get(attrString).lower(amount);
+		attr.lower(amount);
 		this.emit('attributeUpdate', attrString, this.getAttribute(attrString));
 	}
 
@@ -212,11 +218,12 @@ export class EffectableEntity extends EventEmitter {
 	 * @fires EffectableEntity#attributeUpdate
 	 */
 	setAttributeBase(attrString: string, newBase: number) {
-		if (!this.hasAttribute(attrString)) {
+		const attr = this.attributes.get(attrString);
+		if (!attr || !this.hasAttribute(attrString)) {
 			throw new Error(`Invalid attribute ${attrString}`);
 		}
 
-		this.attributes.get(attrString).setBase(newBase);
+		attr.setBase(newBase);
 		this.emit('attributeUpdate', attrString, this.getAttribute(attrString));
 	}
 
@@ -275,39 +282,37 @@ export class EffectableEntity extends EventEmitter {
 			return;
 		}
 
-		if (!(this.attributes instanceof Attributes)) {
-			const attributes = this.attributes;
-			this.attributes = new Attributes();
+		// Attribute Creation
+		const attributes = this.__attributes;
+		for (const attr in attributes) {
+			let attrConfig = attributes[attr];
+			if (typeof attrConfig === 'number') {
+				attrConfig = { base: attrConfig, delta: 0 };
+			}
 
-			for (const attr in attributes) {
-				let attrConfig = attributes[attr];
-				if (typeof attrConfig === 'number') {
-					attrConfig = { base: attrConfig };
-				}
-
-				if (typeof attrConfig !== 'object' || !('base' in attrConfig)) {
-					throw new Error(
-						'Invalid base value given to attributes.\n' +
-							JSON.stringify(attributes, null, 2)
-					);
-				}
-
-				if (!state.AttributeFactory.has(attr)) {
-					throw new Error(
-						`Entity trying to hydrate with invalid attribute ${attr}`
-					);
-				}
-
-				this.addAttribute(
-					state.AttributeFactory.create(
-						attr,
-						attrConfig.base,
-						attrConfig.delta || 0
-					)
+			if (typeof attrConfig !== 'object' || !('base' in attrConfig)) {
+				throw new Error(
+					'Invalid base value given to attributes.\n' +
+						JSON.stringify(attributes, null, 2)
 				);
 			}
+
+			if (!state.AttributeFactory.has(attr)) {
+				throw new Error(
+					`Entity trying to hydrate with invalid attribute ${attr}`
+				);
+			}
+
+			this.addAttribute(
+				state.AttributeFactory.create(
+					attr,
+					attrConfig.base,
+					attrConfig.delta || 0
+				)
+			);
 		}
 
+		// Effects
 		this.effects.hydrate(state);
 
 		// inventory is hydrated in the subclasses because npc and players hydrate their inventories differently

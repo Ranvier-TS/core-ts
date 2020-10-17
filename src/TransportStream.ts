@@ -5,7 +5,8 @@ import { WebsocketStream } from '../types/WebsocketStream';
  * Base class for anything that should be sending or receiving data from the player
  */
 export class TransportStream extends EventEmitter {
-	socket?: TelnetStream;
+	socket?: TelnetStream | WebsocketStream;
+	_prompted: boolean = false;
 
 	get readable() {
 		return true;

@@ -1,4 +1,4 @@
-import { Effect, IEffectDef } from './Effect';
+import { Effect, IEffectConfig, IEffectDef, IEffectState } from './Effect';
 import { EventManager } from './EventManager';
 import { IGameState } from './GameState';
 
@@ -61,14 +61,14 @@ export class EffectFactory {
 	 * @param {?object} state   Effect.state override
 	 * @return {Effect}
 	 */
-	create(id: string, config = {}, state = {}) {
+	create(id: string, config?: IEffectConfig, state?: IEffectState) {
 		const entry = this.effects.get(id);
 		if (!entry || !entry.definition) {
 			throw new Error(`No valid entry definition found for effect ${id}.`);
 		}
 		let def = Object.assign({}, entry.definition);
-		def.config = Object.assign(def.config, config);
-		def.state = Object.assign(def.state || {}, state);
+		def.config = Object.assign(def.config || {}, config || {});
+		def.state = Object.assign(def.state || {}, state || {});
 		const effect = new Effect(id, def);
 		entry.eventManager.attach(effect);
 

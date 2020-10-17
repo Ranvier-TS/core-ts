@@ -1,6 +1,6 @@
 import { Attribute } from './Attribute';
 import { Damage } from './Damage';
-import { Effect } from './Effect';
+import { Effect, ISerializedEffect } from './Effect';
 import { EffectableEntity } from './EffectableEntity';
 import { IGameState } from './GameState';
 
@@ -11,14 +11,17 @@ import { IGameState } from './GameState';
  * @property {Character} target
  */
 export class EffectList {
-	effects: Set<Effect>;
 	target: EffectableEntity;
+	effects: Set<Effect>;
+	private readonly __effects: ISerializedEffect[];
+
 	/**
 	 * @param {GameEntity} target
 	 * @param {Array<Object|Effect>} effects array of serialized effects (Object) or actual Effect instances
 	 */
-	constructor(target: EffectableEntity, effects: Effect[]) {
-		this.effects = new Set(effects);
+	constructor(target: EffectableEntity, effects: ISerializedEffect[]) {
+		this.__effects = effects;
+		this.effects = new Set();
 		this.target = target;
 	}
 
@@ -78,13 +81,17 @@ export class EffectList {
 
 			if (
 				event === 'updateTick' &&
-				typeof effect.config.tickInterval !== 'boolean'
+				typeof effect.config.tickInterval !== 'boolean' &&
+				typeof effect.config.tickInterval !== 'undefined'
 			) {
-				const sinceLastTick = Date.now() - (effect.state.ticks || 0);
-				if (sinceLastTick < effect.config.tickInterval * 1000) {
+				const now = Date.now();
+				if (
+					Date.now() <
+					effect.state.ticks * effect.config.tickInterval * 1000
+				) {
 					continue;
 				}
-				effect.state.lastTick = Date.now();
+				effect.state.lastTick = now;
 				effect.state.ticks && effect.state.ticks++;
 			}
 			effect.emit(event, ...args);
@@ -110,7 +117,7 @@ export class EffectList {
 			if (effect.config.type === activeEffect.config.type) {
 				if (
 					activeEffect.config.maxStacks &&
-					activeEffect.state.stacks < activeEffect.config.maxStacks
+					(activeEffect.state.stacks || 0) < activeEffect.config.maxStacks
 				) {
 					activeEffect.state.stacks = Math.min(
 						activeEffect.config.maxStacks,
@@ -280,9 +287,7 @@ export class EffectList {
 	}
 
 	hydrate(state: IGameState) {
-		const effects = this.effects;
-		this.effects = new Set();
-		for (const newEffect of effects) {
+		for (const newEffect of this.__effects) {
 			const effect = state.EffectFactory.create(newEffect.id);
 			effect.hydrate(state, newEffect);
 			this.add(effect);

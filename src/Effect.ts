@@ -21,7 +21,7 @@ export interface IEffectDef {
 	skill?: string;
 	/** @property {EffectModifiers} modifiers Attribute modifier functions */
 	modifiers?: EffectModifiers;
-	state?: IEffectState;
+	state?: Partial<IEffectState>;
 	listeners?: EventListeners;
 }
 
@@ -35,11 +35,11 @@ export interface ISerializedEffect {
 }
 
 export interface IEffectState {
-	stacks?: number;
-	maxStacks?: number;
-	ticks?: number;
-	lastTick?: number;
-	cooldownId?: null | string;
+	stacks: number;
+	maxStacks: number;
+	ticks: number;
+	lastTick: number;
+	cooldownId: null | string;
 	[key: string]: unknown;
 }
 
@@ -103,11 +103,11 @@ export class Effect extends EventEmitter {
 	/** @property {string}    id     filename minus .js */
 	id: string;
 	/** @property {EffectConfig}  config Effect configuration (name/desc/duration/etc.) */
-	config: Required<IEffectConfig>;
+	config: IEffectConfig;
 	/** @property {number}    startedAt Date.now() time this effect became active */
 	startedAt: number;
 	/** @property {object}    state  Configuration of this _type_ of effect (magnitude, element, stat, etc.) */
-	state: Required<IEffectState>;
+	state: IEffectState;
 	/** @property {Character} target Character this effect is... effecting */
 	target?: EffectableEntity;
 	flags: string[];
@@ -134,9 +134,9 @@ export class Effect extends EventEmitter {
 				refreshes: false,
 				tickInterval: false,
 				type: 'undef',
-        unique: true,
-        elapsed: 0,
-        paused: 0,
+				unique: true,
+				elapsed: 0,
+				paused: 0,
 			},
 			def.config
 		);
@@ -385,7 +385,7 @@ export class Effect extends EventEmitter {
 	 * @param {GameState}
 	 * @param {Object} data
 	 */
-	hydrate(state: IGameState, data: Effect) {
+	hydrate(state: IGameState, data: ISerializedEffect) {
 		if (data.config) {
 			data.config.duration =
 				data.config.duration === -1 ? Infinity : data.config.duration;

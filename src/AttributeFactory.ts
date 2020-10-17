@@ -60,7 +60,7 @@ export class AttributeFactory {
 	 * @param {number} delta
 	 * @return {Attribute}
 	 */
-	create(name: string, base = null, delta = 0) {
+	create(name: string, base: number | null = null, delta = 0) {
 		const def = this.attributes.get(name);
 
 		if (!def) {
