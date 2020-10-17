@@ -8,13 +8,13 @@ import { PlayerOrNpc } from './GameEntity';
  */
 export class AreaAudience extends ChannelAudience {
 	getBroadcastTargets() {
-		if (!this.sender.room) {
+		if (!this.sender?.room) {
 			return [];
 		}
 
 		const { area } = this.sender.room;
 		return area
 			.getBroadcastTargets()
-			.filter((target: PlayerOrNpc) => target !== this.sender);
+			.filter((target) => target !== this.sender);
 	}
 }

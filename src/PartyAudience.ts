@@ -1,5 +1,4 @@
 import { ChannelAudience } from './ChannelAudience';
-import { PlayerOrNpc } from './GameEntity';
 
 /**
  * Audience class representing other players in the same group as the sender
@@ -8,12 +7,12 @@ import { PlayerOrNpc } from './GameEntity';
  */
 export class PartyAudience extends ChannelAudience {
 	getBroadcastTargets() {
-		if (!this.sender.party) {
+		if (!this.sender?.party) {
 			return [];
 		}
 
 		return this.sender.party
 			.getBroadcastTargets()
-			.filter((player: PlayerOrNpc) => player !== this.sender);
+			.filter((player) => player !== this.sender);
 	}
 }

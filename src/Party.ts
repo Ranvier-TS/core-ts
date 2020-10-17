@@ -3,7 +3,7 @@ import { PlayerOrNpc } from './GameEntity';
 /**
  * Representation of an adventuring party
  */
-export class Party extends Set {
+export class Party extends Set<PlayerOrNpc> {
 	invited: Set<PlayerOrNpc>;
 	leader: PlayerOrNpc;
 	constructor(leader: PlayerOrNpc) {

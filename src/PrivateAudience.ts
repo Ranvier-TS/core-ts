@@ -9,21 +9,12 @@ import { ChannelAudience } from './ChannelAudience';
 export class PrivateAudience extends ChannelAudience {
 	getBroadcastTargets() {
 		const targetPlayerName = this.message.split(' ')[0];
-		const targetPlayer = this.state.PlayerManager.getPlayer(targetPlayerName);
+		const targetPlayer = this.state?.PlayerManager.getPlayer(targetPlayerName);
 
-		// return token '_self' if player targeted themselves
-		if (
-			targetPlayer === this.sender ||
-			targetPlayerName === 'me' ||
-			targetPlayerName === 'self'
-		) {
-			return ['_self'];
-		} else {
-			if (targetPlayer) {
-				return [targetPlayer];
-			}
-			return [];
+		if (targetPlayer) {
+			return [targetPlayer];
 		}
+		return [];
 	}
 
 	alterMessage(message: string) {

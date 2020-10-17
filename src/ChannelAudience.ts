@@ -5,8 +5,14 @@
  * @namespace ChannelAudience
  */
 
+import { Area } from './Area';
+import { AnyGameEntity, PlayerOrNpc } from './GameEntity';
 import { IGameState } from './GameState';
+import { Npc } from './Npc';
 import { Player } from './Player';
+import { Room } from './Room';
+
+export type AreaBroadcastable = Player | Npc | Room | Area;
 
 export interface AudienceOptions {
 	/** @param {GameState} state */
@@ -45,8 +51,8 @@ export class ChannelAudience {
 	 * Find targets for this audience
 	 * @return {Array<Player>}
 	 */
-	getBroadcastTargets() {
-		return this.state?.PlayerManager.getPlayersAsArray();
+	getBroadcastTargets(): AnyGameEntity[] {
+		return this.state?.PlayerManager.getPlayersAsArray() || [];
 	}
 
 	/**
