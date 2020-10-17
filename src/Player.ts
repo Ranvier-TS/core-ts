@@ -234,10 +234,6 @@ export class Player extends Character {
 		// hydration will be emitted onto unhydrated quest objects and error
 		this.questTracker.hydrate(state);
 
-		if (typeof this.account === 'string') {
-			this.account = state.AccountManager.getAccount(this.account);
-		}
-
 		// Hydrate inventory
 		this.inventory.hydrate(state, this);
 		// Hydrate equipment
@@ -285,15 +281,15 @@ export class Player extends Character {
 	}
 
 	serialize(): ISerializedPlayer {
-		const account = this.account?.name;
+		const account = this.account?.name || '';
 		const experience = this.experience;
 		const inventory = this.inventory && this.inventory.serialize();
-		const metadata = this.metadata;
+		const metadata = this.metadata || {};
 		const password = this.password;
 		const prompt = this.prompt;
 		const quests = this.questTracker.serialize();
 		const role = this.role;
-		let data: ISerializedPlayer = Object.assign(super.serialize(), {
+		const data: ISerializedPlayer = Object.assign(super.serialize(), {
 			account,
 			experience,
 			inventory,

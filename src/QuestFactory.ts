@@ -2,7 +2,7 @@ import { EntityReference } from './EntityReference';
 import { IGameState } from './GameState';
 import { Logger } from './Logger';
 import { Player } from './Player';
-import { IQuestDef, Quest } from './Quest';
+import { IQuestDef, ISerializedQuestDef, Quest } from './Quest';
 
 export interface IQuestFactoryDef {
 	area: string;
@@ -81,7 +81,7 @@ export class QuestFactory {
 		GameState: IGameState,
 		qid: EntityReference,
 		player: Player,
-		state: any[] = []
+		state: ISerializedQuestDef[] = []
 	) {
 		const quest = this.quests.get(qid);
 		if (!quest) {

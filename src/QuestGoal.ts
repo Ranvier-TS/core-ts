@@ -8,6 +8,15 @@ export interface IQuestGoalDef {
 	config: IQuestGoalConfig;
 }
 
+export interface ISerializedQuestGoal {
+	state: object;
+	progress: {
+		percent: number;
+		display: string;
+	};
+	config: IQuestGoalConfig;
+}
+
 export interface IQuestGoalConfig {
 	[key: string]: any;
 }
@@ -58,7 +67,7 @@ export class QuestGoal extends EventEmitter {
 	 */
 	complete() {}
 
-	serialize() {
+	serialize(): ISerializedQuestGoal {
 		return {
 			state: this.state,
 			progress: this.getProgress(),

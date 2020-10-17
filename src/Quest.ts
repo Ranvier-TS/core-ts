@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import { EntityReference } from './EntityReference';
 import { IGameState } from './GameState';
 import { Player } from './Player';
-import { IQuestGoalDef, QuestGoal } from './QuestGoal';
+import { IQuestGoalDef, ISerializedQuestGoal, QuestGoal } from './QuestGoal';
 import { IQuestRewardDef } from './QuestReward';
 
 export interface IQuestDef {
@@ -21,7 +21,7 @@ export interface IQuestDef {
 }
 
 export interface ISerializedQuestDef {
-	state: any[];
+	state: ISerializedQuestGoal[];
 	progress: {
 		percent: number;
 		display: string;
@@ -45,7 +45,7 @@ export class Quest extends EventEmitter {
 	config: IQuestDef;
 	player: Player;
 	goals: QuestGoal[];
-	state: any[];
+	state: Record<string, any> | ISerializedQuestDef[];
 	GameState: IGameState;
 	started?: string;
 
@@ -166,7 +166,7 @@ export class Quest extends EventEmitter {
 	}
 
 	hydrate() {
-		this.state.forEach((goalState, i) => {
+		(this.state as ISerializedQuestDef[]).forEach((goalState, i: number) => {
 			this.goals[i].hydrate(goalState.state);
 		});
 	}

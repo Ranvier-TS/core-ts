@@ -13,7 +13,10 @@ export interface IQuestTrackerCompletedDef {
 	completedAt: string;
 }
 
-export type SerializedQuestTracker = ISerializedQuestDef[];
+export type SerializedQuestTracker = {
+	active: [string, ISerializedQuestDef][];
+	completed: [string, IQuestTrackerCompletedDef][];
+};
 
 /**
  * Keeps track of player quest progress
@@ -118,7 +121,7 @@ export class QuestTracker {
 				state,
 				qid,
 				this.player,
-				data.state
+				(data.state as ISerializedQuestDef[])
 			);
 			quest.started = data.started;
 			quest.hydrate();
@@ -130,7 +133,7 @@ export class QuestTracker {
 	/**
 	 * @return {object}
 	 */
-	serialize() {
+	serialize(): SerializedQuestTracker {
 		return {
 			completed: [...this.completedQuests],
 			active: [...this.activeQuests].map(([qid, quest]) => [
