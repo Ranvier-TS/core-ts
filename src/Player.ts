@@ -239,7 +239,7 @@ export class Player extends Character {
 		// Hydrate equipment
 		// maybe refactor Equipment to be an object like Inventory?
 		if (this.equipment && !(this.equipment instanceof Map)) {
-			const eqDefs = this.equipment;
+			const eqDefs = this.equipment as Record<string, IItemDef> ;
 			this.equipment = new Map();
 			for (const slot in eqDefs) {
 				const itemDef = eqDefs[slot];

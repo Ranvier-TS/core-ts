@@ -103,11 +103,11 @@ export class Effect extends EventEmitter {
 	/** @property {string}    id     filename minus .js */
 	id: string;
 	/** @property {EffectConfig}  config Effect configuration (name/desc/duration/etc.) */
-	config: IEffectConfig;
+	config: Required<IEffectConfig>;
 	/** @property {number}    startedAt Date.now() time this effect became active */
 	startedAt: number;
 	/** @property {object}    state  Configuration of this _type_ of effect (magnitude, element, stat, etc.) */
-	state: IEffectState;
+	state: Required<IEffectState>;
 	/** @property {Character} target Character this effect is... effecting */
 	target?: EffectableEntity;
 	flags: string[];
@@ -134,7 +134,9 @@ export class Effect extends EventEmitter {
 				refreshes: false,
 				tickInterval: false,
 				type: 'undef',
-				unique: true,
+        unique: true,
+        elapsed: 0,
+        paused: 0,
 			},
 			def.config
 		);

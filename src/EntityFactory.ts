@@ -1,3 +1,4 @@
+import { EventEmitter } from 'events';
 import { Area } from './Area';
 import { AreaFactory } from './AreaFactory';
 import { Attributes } from './Attributes';
@@ -86,9 +87,9 @@ export class EntityFactory {
 			throw new Error('No Entity definition found for ' + entityRef);
 		}
 		const entity = new Type(area, definition);
-
+    
 		if (this.scripts?.has(entityRef)) {
-			this.scripts.get(entityRef)?.attach(entity);
+			this.scripts.get(entityRef)?.attach(entity as any);
 		}
 
 		return entity;
@@ -134,7 +135,7 @@ export class EntityFactory {
 							// console.log('__!', toSet, 'flat data (type) is now:', newProps)
 							return (entity.type = ItemType[newProps] || newProps);
 						}
-						entity[toSet] = newProps;
+						entity[toSet as string] = newProps;
 						// console.log('__!', toSet, 'flat data is now:', newProps)
 						return;
 					}
@@ -196,7 +197,7 @@ export class EntityFactory {
 					if (toSet === 'items') {
 						// console.log('setting items...')
 						for (const p of Object.keys(newProps)) {
-							entity.defaultItems[p] = newProps[p];
+							entity.defaultItems[p as any] = newProps[p];
 						}
 						return;
 					}

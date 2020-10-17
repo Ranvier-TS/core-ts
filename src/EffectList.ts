@@ -109,8 +109,8 @@ export class EffectList {
 		for (const activeEffect of this.effects) {
 			if (effect.config.type === activeEffect.config.type) {
 				if (
-					(activeEffect.config.maxStacks && activeEffect.state.stacks) ||
-					0 < activeEffect.config.maxStacks
+					activeEffect.config.maxStacks &&
+					activeEffect.state.stacks < activeEffect.config.maxStacks
 				) {
 					activeEffect.state.stacks = Math.min(
 						activeEffect.config.maxStacks,
