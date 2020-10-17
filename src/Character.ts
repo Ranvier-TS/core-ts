@@ -9,14 +9,16 @@ import { Room } from './Room';
 import { Config } from './Config';
 import { Party } from './Party';
 import { EquipSlotTakenError, EquipAlreadyEquippedError } from './EquipErrors';
-
+import { EntityReference } from './EntityReference';
 
 export interface ICharacterConfig extends ISerializedEffectableEntity {
 	/** @property {string}     name       Name shown on look/who/login */
 	name: string;
 	/** @property {Inventory}  inventory */
 	inventory: IInventoryDef;
-	equipment: Map<string, Item>;
+	equipment?:
+		| Map<string, Item>
+		| Record<string, { entityRefence: EntityReference }>;
 	/** @property {number}     level */
 	level: number;
 	/** @property {Room}       room       Room the character is currently in */
@@ -51,7 +53,10 @@ export class Character extends Metadatable(EffectableEntity) {
 	/** @property {Set}        combatants Enemies this character is currently in combat with */
 	combatants: Set<Character>;
 	/** @property {number}     level */
-	equipment: Record<string, IItemDef> | Map<string, Item>;
+	equipment:
+		| Record<string, IItemDef>
+		| Record<string, { entityRefence: EntityReference }>
+		| Map<string, Item>;
 
 	level: number;
 	/** @property {Room}       room       Room the character is currently in */

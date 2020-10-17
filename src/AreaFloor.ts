@@ -36,7 +36,7 @@ export class AreaFloor {
 	highY: number;
 	/** @property {number} z This floor's z index */
 	z: number;
-	map: Room | undefined[][];
+	map: Room[][] | undefined[][];
 
 	constructor(z: number) {
 		this.z = z;

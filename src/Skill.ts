@@ -268,14 +268,14 @@ export class Skill {
 			state: {
 				cooldownId: null,
 			},
-			listeners: {
+			listeners: (state: IGameState) => ({
 				effectDeactivated: function () {
 					Broadcast.sayAt(
 						this.target,
 						`You may now use <bold>${this.skill.name}</bold> again.`
 					);
 				},
-			},
+			}),
 		};
 	}
 

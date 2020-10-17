@@ -1,3 +1,4 @@
+import { Item } from './Item';
 import { Npc } from './Npc';
 
 /**
@@ -35,11 +36,13 @@ export class MobManager {
 		}
 
 		if (mob.equipment && mob.equipment.size) {
-			mob.equipment.forEach((item, slot) => mob.unequip(slot));
+			(mob.equipment as Map<string, Item>).forEach((item, slot) =>
+				mob.unequip(slot)
+			);
 		}
 
 		if (mob.inventory && mob.inventory.size) {
-			mob.inventory.forEach((item) => item.__manager.remove(item));
+			mob.inventory.forEach((item: Item) => item.__manager.remove(item));
 		}
 
 		mob.__pruned = true;

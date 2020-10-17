@@ -1,5 +1,5 @@
 import { Area } from './Area';
-import { Character } from './Character';
+import { Character, ICharacterConfig } from './Character';
 import { CommandQueue } from './CommandQueue';
 import { EntityReference } from './EntityReference';
 import { IGameState } from './GameState';
@@ -10,7 +10,7 @@ import { Scriptable } from './Scriptable';
 
 const uuid = require('uuid');
 
-export interface INpcDef {
+export interface INpcDef extends ICharacterConfig {
 	script?: string;
 	behaviors?: Record<string, any>;
 	equipment?: Record<string, { entityRefence: EntityReference }>;
@@ -34,17 +34,12 @@ export class Npc extends Scriptable(Character) {
 	area: Area;
 	script?: string;
 	behaviors?: Record<string, any>;
-	equipment:
-		| Map<string, Item>
-		| Record<string, { entityRefence: EntityReference }>;
 	defaultEquipment: Record<string, { entityRefence: EntityReference }>;
 	defaultItems: EntityReference[];
 	description: string;
 	entityReference: EntityReference;
 	id: number | string;
-
 	quests: EntityReference[];
-
 	uuid: string;
 	commandQueue: CommandQueue;
 
