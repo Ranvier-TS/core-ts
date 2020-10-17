@@ -1,4 +1,4 @@
-import { Broadcast } from './Broadcast';
+import { Broadcast, Broadcastable } from './Broadcast';
 import { Damage } from './Damage';
 import { IEffectDef } from './Effect';
 import { PlayerOrNpc } from './GameEntity';
@@ -155,13 +155,13 @@ export class Skill {
 	payResourceCosts(player: PlayerOrNpc) {
 		const hasMultipleResourceCosts = Array.isArray(this.resource);
 		if (hasMultipleResourceCosts) {
-			for (const resourceCost of this.resource) {
+			for (const resourceCost of this.resource as ISkillResource[]) {
 				this.payResourceCost(player, resourceCost);
 			}
 			return true;
 		}
 
-		return this.payResourceCost(player, this.resource);
+		return this.payResourceCost(player, this.resource as ISkillResource);
 	}
 
 	// Helper to pay a single resource cost.
