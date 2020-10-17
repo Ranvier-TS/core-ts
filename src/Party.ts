@@ -14,14 +14,16 @@ export class Party extends Set {
 	}
 
 	delete(member: PlayerOrNpc) {
-		super.delete(member);
+		const deleted = super.delete(member);
 		member.party = null;
+		return deleted;
 	}
 
 	add(member: PlayerOrNpc) {
-		super.add(member);
+		const added = super.add(member);
 		member.party = this;
 		this.invited.delete(member);
+		return added;
 	}
 
 	disband() {
