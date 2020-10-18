@@ -1,7 +1,9 @@
 import { Attribute } from './Attribute';
+import { Character } from './Character';
 import { Damage } from './Damage';
 import { Effect, ISerializedEffect } from './Effect';
 import { EffectableEntity } from './EffectableEntity';
+import { PlayerOrNpc } from './GameEntity';
 import { IGameState } from './GameState';
 
 /**
@@ -120,7 +122,8 @@ export class EffectList {
 		for (const activeEffect of this.effects) {
 			if (effect.config.type === activeEffect.config.type) {
 				const maxStacks = activeEffect?.config?.maxStacks || 1;
-				const currentStacks = (activeEffect.config.maxStacks && activeEffect.state.stacks) || 0;
+				const currentStacks =
+					(activeEffect.config.maxStacks && activeEffect.state.stacks) || 0;
 				if (currentStacks < maxStacks) {
 					activeEffect.state.stacks = Math.min(
 						maxStacks,
@@ -245,9 +248,14 @@ export class EffectList {
 	/**
 	 * @param {Damage} damage
 	 * @param {number} currentAmount
+	 * @param {?Character} attacker
 	 * @return {number}
 	 */
-	evaluateIncomingDamage(damage: Damage, currentAmount: number) {
+	evaluateIncomingDamage(
+		damage: Damage,
+		currentAmount: number,
+		attacker?: PlayerOrNpc
+	) {
 		this.validateEffects();
 
 		for (const effect of this.effects) {
@@ -262,13 +270,22 @@ export class EffectList {
 	/**
 	 * @param {Damage} damage
 	 * @param {number} currentAmount
+	 * @param {Character} target
 	 * @return {number}
 	 */
-	evaluateOutgoingDamage(damage: Damage, currentAmount: number) {
+	evaluateOutgoingDamage(
+		damage: Damage,
+		currentAmount: number,
+		target: PlayerOrNpc
+	) {
 		this.validateEffects();
 
 		for (const effect of this.effects) {
-			currentAmount = effect.modifyOutgoingDamage(damage, currentAmount);
+			currentAmount = effect.modifyOutgoingDamage(
+				damage,
+				currentAmount,
+				target
+			);
 		}
 
 		// Same thing, mutatis mutandis, for outgoing damage

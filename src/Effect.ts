@@ -4,12 +4,22 @@ import { EffectableEntity } from './EffectableEntity';
 import { IGameState } from './GameState';
 import { Skill } from './Skill';
 import { EventListeners } from './EventManager';
+import { PlayerOrNpc } from './GameEntity';
+import { Character } from './Character';
 
 /** @typedef EffectModifiers {{attributes: !Object<string,function>}} */
 export type EffectModifiers = {
 	attributes: Record<string, (...args: any[]) => any>;
-	incomingDamage: (...args: any[]) => any;
-	outgoingDamage: (...args: any[]) => any;
+	incomingDamage: (
+		damage: Damage,
+		currentAmount: number,
+		attacker?: PlayerOrNpc
+	) => any;
+	outgoingDamage: (
+		damage: Damage,
+		currentAmount: number,
+		target: PlayerOrNpc
+	) => any;
 	properties: (...args: any[]) => any | Record<string, (...args: any[]) => any>;
 };
 
@@ -321,7 +331,7 @@ export class Effect extends EventEmitter {
 	 * Apply effect property modifiers to a given value
 	 *
 	 * @param {string} propertyName
-	 * @param {*} currentValue
+	 * @param {number} currentValue
 	 * @return {*} property value modified by effect
 	 */
 	modifyProperty(propertyName: string, currentValue: number) {
@@ -339,21 +349,31 @@ export class Effect extends EventEmitter {
 	/**
 	 * @param {Damage} damage
 	 * @param {number} currentAmount
+	 * @param {?Character} attacker
 	 * @return {Damage}
 	 */
-	modifyIncomingDamage(damage: Damage, currentAmount: number) {
+	modifyIncomingDamage(
+		damage: Damage,
+		currentAmount: number,
+		attacker?: PlayerOrNpc
+	) {
 		const modifier = this.modifiers.incomingDamage.bind(this);
-		return modifier(damage, currentAmount);
+		return modifier(damage, currentAmount, attacker);
 	}
 
 	/**
 	 * @param {Damage} damage
 	 * @param {number} currentAmount
+	 * @param {Character} target
 	 * @return {Damage}
 	 */
-	modifyOutgoingDamage(damage: Damage, currentAmount: number) {
+	modifyOutgoingDamage(
+		damage: Damage,
+		currentAmount: number,
+		target: PlayerOrNpc
+	) {
 		const modifier = this.modifiers.outgoingDamage.bind(this);
-		return modifier(damage, currentAmount);
+		return modifier(damage, currentAmount, target);
 	}
 
 	/**

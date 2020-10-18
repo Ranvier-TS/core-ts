@@ -105,6 +105,7 @@ export class Item extends GameEntity {
 	closed: boolean;
 	locked: boolean;
 	lockedBy: string | null;
+	sourceRoom: Room | null;
 
 	carriedBy: InventoryEntityType | Character | null;
 	equippedBy: InventoryEntityType | Character | string | null;
@@ -156,7 +157,8 @@ export class Item extends GameEntity {
 		this.lockedBy = item.lockedBy || null;
 
 		this.carriedBy = null;
-		this.equippedBy = null;
+    this.equippedBy = null;
+		this.sourceRoom = null;
 	}
 
 	/**

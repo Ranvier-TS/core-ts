@@ -60,7 +60,7 @@ export class Character extends Metadatable(EffectableEntity) {
 
 	level: number;
 	/** @property {Room}       room       Room the character is currently in */
-	room: Room;
+	room: Room | null;
 
 	combatData: Record<string, unknown>;
 
@@ -422,7 +422,7 @@ export class Character extends Metadatable(EffectableEntity) {
 		return Object.assign(super.serialize(), {
 			level: this.level,
 			name: this.name,
-			room: this.room.entityReference || 'void',
+			room: this.room?.entityReference || 'void',
 		});
 	}
 

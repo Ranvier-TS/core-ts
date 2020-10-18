@@ -9,7 +9,7 @@ import { PlayerOrNpc } from './GameEntity';
  */
 export class Damage {
 	attribute: string;
-	attacker?: PlayerOrNpc | null = null;
+	attacker?: PlayerOrNpc | null;
 	amount: number;
 	source?: any = null;
 	metadata: object;
@@ -38,7 +38,7 @@ export class Damage {
 			throw new TypeError('Damage attribute name must be a string');
 		}
 
-		this.attacker = attacker;
+		this.attacker = attacker || null;
 		this.attribute = attribute;
 		this.amount = amount;
 		this.source = source;
@@ -57,7 +57,7 @@ export class Damage {
 			amount = this.attacker.evaluateOutgoingDamage(this, amount, target);
 		}
 
-		return target.evaluateIncomingDamage(this, amount);
+		return target.evaluateIncomingDamage(this, amount, this.attacker || undefined);
 	}
 
 	/**

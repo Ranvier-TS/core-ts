@@ -91,7 +91,7 @@ export class Room extends GameEntity {
 	spawnedNpcs: Set<Npc>;
 
 	constructor(area: Area, def: IRoomDef) {
-		super();
+		super(def);
 		const required = ['title', 'description', 'id'];
 		for (const prop of required) {
 			if (!(prop in def)) {
@@ -160,7 +160,8 @@ export class Room extends GameEntity {
 			for (const entity of entities) {
 				entity.emit(eventName, ...args);
 			}
-		}
+    }
+    return true;
 	}
 
 	/**

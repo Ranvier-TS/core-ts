@@ -42,7 +42,9 @@ export class Npc extends Scriptable(Character) {
 	quests: EntityReference[];
 	uuid: string;
 	commandQueue: CommandQueue;
-
+	keywords: string[];
+  sourceRoom: Room | null;
+  __pruned: boolean = false;
 	constructor(area: Area, data: INpcDef) {
 		super(data);
 		const validate = ['name', 'id'];
@@ -63,12 +65,14 @@ export class Npc extends Scriptable(Character) {
 		this.defaultItems = data.items || [];
 		this.description = data.description;
 		this.entityReference = data.entityReference;
+		this.keywords = data.keywords;
 		this.id = data.id;
 
 		this.quests = data.quests || [];
 
 		this.uuid = data.uuid || uuid();
 		this.commandQueue = new CommandQueue();
+		this.sourceRoom = null;
 	}
 
 	/**
