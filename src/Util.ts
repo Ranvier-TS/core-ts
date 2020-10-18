@@ -6,6 +6,6 @@
  * @param {Object} obj
  * @return {boolean}
  */
-export function isIterable(obj: object) {
+export function isIterable(obj: Iterable<unknown>) {
 	return obj && typeof obj[Symbol.iterator] === 'function';
 }
