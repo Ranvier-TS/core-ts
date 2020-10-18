@@ -8,6 +8,10 @@ import { ItemType } from './ItemType';
 import { Room } from './Room';
 import { IGameState } from './GameState';
 import { Character } from './Character';
+import { ISerializedEffect } from './Effect';
+import { SerializedAttributes } from './EffectableEntity';
+import { ItemManager } from './ItemManager';
+import { ISerializedAttribute } from './Attribute';
 
 const uuid = require('uuid/v4');
 
@@ -15,6 +19,8 @@ export declare interface IItemDef {
 	name: string;
 	id: string;
 
+	attributes?: SerializedAttributes;
+	effects?: ISerializedEffect[];
 	description?: string;
 	inventory?: any;
 	metadata?: Record<string, any>;
@@ -38,6 +44,8 @@ export declare interface IItemDef {
 }
 
 export interface ISerializedItem {
+	attributes: SerializedAttributes,
+	effects: ISerializedEffect[],
 	entityReference: string;
 	inventory: string[];
 	metadata: Record<string, any>;
@@ -79,13 +87,13 @@ export interface ISerializedItem {
 export class Item extends GameEntity {
 	name: string;
 	id: string;
-
 	area: Area;
 	description: string;
 	metadata: Record<string, unknown>;
 	behaviors: Map<string, any>;
 	defaultItems: Item[] | IItemDef[] | string[];
 	entityReference: string;
+	inventory?: Inventory | null;
 	maxItems: number;
 	isEquipped: boolean;
 	room: string | Room | null;
@@ -102,8 +110,11 @@ export class Item extends GameEntity {
 	equippedBy: InventoryEntityType | Character | string | null;
 
 	keywords: string[];
+
+	__manager?: ItemManager;
+
 	constructor(area: Area, item: IItemDef) {
-		super();
+		super(item);
 		const validate = ['keywords', 'name', 'id'];
 
 		for (const prop of validate) {
@@ -171,7 +182,7 @@ export class Item extends GameEntity {
 	 */
 	addItem(item: Item) {
 		this._setupInventory();
-		this.inventory.addItem(item);
+		this.inventory?.addItem(item);
 		item.carriedBy = this;
 	}
 
@@ -180,7 +191,8 @@ export class Item extends GameEntity {
 	 * @param {Item} item
 	 */
 	removeItem(item: Item) {
-		this.inventory.removeItem(item);
+		this._setupInventory();
+		this.inventory?.removeItem(item);
 		item.carriedBy = null;
 	}
 
@@ -189,7 +201,7 @@ export class Item extends GameEntity {
 	 */
 	isInventoryFull() {
 		this._setupInventory();
-		return this.inventory.isFull;
+		return this.inventory?.isFull;
 	}
 
 	_setupInventory() {
@@ -330,6 +342,7 @@ export class Item extends GameEntity {
 		}
 
 		return Object.assign({
+			...super.serialize(),
 			entityReference: this.entityReference,
 			inventory: this.inventory && this.inventory.serialize(),
 
