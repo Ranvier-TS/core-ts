@@ -7,6 +7,7 @@ import { Logger } from './Logger';
 import { ItemType } from './ItemType';
 import { Room } from './Room';
 import { IGameState } from './GameState';
+import { Character } from './Character';
 
 const uuid = require('uuid/v4');
 
@@ -97,8 +98,8 @@ export class Item extends GameEntity {
 	locked: boolean;
 	lockedBy: string | null;
 
-	carriedBy: InventoryEntityType | null;
-	equippedBy: InventoryEntityType | string | null;
+	carriedBy: InventoryEntityType | Character | null;
+	equippedBy: InventoryEntityType | Character | string | null;
 
 	keywords: string[];
 	constructor(area: Area, item: IItemDef) {
