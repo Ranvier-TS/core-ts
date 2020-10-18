@@ -25,7 +25,7 @@ type SerializedAttributes = Record<string, ISerializedAttribute>;
 export class EffectableEntity extends EventEmitter {
 	effects: EffectList;
 	attributes: Attributes;
-	private readonly __attributes: SerializedAttributes;
+	readonly __attributes: SerializedAttributes;
 	__hydrated: boolean;
 	constructor(data: ISerializedEffectableEntity) {
 		super();

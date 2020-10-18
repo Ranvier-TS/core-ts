@@ -1,8 +1,9 @@
 import { Broadcast, Broadcastable } from './Broadcast';
 import { Damage } from './Damage';
-import { IEffectDef } from './Effect';
+import { Effect, IEffectDef } from './Effect';
 import { PlayerOrNpc } from './GameEntity';
 import { IGameState } from './GameState';
+import { Logger } from './Logger';
 import {
 	CooldownError,
 	NotEnoughResourcesError,
@@ -269,10 +270,15 @@ export class Skill {
 				cooldownId: null,
 			},
 			listeners: (state: IGameState) => ({
-				effectDeactivated: function () {
+				effectDeactivated: function (this: Effect) {
+					if (!this.target) {
+						Logger.error('Cooldown effect has no target.');
+						return;
+					}
+					const skillName = typeof this.skill === 'string' ? this.skill : this.skill?.name || 'unnamed skill';
 					Broadcast.sayAt(
-						this.target,
-						`You may now use <bold>${this.skill.name}</bold> again.`
+						this.target as PlayerOrNpc,
+						`You may now use <bold>${skillName}</bold> again.`
 					);
 				},
 			}),

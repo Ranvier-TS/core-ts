@@ -1,5 +1,9 @@
+import { EventEmitter } from 'events';
 import { BehaviorManager } from './BehaviorManager';
+import { EffectableEntity } from './EffectableEntity';
+import { PruneableEntity } from './GameEntity';
 import { Logger } from './Logger';
+import { Constructor } from './Util';
 
 /**
  * @ignore
@@ -7,26 +11,27 @@ import { Logger } from './Logger';
  * @param {*} parentClass
  * @return {module:ScriptableFn~Scriptable}
  */
-export const Scriptable = (parentClass: any) =>
+export const Scriptable = <TBase extends Constructor<EffectableEntity>>(ParentClass: TBase) =>
 	/**
 	 * Mixin for entities that can have behaviors attached from a BehaviorManager
 	 * @mixin
 	 * @alias module:ScriptableFn~Scriptable
 	 */
-	class extends parentClass {
-		constructor(...args: any) {
+	class extends ParentClass {
+		behaviors?: Map<string, any>;
+		constructor(...args: any[]) {
 			super(...args);
 		}
 
 		emit(name: string, ...args: any) {
 			// Squelch events on a pruned entity. Attempts to prevent the case where an entity has been effectively removed
 			// from the game but somehow still triggered a listener. Set by respective entity Manager class
-			if (this.__pruned) {
+			if ((this as PruneableEntity).__pruned) {
 				this.removeAllListeners();
-				return;
+				return false;
 			}
 
-			super.emit(name, ...args);
+			return super.emit(name, ...args);
 		}
 
 		/**
@@ -34,7 +39,7 @@ export const Scriptable = (parentClass: any) =>
 		 * @return {boolean}
 		 */
 		hasBehavior(name: string) {
-			return this.behaviors.has(name);
+			return this.behaviors?.has(name);
 		}
 
 		/**
@@ -42,7 +47,7 @@ export const Scriptable = (parentClass: any) =>
 		 * @return {*}
 		 */
 		getBehavior(name: string) {
-			return this.behaviors.get(name);
+			return this.behaviors?.get(name);
 		}
 
 		/**
@@ -50,6 +55,10 @@ export const Scriptable = (parentClass: any) =>
 		 * @param {BehaviorManager} manager
 		 */
 		setupBehaviors(manager: BehaviorManager) {
+			if (!this.behaviors) {
+				throw new Error('Behaviors are null or undefined.');
+			}
+
 			for (let [behaviorName, config] of this.behaviors) {
 				let behavior = manager.get(behaviorName);
 				if (!behavior) {

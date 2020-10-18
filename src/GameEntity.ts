@@ -17,3 +17,7 @@ export class GameEntity extends Scriptable(Metadatable(EffectableEntity)) {}
 export type PlayerOrNpc = Player | Npc;
 export type GameEntities = Item | Npc | Room;
 export type AnyGameEntity = Item | Npc | Room | Area | Player;
+
+export interface PruneableEntity {
+  __pruned?: boolean;
+}

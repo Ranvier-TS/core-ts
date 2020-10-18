@@ -1,10 +1,12 @@
+import { EventEmitter } from 'events';
+import { Constructor } from './Util';
+
 /**
  * @ignore
  * @exports MetadatableFn
  * @param {*} parentClass
  * @return {module:MetadatableFn~Metadatable}
  */
-type Constructor<T = {}> = new (...args: any[]) => T;
 export type Metadata = Record<string, any>;
 
 export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {

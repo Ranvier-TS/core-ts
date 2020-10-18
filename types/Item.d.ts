@@ -1,4 +1,5 @@
 import { Area } from './Area';
+import { Character } from './Character';
 
 import { GameEntity } from './GameEntity';
 import { GameState } from './GameState';

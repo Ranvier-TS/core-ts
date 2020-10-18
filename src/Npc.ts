@@ -33,7 +33,7 @@ export interface INpcDef extends ICharacterConfig {
 export class Npc extends Scriptable(Character) {
 	area: Area;
 	script?: string;
-	behaviors?: Record<string, any>;
+	behaviors?: Map<string, any>;
 	defaultEquipment: Record<string, { entityRefence: EntityReference }>;
 	defaultItems: EntityReference[];
 	description: string;

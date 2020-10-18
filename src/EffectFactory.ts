@@ -61,7 +61,7 @@ export class EffectFactory {
 	 * @param {?object} state   Effect.state override
 	 * @return {Effect}
 	 */
-	create(id: string, config?: IEffectConfig, state?: IEffectState) {
+	create(id: string, config?: IEffectConfig, state?: Partial<IEffectState>) {
 		const entry = this.effects.get(id);
 		if (!entry || !entry.definition) {
 			throw new Error(`No valid entry definition found for effect ${id}.`);
