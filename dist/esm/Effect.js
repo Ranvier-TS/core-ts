@@ -1,0 +1,280 @@
+import { EventEmitter } from 'events';
+/**
+ * See the {@link http://ranviermud.com/extending/effects/|Effect guide} for usage.
+ * @property {object}  config Effect configuration (name/desc/duration/etc.)
+ * @property {boolean} config.autoActivate If this effect immediately activates itself when added to the target
+ * @property {boolean} config.hidden       If this effect is shown in the character's effect list
+ * @property {boolean} config.refreshes    If an effect with the same type is applied it will trigger an effectRefresh
+ *   event instead of applying the additional effect.
+ * @property {boolean} config.unique       If multiple effects with the same `config.type` can be applied at once
+ * @property {number}  config.maxStacks    When adding an effect of the same type it adds a stack to the current
+ *     effect up to maxStacks instead of adding the effect. Implies `config.unique`
+ * @property {boolean} config.persists     If false the effect will not save to the player
+ * @property {string}  config.type         The effect category, mainly used when disallowing stacking
+ * @property {boolean|number} config.tickInterval Number of seconds between calls to the `updateTick` listener
+ * @property {string}    description
+ * @property {number}    duration    Total duration of effect in _milliseconds_
+ * @property {number}    elapsed     Get elapsed time in _milliseconds_
+ * @property {string}    id     filename minus .js
+ * @property {EffectModifiers} modifiers Attribute modifier functions
+ * @property {string}    name
+ * @property {number}    remaining Number of seconds remaining
+ * @property {number}    startedAt Date.now() time this effect became active
+ * @property {object}    state  Configuration of this _type_ of effect (magnitude, element, stat, etc.)
+ * @property {Character} target Character this effect is... effecting
+ * @extends EventEmitter
+ *
+ * @listens Effect#effectAdded
+ */
+export class Effect extends EventEmitter {
+    constructor(id, def) {
+        super();
+        this.id = id;
+        this.flags = def.flags || [];
+        this.config = Object.assign({
+            autoActivate: true,
+            description: '',
+            duration: Infinity,
+            hidden: false,
+            maxStacks: 0,
+            name: 'Unnamed Effect',
+            persists: true,
+            refreshes: false,
+            tickInterval: false,
+            type: 'undef',
+            unique: true,
+            elapsed: 0,
+            paused: 0,
+        }, def.config);
+        this.startedAt = 0;
+        this.paused = 0;
+        this.modifiers = Object.assign({
+            attributes: {},
+            incomingDamage: (damage, current) => current,
+            outgoingDamage: (damage, current) => current,
+        }, def.modifiers);
+        // internal state saved across player load e.g., stacks, amount of damage shield remaining, whatever
+        // Default state can be found in config.state
+        this.state = Object.assign({
+            stacks: 0,
+            maxStacks: 0,
+            ticks: 0,
+            lastTick: -Infinity,
+            cooldownId: null,
+        }, def.state);
+        if (this.config.maxStacks) {
+            this.state.stacks = 1;
+        }
+        // If an effect has a tickInterval it should always apply when first activated
+        if (this.config.tickInterval && !this.state.tickInterval) {
+            this.state.lastTick = -Infinity;
+            this.state.ticks = 0;
+        }
+        if (this.config.autoActivate) {
+            this.on('effectAdded', this.activate);
+        }
+    }
+    /**
+     * @type {string}
+     */
+    get name() {
+        return this.config.name;
+    }
+    /**
+     * @type {string}
+     */
+    get description() {
+        return this.config.description;
+    }
+    /**
+     * @type {number}
+     */
+    get duration() {
+        return this.config.duration;
+    }
+    set duration(dur) {
+        this.config.duration = dur;
+    }
+    /**
+     * Elapsed time in milliseconds since event was activated
+     * @type {number}
+     */
+    get elapsed() {
+        if (!this.startedAt) {
+            return 0;
+        }
+        return this.paused || Date.now() - this.startedAt;
+    }
+    /**
+     * Remaining time in seconds
+     * @type {number}
+     */
+    get remaining() {
+        return this.config.duration - this.elapsed;
+    }
+    /**
+     * Whether this effect has lapsed
+     * @return {boolean}
+     */
+    isCurrent() {
+        return this.elapsed < this.config.duration;
+    }
+    /**
+     * Set this effect active
+     * @fires Effect#effectActivated
+     */
+    activate() {
+        if (!this.target) {
+            throw new Error('Cannot activate an effect without a target');
+        }
+        if (this.active) {
+            return;
+        }
+        this.startedAt = Date.now() - (this.elapsed || 0);
+        this.active = true;
+        /**
+         * @event Effect#effectActivated
+         */
+        this.emit('effectActivated');
+    }
+    /**
+     * Deactivate this effect
+     * @fires Effect#effectDeactivated
+     */
+    deactivate() {
+        if (!this.active) {
+            return;
+        }
+        this.active = false;
+        /**
+         * @event Effect#effectDeactivated
+         */
+        this.emit('effectDeactivated');
+    }
+    /**
+     * Remove this effect from its target
+     * @fires Effect#remove
+     */
+    remove() {
+        /**
+         * @event Effect#remove
+         */
+        this.emit('remove');
+    }
+    /**
+     * Stop this effect from having any effect temporarily
+     */
+    pause() {
+        this.paused = this.elapsed;
+    }
+    /**
+     * Resume a paused effect
+     */
+    resume() {
+        this.startedAt = Date.now() - this.paused;
+        this.paused = 0;
+    }
+    /**
+     * Apply effect attribute modifiers to a given value
+     *
+     * @param {string} attrName
+     * @param {number} currentValue
+     * @return {number} attribute value modified by effect
+     */
+    modifyAttribute(attrName, currentValue) {
+        let modifier = (_) => _;
+        if (typeof this.modifiers.attributes === 'function') {
+            modifier = (current) => {
+                return this.modifiers.attributes.bind(this)(attrName, current);
+            };
+        }
+        else if (attrName in this.modifiers.attributes) {
+            modifier = this.modifiers.attributes[attrName];
+        }
+        return modifier.bind(this)(currentValue);
+    }
+    /**
+     * Apply effect property modifiers to a given value
+     *
+     * @param {string} propertyName
+     * @param {number} currentValue
+     * @return {*} property value modified by effect
+     */
+    modifyProperty(propertyName, currentValue) {
+        let modifier = (_) => _;
+        if (typeof this.modifiers.properties === 'function') {
+            modifier = (current) => {
+                return this.modifiers.properties.bind(this)(propertyName, current);
+            };
+        }
+        else if (propertyName in this.modifiers.properties) {
+            modifier = this.modifiers.properties[propertyName];
+        }
+        return modifier.bind(this)(currentValue);
+    }
+    /**
+     * @param {Damage} damage
+     * @param {number} currentAmount
+     * @param {?Character} attacker
+     * @return {Damage}
+     */
+    modifyIncomingDamage(damage, currentAmount, attacker) {
+        const modifier = this.modifiers.incomingDamage.bind(this);
+        return modifier(damage, currentAmount, attacker);
+    }
+    /**
+     * @param {Damage} damage
+     * @param {number} currentAmount
+     * @param {Character} target
+     * @return {Damage}
+     */
+    modifyOutgoingDamage(damage, currentAmount, target) {
+        const modifier = this.modifiers.outgoingDamage.bind(this);
+        return modifier(damage, currentAmount, target);
+    }
+    /**
+     * Gather data to persist
+     * @return {Object}
+     */
+    serialize() {
+        let config = Object.assign({}, this.config);
+        config.duration = config.duration === Infinity ? -1 : config.duration;
+        let state = Object.assign({}, this.state);
+        // store lastTick as a difference so we can make sure to start where we left off when we hydrate
+        if (state.lastTick && isFinite(state.lastTick)) {
+            state.lastTick = Date.now() - (state.lastTick || 0);
+        }
+        return {
+            config,
+            elapsed: this.elapsed,
+            id: this.id,
+            remaining: this.remaining,
+            skill: this.skill && this.skill.id,
+            state,
+        };
+    }
+    /**
+     * Reinitialize from persisted data
+     * @param {GameState}
+     * @param {Object} data
+     */
+    hydrate(state, data) {
+        var _a;
+        if (data.config) {
+            data.config.duration =
+                data.config.duration === -1 ? Infinity : data.config.duration;
+            this.config = data.config;
+        }
+        if (!isNaN(data.elapsed)) {
+            this.startedAt = Date.now() - ((data === null || data === void 0 ? void 0 : data.elapsed) || 0);
+        }
+        if (data.state && !isNaN(data.state.lastTick)) {
+            data.state.lastTick = Date.now() - (data.state.lastTick || 0);
+            this.state = data.state;
+        }
+        if (data.skill) {
+            this.skill =
+                state.SkillManager.get(data.skill) || ((_a = state === null || state === void 0 ? void 0 : state.SpellManager) === null || _a === void 0 ? void 0 : _a.get(data.skill));
+        }
+    }
+}

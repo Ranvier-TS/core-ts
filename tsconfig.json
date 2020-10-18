@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "es2020",
     "target": "es2017",
     "declaration": true,
-    "outDir": "./dist",
+    "outDir": "./dist/esm",
     "noImplicitAny": true,
     "strict": true,
     "esModuleInterop": true

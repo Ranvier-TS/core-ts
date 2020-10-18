@@ -14,10 +14,17 @@
     "test": "nyc --reporter=html --reporter=text --include=src --all mocha --recursive",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
     "prepare": "npm run build",
-    "build": "tsc"
+    "build": "tsc",
+    "project": "npx tsc -p tsconfig.json",
+    "tsc": "tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
+    "prepublish": "npm run tsc"
   },
-  "main": "dist/index.js",
+  "main": "./dist/cjs/index.js",
   "types": "dist.index.d.ts",
+  "module": "./dist/esm/index.js",
+  "files": [
+    "dist/"
+  ],
   "dependencies": {
     "@types/bcryptjs": "^2.4.2",
     "@types/commander": "^2.12.2",
