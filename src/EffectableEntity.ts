@@ -12,7 +12,7 @@ export interface ISerializedEffectableEntity {
 	effects: ISerializedEffect[];
 }
 
-type SerializedAttributes = Record<string, ISerializedAttribute>;
+export type SerializedAttributes = Record<string, ISerializedAttribute>;
 
 /**
  * @ignore
@@ -27,12 +27,12 @@ export class EffectableEntity extends EventEmitter {
 	attributes: Attributes;
 	readonly __attributes: SerializedAttributes;
 	__hydrated: boolean;
-	constructor(data: ISerializedEffectableEntity) {
+	constructor(data: Partial<ISerializedEffectableEntity>) {
 		super();
 
 		this.attributes = new Attributes();
 		this.__attributes = Object.assign({}, data.attributes);
-		this.effects = new EffectList(this, data.effects);
+		this.effects = new EffectList(this, data.effects || []);
 		this.__hydrated = false;
 	}
 
