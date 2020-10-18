@@ -124,6 +124,7 @@ export class EffectableEntity extends EventEmitter {
 			);
 		}
 
+		//@ts-ignore
 		let propertyValue = this[propertyName];
 
 		// deep copy non-scalar property values to prevent modifiers from actually
