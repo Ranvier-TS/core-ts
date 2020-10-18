@@ -27,13 +27,15 @@ export class TransportStream extends EventEmitter {
 	 * @param {...*} args
 	 * @return {*}
 	 */
-	command(command: string, ...args: any[]) {
+	command<T, K extends keyof T>(this: T, command: string, ...args: any[]): any {
 		if (!command || !command.length) {
 			throw new RangeError('Must specify a command to the stream');
 		}
-		command = 'execute' + command[0].toUpperCase() + command.substr(1);
-		if (typeof this[command] === 'function') {
-			return this[command](...args);
+
+		const methodName = 'execute' + command[0].toUpperCase() + command.substr(1);
+		if (typeof this[methodName as K] === 'function') {
+			const commandMethod = this[methodName as K] as unknown as ((...args: any[]) => any);
+			return commandMethod(...args);
 		}
 	}
 
