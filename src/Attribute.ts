@@ -7,11 +7,8 @@ export type AttributeName = string;
 export interface IAttributeDef {
 	name: AttributeName;
 	base: number;
-	metadata?: Metadata;
-	formula?: {
-		requires?: AttributeName[];
-		fn: AttributeFormulaExecutable;
-	};
+	metadata: Metadata;
+	formula: IAttributeFormulaDef;
 }
 
 export interface ISerializedAttribute {
@@ -41,7 +38,7 @@ export class Attribute {
 	/** @property {AttributeFormula} formula */
 	formula: AttributeFormula | null = null;
 	/** @property {object} metadata any custom info for this attribute */
-	metadata: object = {};
+	metadata: Metadata = {};
 
 	/**
 	 * @param {AttributeName} name
@@ -54,8 +51,8 @@ export class Attribute {
 		name: AttributeName,
 		base: number,
 		delta: number,
-		formula: AttributeFormula,
-		metadata: object
+		formula: AttributeFormula | null,
+		metadata: Metadata
 	) {
 		if (isNaN(base)) {
 			throw new TypeError(`Base attribute must be a number, got ${base}.`);
@@ -119,6 +116,11 @@ export type AttributeFormulaExecutable = (
 	character: EffectableEntity,
 	...attrs: number[]
 ) => number;
+
+export interface IAttributeFormulaDef {
+	requires?: AttributeName[];
+	fn: AttributeFormulaExecutable;
+}
 
 /**
  * @property {Array<string>} requires Array of attributes required for this formula to run

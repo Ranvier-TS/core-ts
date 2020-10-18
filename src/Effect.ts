@@ -21,7 +21,7 @@ export interface IEffectDef {
 	skill?: string;
 	/** @property {EffectModifiers} modifiers Attribute modifier functions */
 	modifiers?: EffectModifiers;
-	state?: IEffectState;
+	state?: Partial<IEffectState>;
 	listeners?: EventListeners;
 }
 
@@ -35,11 +35,11 @@ export interface ISerializedEffect {
 }
 
 export interface IEffectState {
-	stacks?: number;
-	maxStacks?: number;
-	ticks?: number;
-	lastTick?: number;
-	cooldownId?: null | string;
+	stacks: number;
+	maxStacks: number;
+	ticks: number;
+	lastTick: number;
+	cooldownId: null | string;
 	[key: string]: unknown;
 }
 
@@ -135,6 +135,8 @@ export class Effect extends EventEmitter {
 				tickInterval: false,
 				type: 'undef',
 				unique: true,
+				elapsed: 0,
+				paused: 0,
 			},
 			def.config
 		);
@@ -383,7 +385,7 @@ export class Effect extends EventEmitter {
 	 * @param {GameState}
 	 * @param {Object} data
 	 */
-	hydrate(state: IGameState, data: Effect) {
+	hydrate(state: IGameState, data: ISerializedEffect) {
 		if (data.config) {
 			data.config.duration =
 				data.config.duration === -1 ? Infinity : data.config.duration;

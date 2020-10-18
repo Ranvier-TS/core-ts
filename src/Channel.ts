@@ -1,5 +1,6 @@
 import { Broadcast } from './Broadcast';
 import { ChannelAudience } from './ChannelAudience';
+import { PlayerOrNpc } from './GameEntity';
 import { IGameState } from './GameState';
 import { Npc } from './Npc';
 import { PartyAudience } from './PartyAudience';
@@ -216,8 +217,8 @@ export class Channel {
 	 * @return {string}
 	 */
 	formatToSender(
-		sender: Player,
-		target: Player | Npc,
+		sender: PlayerOrNpc,
+		target: PlayerOrNpc,
 		message: string,
 		colorify: Function
 	) {
@@ -234,8 +235,8 @@ export class Channel {
 	 * @return {string}
 	 */
 	formatToReceipient(
-		sender: Player | Npc,
-		target: Player | Npc,
+		sender: PlayerOrNpc,
+		target: PlayerOrNpc,
 		message: string,
 		colorify: Function
 	) {
@@ -249,7 +250,7 @@ export class Channel {
 
 		const colors = Array.isArray(this.color) ? this.color : [this.color];
 
-		const open = colors.map((color: string) => `<${color}>`).join('');
+		const open = (colors as string[]).map((color: string) => `<${color}>`).join('');
 		const close = colors
 			.reverse()
 			.map((color) => `</${color}>`)

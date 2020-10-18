@@ -1,11 +1,15 @@
 import { Attribute, AttributeFormula, IAttributeDef } from './Attribute';
 
+type OmitFormula = Omit<IAttributeDef, 'formula'>;
+export interface AttributeFactoryAttribute extends OmitFormula {
+	formula: AttributeFormula | null;
+}
 /**
  * @property {Map} attributes
  */
 export class AttributeFactory {
 	/** @property {Map} attributes */
-	attributes: Map<string, IAttributeDef>;
+	attributes: Map<string, AttributeFactoryAttribute>;
 
 	constructor() {
 		this.attributes = new Map();
@@ -16,7 +20,12 @@ export class AttributeFactory {
 	 * @param {number} base
 	 * @param {AttributeFormula} formula
 	 */
-	add(name: string, base: number, formula = null, metadata = {}) {
+	add(
+		name: string,
+		base: number,
+		formula: AttributeFormula | null = null,
+		metadata = {}
+	) {
 		if (formula && !(formula instanceof AttributeFormula)) {
 			throw new TypeError('Formula not instance of AttributeFormula');
 		}
@@ -51,9 +60,9 @@ export class AttributeFactory {
 	 * @param {number} delta
 	 * @return {Attribute}
 	 */
-	create(name: string, base = null, delta = 0) {
-    const def = this.attributes.get(name);
-    
+	create(name: string, base: number | null = null, delta = 0) {
+		const def = this.attributes.get(name);
+
 		if (!def) {
 			throw new RangeError(`No attribute definition found for [${name}]`);
 		}
@@ -72,18 +81,16 @@ export class AttributeFactory {
 	 * @throws Error
 	 */
 	validateAttributes() {
-		const references = [...this.attributes].reduce(
-			(acc, [attrName, { formula }]) => {
-				if (!formula) {
-					return acc;
-				}
-
-				acc[attrName] = formula.requires;
-
+		const references: Record<string, string[]> = {};
+		[...this.attributes].reduce((acc, [attrName, { formula }]) => {
+			if (!formula) {
 				return acc;
-			},
-			{}
-		);
+			}
+
+			acc[attrName] = formula.requires;
+
+			return acc;
+		}, references);
 
 		for (const attrName in references) {
 			const check = this.checkReferences(attrName, references);

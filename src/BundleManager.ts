@@ -1,7 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import { IAreaDef } from './Area';
-import { Attribute, AttributeFormula, IAttributeDef } from './Attribute';
+import {
+	Attribute,
+	AttributeFormula,
+	IAttributeDef,
+	IAttributeFormulaDef,
+} from './Attribute';
 import { BehaviorManager } from './BehaviorManager';
 import { Channel, IChannelLoader } from './Channel';
 import { Command, ICommandDef } from './Command';
@@ -222,7 +227,7 @@ export class BundleManager {
 				continue;
 			}
 
-			let formula = null;
+			let formula: AttributeFormula | null = null;
 			if (attribute.formula) {
 				formula = new AttributeFormula(
 					attribute.formula.requires || [],

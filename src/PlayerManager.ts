@@ -145,9 +145,9 @@ export class PlayerManager extends EventEmitter {
 
 		const data = await this.loader.fetch(username);
 		data.name = username;
+		data.account = account;
 
 		const player = new Player(data);
-		player.account = account;
 
 		this.events.attach(player as EffectableEntity);
 

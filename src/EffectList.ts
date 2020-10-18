@@ -11,14 +11,17 @@ import { IGameState } from './GameState';
  * @property {Character} target
  */
 export class EffectList {
-	effects: Set<Effect | ISerializedEffect>;
 	target: EffectableEntity;
+	effects: Set<Effect>;
+	private readonly __effects: ISerializedEffect[];
+
 	/**
 	 * @param {GameEntity} target
 	 * @param {Array<Object|Effect>} effects array of serialized effects (Object) or actual Effect instances
 	 */
-	constructor(target: EffectableEntity, effects: Effect[] | ISerializedEffect[]) {
-		this.effects = new Set([...effects]);
+	constructor(target: EffectableEntity, effects: ISerializedEffect[]) {
+		this.__effects = effects;
+		this.effects = new Set();
 		this.target = target;
 	}
 
@@ -82,14 +85,17 @@ export class EffectList {
 
 			if (
 				event === 'updateTick' &&
-				typeof effect.config.tickInterval !== 'boolean'
+				typeof effect.config.tickInterval !== 'boolean' &&
+				typeof effect.config.tickInterval !== 'undefined'
 			) {
-				const sinceLastTick = Date.now() - (effect.state.ticks || 0);
-				const tickIntervalSeconds = effect.config?.tickInterval || 0;
-				if (sinceLastTick < tickIntervalSeconds * 1000) {
+				const now = Date.now();
+				if (
+					Date.now() <
+					effect.state.ticks * effect.config.tickInterval * 1000
+				) {
 					continue;
 				}
-				effect.state.lastTick = Date.now();
+				effect.state.lastTick = now;
 				effect.state.ticks && effect.state.ticks++;
 			}
 			(effect as Effect).emit(event, ...args);
@@ -284,9 +290,7 @@ export class EffectList {
 	}
 
 	hydrate(state: IGameState) {
-		const effects = this.effects;
-		this.effects = new Set();
-		for (const newEffect of effects) {
+		for (const newEffect of this.__effects) {
 			const effect = state.EffectFactory.create(newEffect.id);
 			effect.hydrate(state, newEffect);
 			this.add(effect);

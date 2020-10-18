@@ -96,7 +96,10 @@ export class Broadcast {
 
 		const targets = source
 			.getBroadcastTargets()
-			.filter((target) => !(excludes as Broadcastable[]).includes(target));
+			.filter(
+				(target: Broadcastable) =>
+					!(excludes as Broadcastable[]).includes(target)
+			);
 
 		const newSource = {
 			getBroadcastTargets: () => targets,
@@ -174,10 +177,14 @@ export class Broadcast {
 	 */
 	static prompt(
 		player: Player,
-		extra?: object,
+		extra?: Record<string, unknown>,
 		wrapWidth?: number,
 		useColor?: boolean
 	) {
+		if (!player.socket) {
+			return;
+		}
+
 		player.socket._prompted = false;
 		Broadcast.at(
 			(player as Character) as Broadcastable,
