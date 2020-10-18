@@ -1,6 +1,8 @@
 import { Area } from './Area';
 import { IBehavior } from './BehaviorManager';
 import { Config } from './Config';
+import { ISerializedEffect } from './Effect';
+import { SerializedAttributes } from './EffectableEntity';
 import { EntityReference } from './EntityReference';
 import { GameEntity } from './GameEntity';
 import { IGameState } from './GameState';
@@ -30,6 +32,8 @@ export interface IRoomDef {
 	npcs?: IRoomNpcDef[] | string[];
 	script?: string;
 	behaviors?: Record<string, any>;
+	attributes?: SerializedAttributes;
+	effects?: ISerializedEffect[];
 	coordinates?: [number, number, number];
 	doors?: Record<string, IDoor>;
 	exits?: IExit[];
@@ -75,7 +79,7 @@ export class Room extends GameEntity {
 		| Record<string, ComposableDef<IRoomNpcDef>>;
 	metadata: Record<string, any> = {};
 	script: string | null = null;
-	behaviors: IBehavior | Record<string, any>;
+	behaviors: Map<string, any>;
 	coordinates: { x: number; y: number; z: number } | null = null;
 	description: string = '';
 	entityReference: EntityReference = '';
@@ -160,8 +164,8 @@ export class Room extends GameEntity {
 			for (const entity of entities) {
 				entity.emit(eventName, ...args);
 			}
-    }
-    return true;
+		}
+		return true;
 	}
 
 	/**
@@ -504,11 +508,11 @@ export class Room extends GameEntity {
 			Object.keys(this.defaultNpcs).forEach((defaultNpc: EntityReference) => {
 				const npc: Partial<IRoomNpcDef> | boolean = (this
 					.defaultNpcs as ComposableDef<IRoomNpcDef>)[defaultNpc];
-				if (npc === false) return;
-				const newNpc = this.spawnNpc(state, defaultNpc.replace(/%.*$/g, ''));
-
-				if (npc !== true) {
-					state.MobFactory.modifyDefinition(newNpc, false, npc);
+        if (npc === false) return;
+        try {
+          this.spawnNpc(state, defaultNpc.replace(/%.*$/g, ''));
+				} catch (err) {
+					Logger.error(err);
 				}
 			});
 		}

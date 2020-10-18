@@ -6,6 +6,7 @@
  */
 
 import { Area } from './Area';
+import { Character } from './Character';
 import { AnyGameEntity, PlayerOrNpc } from './GameEntity';
 import { IGameState } from './GameState';
 import { Npc } from './Npc';
@@ -17,8 +18,8 @@ export type AreaBroadcastable = Player | Npc | Room | Area;
 export interface AudienceOptions {
 	/** @param {GameState} state */
 	state: IGameState;
-	/** @param {Player} sender */
-	sender: Player;
+	/** @param {Character} sender */
+	sender: PlayerOrNpc;
 	/** @param {string} message */
 	message: string;
 }
@@ -29,8 +30,8 @@ export interface AudienceOptions {
 export class ChannelAudience {
 	/** @param {GameState} state */
 	state?: IGameState;
-	/** @param {Player} sender */
-	sender?: Player;
+	/** @param {Character} sender */
+	sender?: PlayerOrNpc;
 	/** @param {string} message */
 	message: string = '';
 	constructor(...args: any[]) {}
@@ -38,7 +39,7 @@ export class ChannelAudience {
 	 * Configure the current state for the audience. Called by {@link Channel#send}
 	 * @param {object} options
 	 * @param {GameState} options.state
-	 * @param {Player} options.sender
+	 * @param {Character} options.sender
 	 * @param {string} options.message
 	 */
 	configure(options: AudienceOptions) {

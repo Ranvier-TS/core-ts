@@ -1,5 +1,7 @@
 import { AreaFloor } from './AreaFloor';
 import { IBehavior } from './BehaviorManager';
+import { ISerializedEffect } from './Effect';
+import { SerializedAttributes } from './EffectableEntity';
 import { GameEntity } from './GameEntity';
 import { IGameState } from './GameState';
 import { Metadata } from './Metadatable';
@@ -11,7 +13,9 @@ export interface IAreaDef {
 	title: string;
 	metadata?: Metadata;
 	script?: string;
-	behaviors?: Record<string, any>;
+  behaviors?: Record<string, any>;
+  attributes?: SerializedAttributes,
+	effects?: ISerializedEffect[],
 }
 
 /**
@@ -48,7 +52,7 @@ export class Area extends GameEntity {
 	/** Active NPCs that originate from this area. Note: this is NPCs that */
 	npcs: Set<Npc>;
 	metadata: Metadata;
-	behaviors: IBehavior | Record<string, any>;
+  behaviors: Map<string, any>;
 
 	constructor(bundle: string | null, name: string, manifest: IAreaDef) {
 		super(manifest);

@@ -41,9 +41,7 @@ export class MobManager {
 			);
 		}
 
-		if (mob.inventory && mob.inventory.size) {
-			mob.inventory.forEach((item: Item) => item.__manager.remove(item));
-		}
+		mob.inventory.forEach((item: Item) => item.__manager?.remove(item));
 
 		mob.__pruned = true;
 		mob.removeAllListeners();

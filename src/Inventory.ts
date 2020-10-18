@@ -5,7 +5,7 @@ import { Npc } from './Npc';
 import { Player } from './Player';
 
 export interface IInventoryDef {
-	items?: [string, IItemDef | Item][];
+	items?: [string, IItemDef][];
 	max?: number;
 }
 
@@ -19,9 +19,10 @@ export type InventoryEntityType = Npc | Player | Item;
  * Representation of a `Character` or container `Item` inventory
  * @extends Map
  */
-export class Inventory extends Map<string, IItemDef | Item> {
+export class Inventory extends Map<string, Item> {
 	maxSize: number;
 	__hydated: boolean;
+	private readonly __items: [string, IItemDef][];
 	/**
 	 * @param {object} init
 	 * @param {Array<Item>} init.items
@@ -36,7 +37,8 @@ export class Inventory extends Map<string, IItemDef | Item> {
 			init
 		);
 
-		super(init.items);
+		super();
+		this.__items = init.items || [];
 		this.maxSize = init.max || Infinity;
 		this.__hydated = false;
 	}
@@ -84,7 +86,7 @@ export class Inventory extends Map<string, IItemDef | Item> {
 		const Item = require('./Item');
 
 		let data: {
-			items: [string, ISerializedItem][],
+			items: [string, ISerializedItem][];
 			max: number;
 		} = {
 			items: [],
@@ -111,7 +113,7 @@ export class Inventory extends Map<string, IItemDef | Item> {
 		// Item is imported here to prevent circular dependency with Item having an Inventory
 		const Item = require('./Item');
 
-		for (const [uuid, def] of this) {
+		for (const [uuid, def] of this.__items) {
 			if (def instanceof Item) {
 				def.carriedBy = carriedBy;
 				continue;
@@ -125,8 +127,8 @@ export class Inventory extends Map<string, IItemDef | Item> {
 			let newItem = state.ItemFactory.create(area, def.entityReference);
 			newItem.uuid = uuid;
 			newItem.carriedBy = carriedBy;
-			newItem.initializeInventory(def.inventory);
-			newItem.hydrate(state, def as IItemDef);
+			newItem.initializeInventoryFromSerialized(def.inventory);
+			newItem.hydrate(state, def);
 			this.set(uuid, newItem);
 			state.ItemManager.add(newItem);
 			/**

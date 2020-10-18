@@ -68,28 +68,15 @@ export class PlayerManager extends EventEmitter {
 		player.removeAllListeners();
 		player.removeFromCombat();
 		player.effects.clear();
-		if (player.room) {
-			player.room.removePlayer(player);
-		}
+		player.room?.removePlayer(player);
 
-		if (
-			player.equipment &&
-			player.equipment instanceof Map &&
-			player.equipment.size
-		) {
+		if (player.equipment instanceof Map && player.equipment.size) {
 			player.equipment.forEach((item: Item, slot: string) =>
 				player.unequip(slot)
 			);
 		}
 
-		if (
-			player.inventory &&
-			player.inventory.size
-		) {
-			(player.inventory as Map<string, Item>).forEach((item: Item) =>
-				item.__manager.remove(item)
-			);
-		}
+		player.inventory.forEach((item) => item.__manager?.remove(item));
 
 		player.__pruned = true;
 		this.players.delete(this.keyify(player));

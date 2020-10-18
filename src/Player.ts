@@ -248,7 +248,7 @@ export class Player extends Character {
 						state.AreaManager.getArea(itemDef.area),
 						itemDef.entityReference
 					);
-					newItem.initializeInventory(itemDef.inventory);
+					newItem.initializeInventoryFromSerialized(itemDef.inventory);
 					newItem.hydrate(state, itemDef);
 					state.ItemManager.add(newItem);
 					this.equip(newItem, slot);

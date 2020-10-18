@@ -13,7 +13,7 @@ export class RoomAudience extends ChannelAudience {
 	getBroadcastTargets() {
 		return (
 			this.sender?.room
-				.getBroadcastTargets()
+				?.getBroadcastTargets()
 				.filter((target) => target !== this.sender) || []
 		);
 	}

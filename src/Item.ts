@@ -2,7 +2,12 @@
 
 import { Area } from './Area';
 import { GameEntity } from './GameEntity';
-import { IInventoryDef, Inventory, InventoryEntityType } from './Inventory';
+import {
+	IInventoryDef,
+	Inventory,
+	InventoryEntityType,
+	ISerializedInventory,
+} from './Inventory';
 import { Logger } from './Logger';
 import { ItemType } from './ItemType';
 import { Room } from './Room';
@@ -11,7 +16,6 @@ import { Character } from './Character';
 import { ISerializedEffect } from './Effect';
 import { SerializedAttributes } from './EffectableEntity';
 import { ItemManager } from './ItemManager';
-import { ISerializedAttribute } from './Attribute';
 
 const uuid = require('uuid/v4');
 
@@ -22,7 +26,7 @@ export declare interface IItemDef {
 	attributes?: SerializedAttributes;
 	effects?: ISerializedEffect[];
 	description?: string;
-	inventory?: any;
+	inventory?: IInventoryDef;
 	metadata?: Record<string, any>;
 	behaviors?: Record<string, any>;
 	items?: IItemDef[];
@@ -44,10 +48,10 @@ export declare interface IItemDef {
 }
 
 export interface ISerializedItem {
-	attributes: SerializedAttributes,
-	effects: ISerializedEffect[],
+	attributes: SerializedAttributes;
+	effects: ISerializedEffect[];
 	entityReference: string;
-	inventory: string[];
+	inventory: ISerializedInventory;
 	metadata: Record<string, any>;
 	description: string;
 	keywords: string[];
@@ -91,9 +95,9 @@ export class Item extends GameEntity {
 	description: string;
 	metadata: Record<string, unknown>;
 	behaviors: Map<string, any>;
-	defaultItems: Item[] | IItemDef[] | string[];
+	defaultItems: IItemDef[] | string[];
 	entityReference: string;
-	inventory?: Inventory | null;
+	inventory: Inventory;
 	maxItems: number;
 	isEquipped: boolean;
 	room: string | Room | null;
@@ -113,7 +117,8 @@ export class Item extends GameEntity {
 	keywords: string[];
 
 	__manager?: ItemManager;
-
+  __pruned: boolean = false;
+  
 	constructor(area: Area, item: IItemDef) {
 		super(item);
 		const validate = ['keywords', 'name', 'id'];
@@ -134,8 +139,9 @@ export class Item extends GameEntity {
 		this.entityReference = item.entityReference; // EntityFactory key
 		this.id = item.id;
 
-		this.maxItems = item.maxItems || Infinity;
-		this.initializeInventory(item.inventory);
+		this.maxItems = item.maxItems || 0;
+		this.inventory = new Inventory(item.inventory || {});
+		this.inventory.setMax(this.maxItems);
 
 		this.isEquipped = item.isEquipped || false;
 		this.keywords = item.keywords;
@@ -157,7 +163,7 @@ export class Item extends GameEntity {
 		this.lockedBy = item.lockedBy || null;
 
 		this.carriedBy = null;
-    this.equippedBy = null;
+		this.equippedBy = null;
 		this.sourceRoom = null;
 	}
 
@@ -165,13 +171,10 @@ export class Item extends GameEntity {
 	 * Create an Inventory object from a serialized inventory
 	 * @param {object} inventory Serialized inventory
 	 */
-	initializeInventory(inventory: IInventoryDef) {
-		if (inventory) {
-			this.inventory = new Inventory(inventory);
-			this.inventory.setMax(this.maxItems);
-		} else {
-			this.inventory = null;
-		}
+	initializeInventoryFromSerialized(inventory: IInventoryDef = {}) {
+		this.inventory = new Inventory(inventory);
+		this.maxItems = inventory.max || 0;
+		this.inventory.setMax(this.maxItems);
 	}
 
 	hasKeyword(keyword: string) {
@@ -183,8 +186,7 @@ export class Item extends GameEntity {
 	 * @param {Item} item
 	 */
 	addItem(item: Item) {
-		this._setupInventory();
-		this.inventory?.addItem(item);
+		this.inventory.addItem(item);
 		item.carriedBy = this;
 	}
 
@@ -193,8 +195,7 @@ export class Item extends GameEntity {
 	 * @param {Item} item
 	 */
 	removeItem(item: Item) {
-		this._setupInventory();
-		this.inventory?.removeItem(item);
+		this.inventory.removeItem(item);
 		item.carriedBy = null;
 	}
 
@@ -202,17 +203,7 @@ export class Item extends GameEntity {
 	 * @return {boolean}
 	 */
 	isInventoryFull() {
-		this._setupInventory();
-		return this.inventory?.isFull;
-	}
-
-	_setupInventory() {
-		if (!this.inventory) {
-			this.inventory = new Inventory({
-				items: [],
-				max: this.maxItems,
-			});
-		}
+		return this.inventory.isFull;
 	}
 
 	/**
@@ -322,7 +313,7 @@ export class Item extends GameEntity {
 			this.inventory.hydrate(state, this);
 		} else {
 			// otherwise load its default inv
-			this.defaultItems.forEach((defaultItemId: string | Item | IItemDef) => {
+			this.defaultItems.forEach((defaultItemId: IItemDef | string) => {
 				if (typeof defaultItemId == 'string') {
 					Logger.verbose(
 						`\tDIST: Adding item [${defaultItemId}] to item [${this.name}]`

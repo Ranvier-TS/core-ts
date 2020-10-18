@@ -1,4 +1,4 @@
-import { Broadcast } from './Broadcast';
+import { Broadcast, Broadcastable } from './Broadcast';
 import { ChannelAudience } from './ChannelAudience';
 import { PlayerOrNpc } from './GameEntity';
 import { IGameState } from './GameState';
@@ -156,7 +156,7 @@ export class Channel {
 		}
 
 		// send to audience targets
-		Broadcast.sayAtFormatted(this.audience, message, (target, message) => {
+		Broadcast.sayAtFormatted(this.audience as Broadcastable, message, (target, message) => {
 			return this.formatter.target(
 				sender,
 				target,

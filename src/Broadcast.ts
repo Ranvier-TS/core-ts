@@ -1,4 +1,3 @@
-import { Character } from './Character';
 import { PlayerOrNpc } from './GameEntity';
 import { Player } from './Player';
 
@@ -7,14 +6,13 @@ ansi.enable(); // force ansi on even when there isn't a tty for the server
 const wrap = require('wrap-ansi');
 
 /** @typedef {{getBroadcastTargets: function(): Array}} */
-// var Broadcastable;
 export type Broadcastable =
 	| PlayerOrNpc
 	| {
 			getBroadcastTargets: () => Broadcastable[];
 	  };
 
-export type FormatterFn = (target: Character, message: string) => string;
+export type FormatterFn = (target: Broadcastable, message: string) => string;
 
 /**
  * Class used for sending text to the player. All output to the player should happen through this
@@ -48,7 +46,11 @@ export class Broadcast {
 		message = Broadcast._fixNewlines(message);
 
 		for (const target of source.getBroadcastTargets()) {
-			if (!target.socket || !target.socket.writable) {
+			if (
+				!(target instanceof Player) ||
+				!target.socket ||
+				!target.socket.writable
+			) {
 				continue;
 			}
 
@@ -176,30 +178,30 @@ export class Broadcast {
 	 * @param {?boolean} useColor
 	 */
 	static prompt(
-		player: Player,
+		player: Broadcastable,
 		extra?: Record<string, unknown>,
 		wrapWidth?: number,
 		useColor?: boolean
 	) {
-		if (!player.socket) {
+		if (!(player instanceof Player) || !player.socket) {
 			return;
 		}
 
 		player.socket._prompted = false;
 		Broadcast.at(
-			(player as Character) as Broadcastable,
+			player as Broadcastable,
 			'\r\n' + player.interpolatePrompt(player.prompt, extra) + ' ',
 			wrapWidth,
 			useColor
 		);
 		let needsNewline = player.extraPrompts.size > 0;
 		if (needsNewline) {
-			Broadcast.sayAt((player as Character) as Broadcastable);
+			Broadcast.sayAt(player as Broadcastable);
 		}
 
 		for (const [id, extraPrompt] of player.extraPrompts) {
 			Broadcast.sayAt(
-				(player as Character) as Broadcastable,
+				player as Broadcastable,
 				extraPrompt.renderer(),
 				wrapWidth,
 				useColor
@@ -210,7 +212,7 @@ export class Broadcast {
 		}
 
 		if (needsNewline) {
-			Broadcast.at((player as Character) as Broadcastable, '> ');
+			Broadcast.at(player as Broadcastable, '> ');
 		}
 
 		player.socket._prompted = true;

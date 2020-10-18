@@ -6,7 +6,7 @@ import { TransportStream } from '../src/TransportStream';
 export declare class TelnetStream extends TransportStream {
 	attach(socket: TelnetStream): void;
 
-	write(message: string, encoding: string): void;
+	write(message: string, encoding?: string): void;
 
 	pause(): void;
 
