@@ -20,7 +20,7 @@
     "prepublish": "npm run tsc"
   },
   "main": "./dist/cjs/index.js",
-  "types": "dist.index.d.ts",
+  "types": "./dist/index.d.ts",
   "module": "./dist/esm/index.js",
   "files": [
     "dist/"
