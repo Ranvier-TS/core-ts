@@ -54,4 +54,3 @@ class AccountManager {
     }
 }
 exports.AccountManager = AccountManager;
-module.exports = AccountManager;

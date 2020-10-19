@@ -50,4 +50,3 @@ export class AccountManager {
         return account;
     }
 }
-module.exports = AccountManager;
