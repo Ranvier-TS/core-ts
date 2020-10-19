@@ -2,7 +2,6 @@ import { Broadcast, Broadcastable } from './Broadcast';
 import { ChannelAudience } from './ChannelAudience';
 import { PlayerOrNpc } from './GameEntity';
 import { IGameState } from './GameState';
-import { Npc } from './Npc';
 import { PartyAudience } from './PartyAudience';
 import { Player } from './Player';
 import { PlayerRoles } from './PlayerRoles';

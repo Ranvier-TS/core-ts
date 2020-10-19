@@ -34,8 +34,10 @@ export class TransportStream extends EventEmitter {
 
 		const methodName = 'execute' + command[0].toUpperCase() + command.substr(1);
 		if (typeof this[methodName as K] === 'function') {
-			const commandMethod = this[methodName as K] as unknown as ((...args: any[]) => any);
-			return commandMethod(...args);
+			const commandMethod = (this[methodName as K] as unknown) as (
+				...args: any[]
+			) => any;
+			return commandMethod.call(this, ...args);
 		}
 	}
 

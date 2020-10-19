@@ -63,5 +63,5 @@ export class AccountManager {
 		this.addAccount(account);
 
 		return account;
-	}
+  }
 }

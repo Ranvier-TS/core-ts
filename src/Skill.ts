@@ -1,4 +1,4 @@
-import { Broadcast, Broadcastable } from './Broadcast';
+import { Broadcast } from './Broadcast';
 import { Damage } from './Damage';
 import { Effect, IEffectDef } from './Effect';
 import { PlayerOrNpc } from './GameEntity';

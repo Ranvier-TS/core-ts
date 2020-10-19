@@ -40,7 +40,7 @@ import { EntityFactory } from './EntityFactory';
 import { EntityLoader } from './EntityLoader';
 import { EntityLoaderRegistry } from './EntityLoaderRegistry';
 import { EntityReference } from './EntityReference';
-import { EquipSlotTakenError, EquipAlreadyEquippedError } from './EquipErrors';
+import * as EquipErrors from './EquipErrors';
 import { EventManager } from './EventManager';
 import { EventUtil } from './EventUtil';
 import { GameEntity } from './GameEntity';
@@ -137,8 +137,7 @@ export {
 	EntityLoader,
 	EntityLoaderRegistry,
 	EntityReference,
-	EquipSlotTakenError,
-	EquipAlreadyEquippedError,
+	EquipErrors,
 	EventManager,
 	EventUtil,
 	GameEntity,
