@@ -1,8 +1,8 @@
 export interface IEntityLoaderConfig {
 	area?: string;
-  bundle?: string;
-  path?: string;
-  db?: string;
+	bundle?: string;
+	path?: string;
+	db?: string;
 }
 
 export interface IDataSource {

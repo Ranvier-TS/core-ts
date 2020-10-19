@@ -18,7 +18,7 @@ export interface IDoor {
 }
 
 export interface IExit {
-	roomId: string;
+	roomId: EntityReference;
 	direction: string;
 	inferred?: boolean;
 	leaveMessage?: string;

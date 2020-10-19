@@ -39,7 +39,7 @@
     "require-dir": "^1.1.0",
     "sty": "",
     "uuid": "^3.3.2",
-    "winston": "^2.4.4",
+    "winston": "^2.4.5",
     "wrap-ansi": "^2.0.0"
   },
   "devDependencies": {

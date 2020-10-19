@@ -1,16 +1,18 @@
 import { DataSourceRegistry } from './DataSourceRegistry';
 import { EntityLoader, IEntityLoaderConfig } from './EntityLoader';
 
-export enum EntityLoaderKeys {
-	ACCOUNT = 'accounts',
-	AREAS = 'areas',
-	HELP = 'help',
-	ITEMS = 'items',
-	NPCS = 'npcs',
-	PLAYERS = 'players',
-	QUESTS = 'quests',
-	ROOMS = 'rooms',
-}
+export const EntityLoaderKeys = {
+	ACCOUNT: 'accounts',
+	AREAS: 'areas',
+	HELP: 'help',
+	ITEMS: 'items',
+	NPCS: 'npcs',
+	PLAYERS: 'players',
+	QUESTS: 'quests',
+	ROOMS: 'rooms',
+} as const;
+export type EntityLoaderKeys = typeof EntityLoaderKeys[keyof typeof EntityLoaderKeys];
+
 export interface EntityLoaderConfig {
 	source: string;
 	config: IEntityLoaderConfig;
@@ -43,9 +45,11 @@ export class EntityLoaderRegistry extends Map<EntityLoaderKeys, EntityLoader> {
 				throw new TypeError(`EntityLoader [${name}] has an invalid 'source'`);
 			}
 
-			if (!(name in EntityLoaderKeys)) {
-				throw new Error(`EntityLoader [${name}] is not a register source`);
-			}
+			// if (name === EntityLoaderKeys[name]) {
+			// 	throw new Error(
+			// 		`EntityLoader [${name}] is not an actual registered source in the Ranvier.json file.`
+			// 	);
+			// }
 
 			const source = sourceRegistry.get(settings.source);
 

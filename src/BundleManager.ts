@@ -1,12 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { IAreaDef } from './Area';
-import {
-	Attribute,
-	AttributeFormula,
-	IAttributeDef,
-	IAttributeFormulaDef,
-} from './Attribute';
+import { AttributeFormula, IAttributeDef } from './Attribute';
 import { BehaviorManager } from './BehaviorManager';
 import { Channel, IChannelLoader } from './Channel';
 import { Command, ICommandDef } from './Command';
@@ -14,7 +9,10 @@ import { Config } from './Config';
 import { Data } from './Data';
 import { IEffectDef } from './Effect';
 import { EntityFactoryType } from './EntityFactory';
-import { EntityLoaderKeys, EntityLoaderRegistry } from './EntityLoaderRegistry';
+import {
+	EntityLoaderKeys,
+	EntityLoaderRegistry,
+} from './EntityLoaderRegistry';
 import { EntityReference } from './EntityReference';
 import { EventListeners } from './EventManager';
 import { GameEntities } from './GameEntity';
@@ -132,7 +130,7 @@ export class BundleManager {
 		for (const feature of features) {
 			const path = bundlePath + '/' + feature.path;
 			if (fs.existsSync(path)) {
-				feature.fn(bundle, path);
+				feature.fn.call(this, bundle, path);
 			}
 		}
 
@@ -609,7 +607,6 @@ export class BundleManager {
 	 */
 	loadBehaviors(bundle: string, behaviorsDir: string) {
 		Logger.verbose(`\tLOAD: Behaviors...`);
-
 		const loadEntityBehaviors = (
 			type: string,
 			manager: BehaviorManager,
