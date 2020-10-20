@@ -7,5 +7,6 @@
 !index.d.ts
 !types/*
 !package*
+!dist
 tsconfig.json
 src
