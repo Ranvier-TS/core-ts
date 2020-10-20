@@ -120,7 +120,7 @@ export class PlayerManager extends EventEmitter {
 		state: IGameState,
 		account: Account,
 		username: string,
-		force: boolean
+		force?: boolean
 	) {
 		if (this.players.has(username) && !force) {
 			return this.getPlayer(username);
