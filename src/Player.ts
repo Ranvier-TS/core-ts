@@ -1,8 +1,8 @@
 'use strict';
 
-import { EventEmitter } from 'events';
 import { TelnetStream } from '../types/TelnetStream';
 import { WebsocketStream } from '../types/WebsocketStream';
+import { Account } from './Account';
 import { Character, ICharacterConfig, ISerializedCharacter } from './Character';
 import { CommandQueue, ICommandExecutable } from './CommandQueue';
 import { Config } from './Config';

@@ -156,7 +156,7 @@ export class Npc extends Scriptable(Character) {
 			{
 				script: this.script,
 				behaviors: new Map(
-					(this.behaviors as Iterable<readonly [unknown, unknown]>) || {}
+					(this.behaviors as Iterable<readonly [unknown, unknown]>) || new Map()
 				),
 				defaultEquipment: this.defaultEquipment || {},
 				defaultItems: this.defaultItems || [],

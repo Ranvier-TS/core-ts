@@ -51,7 +51,7 @@ export interface ISkillResource {
 export class Skill {
 	configureEffect: Function;
 	cooldownGroup: string | null;
-	cooldownLength: number | null;
+	cooldownLength: ISkillCooldown | number | null;
 	effect: string | null;
 	flags: any[];
 	id: string;
