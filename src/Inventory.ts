@@ -10,7 +10,7 @@ export interface IInventoryDef {
 }
 
 export interface ISerializedInventory {
-	items?: [string, IItemDef][];
+	items?: [string, ISerializedItem][];
 	max?: number;
 }
 
@@ -85,7 +85,7 @@ export class Inventory extends Map<string, Item> {
 		// Item is imported here to prevent circular dependency with Item having an Inventory
 		const Item = require('./Item');
 
-		let data: {
+		const data: {
 			items: [string, ISerializedItem][];
 			max: number;
 		} = {
