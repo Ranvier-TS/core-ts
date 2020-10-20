@@ -16,14 +16,13 @@
     "prepare": "npm run build",
     "build": "tsc",
     "project": "npx tsc -p tsconfig.json",
-    "tsc": "tsc -p tsconfig-cjs.json",
-    "prepublish": "npm run tsc"
+    "prepublish": "tsc -p tsconfig.json && tsc -p tsconfig-cjs.json"
   },
   "main": "./dist/cjs/index.js",
   "types": "./dist/index.d.ts",
   "module": "./dist/esm/index.js",
-  "files": [
-    "dist/"
+  "directory": [
+    "./dist/esm"
   ],
   "dependencies": {
     "@types/bcryptjs": "^2.4.2",
