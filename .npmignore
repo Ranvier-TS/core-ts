@@ -8,5 +8,4 @@
 !types/*
 !package*
 !dist/*
-tsconfig.json
-src
+!tsconfig.json
