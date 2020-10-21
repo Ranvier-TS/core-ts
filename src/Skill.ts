@@ -245,11 +245,15 @@ export class Skill {
 			);
 		}
 
+		const duration = typeof this.cooldownLength === 'number'
+			? this.cooldownLength
+			: this.cooldownLength?.length || 0;
+
 		const effect = this.state.EffectFactory.create(
 			'cooldown',
 			{
 				name: 'Cooldown: ' + this.name,
-				duration: this.cooldownLength || 0 * 1000,
+				duration: duration * 1000,
 			},
 			{ cooldownId: this.getCooldownId() }
 		);
