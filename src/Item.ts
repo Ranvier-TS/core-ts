@@ -173,7 +173,7 @@ export class Item extends GameEntity {
 	 */
 	initializeInventoryFromSerialized(inventory: IInventoryDef = {}) {
 		this.inventory = new Inventory(inventory);
-		this.maxItems = inventory.max || 0;
+		this.maxItems = inventory?.max || 0;
 		this.inventory.setMax(this.maxItems);
 	}
 

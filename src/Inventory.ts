@@ -120,7 +120,7 @@ export class Inventory extends Map<string, Item> {
 			let newItem = state.ItemFactory.create(area, def.entityReference);
 			newItem.uuid = uuid;
 			newItem.carriedBy = carriedBy;
-			newItem.initializeInventoryFromSerialized(def.inventory);
+			newItem.initializeInventoryFromSerialized(def.inventory || {});
 			newItem.hydrate(state, def);
 			this.set(uuid, newItem);
 			state.ItemManager.add(newItem);
