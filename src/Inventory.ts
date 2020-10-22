@@ -1,4 +1,3 @@
-import { Character } from './Character';
 import { IGameState } from './GameState';
 import { Item, IItemDef, ISerializedItem } from './Item';
 import { Npc } from './Npc';
@@ -82,10 +81,7 @@ export class Inventory extends Map<string, Item> {
 	}
 
 	serialize() {
-		// Item is imported here to prevent circular dependency with Item having an Inventory
-		const Item = require('./Item');
-
-		let data: {
+		const data: {
 			items: [string, ISerializedItem][];
 			max: number;
 		} = {
