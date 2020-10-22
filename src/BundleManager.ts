@@ -97,7 +97,7 @@ export class BundleManager {
 			try {
 				area.hydrate(this.state);
 			} catch (err) {
-				Logger.error(err.message);
+				Logger.error(err);
 				process.exit(0);
 			}
 			this.state.AreaManager.addArea(area);
