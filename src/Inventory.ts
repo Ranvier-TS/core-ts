@@ -106,9 +106,6 @@ export class Inventory extends Map<string, Item> {
 	 * @param {Character|Item} carriedBy
 	 */
 	hydrate(state: IGameState, carriedBy: InventoryEntityType) {
-		// Item is imported here to prevent circular dependency with Item having an Inventory
-		const Item = require('./Item');
-
 		for (const [uuid, def] of this.__items) {
 			if (def instanceof Item) {
 				def.carriedBy = carriedBy;
