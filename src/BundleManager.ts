@@ -15,7 +15,7 @@ import {
 } from './EntityLoaderRegistry';
 import { EntityReference } from './EntityReference';
 import { EventListeners } from './EventManager';
-import { GameEntities } from './GameEntity';
+import { GameEntities, GameEntityDefinition } from './GameEntity';
 import { IGameState } from './GameState';
 import { Helpfile } from './Helpfile';
 import { Logger } from './Logger';
@@ -396,8 +396,11 @@ export class BundleManager {
 			Logger.warn(`\t\t\t${type} has an invalid value [${entities}]`);
 			return [];
 		}
-		return entities.map((entity: GameEntities) => {
+		return entities.map((entity: GameEntityDefinition) => {
 			const entityRef = factory.createEntityRef(areaName, entity.id);
+			console.log('entity before ', entity);
+			entity.area = areaName;
+			console.log('entity after ', entity);
 			factory.setDefinition(entityRef, entity);
 			if (entity.script !== undefined) {
 				let scriptPath = '';

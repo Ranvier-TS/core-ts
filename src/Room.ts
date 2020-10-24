@@ -28,6 +28,7 @@ export interface IRoomDef {
 	title: string;
 	description: string;
 	id: string;
+	area?: string;
 	items?: IRoomItemDef[];
 	npcs?: IRoomNpcDef[] | string[];
 	script?: string;

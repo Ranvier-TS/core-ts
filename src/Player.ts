@@ -1,5 +1,6 @@
 'use strict';
 
+import { isString } from 'util';
 import { TelnetStream } from '../types/TelnetStream';
 import { WebsocketStream } from '../types/WebsocketStream';
 import { Account } from './Account';
@@ -242,17 +243,25 @@ export class Player extends Character {
 		this.inventory.hydrate(state, this);
 		// Hydrate equipment
 		// maybe refactor Equipment to be an object like Inventory?
-		if (this.equipment && this.__equipment && !this.equipment.size) {
-			const eqDefs = this.__equipment as Record<string, IItemDef> ;
+		if (this.__equipment && !this.equipment.size) {
+			const eqDefs = this.__equipment as Record<string, IItemDef>;
 			this.equipment = new Map();
+			console.log({ eqDefs });
 			for (const slot in eqDefs) {
-				const itemDef = eqDefs[slot];
+				const itemDef= eqDefs[slot];
 				try {
+					const entityReference = itemDef.entityReference;
+					const area = itemDef.area ?? itemDef.entityReference.split(':')[0];
 					let newItem = state.ItemFactory.create(
-						state.AreaManager.getArea(itemDef.area),
-						itemDef.entityReference
+						state.AreaManager.getArea(area),
+						entityReference
 					);
-					newItem.initializeInventoryFromSerialized(itemDef.inventory);
+					
+					const inventory = itemDef.inventory;
+					if (inventory) {
+						newItem.initializeInventoryFromSerialized(itemDef.inventory);
+					}
+					
 					newItem.hydrate(state, itemDef);
 					state.ItemManager.add(newItem);
 					this.equip(newItem, slot);
@@ -286,6 +295,7 @@ export class Player extends Character {
 
 	serialize(): ISerializedPlayer {
 		const account = this.account?.username || '';
+
 		const experience = this.experience;
 		const inventory = this.inventory && this.inventory.serialize();
 		const metadata = this.metadata || {};

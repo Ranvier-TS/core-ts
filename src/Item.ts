@@ -117,13 +117,14 @@ export class Item extends GameEntity {
 	keywords: string[];
 
 	__manager?: ItemManager;
-  __pruned: boolean = false;
+	__pruned: boolean = false;
+	
+	static validate = ['keywords', 'name', 'id'];
   
 	constructor(area: Area, item: IItemDef) {
 		super(item);
-		const validate = ['keywords', 'name', 'id'];
 
-		for (const prop of validate) {
+		for (const prop of Item.validate) {
 			if (!(prop in item)) {
 				throw new ReferenceError(
 					`Item in area [${area.name}] missing required property [${prop}]`

@@ -17,7 +17,6 @@ export class RoomManager {
 	getRoom(entityRef: EntityReference) {
 		const room = this.rooms.get(entityRef);
 		if (!room) {
-			console.log(this.rooms);
 			throw new Error(`RoomManager can't find the Room [${entityRef}]`);
 		}
 		return room;

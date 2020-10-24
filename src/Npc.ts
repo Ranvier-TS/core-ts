@@ -12,9 +12,10 @@ import { Scriptable } from './Scriptable';
 const uuid = require('uuid');
 
 export interface INpcDef extends ICharacterConfig {
+	area?: string;
 	script?: string;
 	behaviors?: Record<string, any>;
-	equipment?: Equipment | Record<string, IItemDef> | Record<string, { entityReference: string; }>;
+	equipment?: Record<string, IItemDef> | Record<string, { entityReference: string; }>;
 	items?: EntityReference[];
 	description: string;
 	entityReference: EntityReference;
@@ -35,7 +36,7 @@ export class Npc extends Scriptable(Character) {
 	area: Area;
 	script?: string;
 	behaviors?: Map<string, any>;
-	defaultEquipment: Equipment | Record<string, { entityReference: EntityReference }>;
+	defaultEquipment: Record<string, { entityReference: EntityReference }>;
 	defaultItems: EntityReference[];
 	description: string;
 	entityReference: EntityReference;
