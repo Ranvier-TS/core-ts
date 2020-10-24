@@ -46,12 +46,13 @@ export class Npc extends Scriptable(Character) {
 	commandQueue: CommandQueue;
 	keywords: string[];
   sourceRoom: Room | null;
-  __pruned: boolean = false;
+	__pruned: boolean = false;
+	
+	static validate: string[] = ['name', 'id'];
 	constructor(area: Area, data: INpcDef) {
 		super(data);
-		const validate = ['name', 'id'];
 
-		for (const prop of validate) {
+		for (const prop of Npc.validate) {
 			if (!(prop in data)) {
 				throw new ReferenceError(
 					`NPC in area [${area.name}] missing required property [${prop}]`
