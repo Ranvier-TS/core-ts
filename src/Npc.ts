@@ -2,8 +2,9 @@ import { Area } from './Area';
 import { Character, ICharacterConfig } from './Character';
 import { CommandQueue } from './CommandQueue';
 import { EntityReference } from './EntityReference';
+import { Equipment } from './Equipment';
 import { IGameState } from './GameState';
-import { Item } from './Item';
+import { IItemDef, Item } from './Item';
 import { Logger } from './Logger';
 import { Room } from './Room';
 import { Scriptable } from './Scriptable';
@@ -13,7 +14,7 @@ const uuid = require('uuid');
 export interface INpcDef extends ICharacterConfig {
 	script?: string;
 	behaviors?: Record<string, any>;
-	equipment?: Record<string, { entityRefence: EntityReference }>;
+	equipment?: Equipment | Record<string, IItemDef> | Record<string, { entityReference: string; }>;
 	items?: EntityReference[];
 	description: string;
 	entityReference: EntityReference;
@@ -34,7 +35,7 @@ export class Npc extends Scriptable(Character) {
 	area: Area;
 	script?: string;
 	behaviors?: Map<string, any>;
-	defaultEquipment: Record<string, { entityRefence: EntityReference }>;
+	defaultEquipment: Equipment | Record<string, { entityReference: EntityReference }>;
 	defaultItems: EntityReference[];
 	description: string;
 	entityReference: EntityReference;
@@ -140,7 +141,7 @@ export class Npc extends Scriptable(Character) {
 			);
 			const newItem = state.ItemFactory.create(
 				this.area,
-				defaultEqId.entityRefence
+				defaultEqId.entityReference
 			);
 			newItem.hydrate(state);
 			state.ItemManager.add(newItem);
@@ -156,7 +157,7 @@ export class Npc extends Scriptable(Character) {
 			{
 				script: this.script,
 				behaviors: new Map(
-					(this.behaviors as Iterable<readonly [unknown, unknown]>) || {}
+					(this.behaviors as Iterable<readonly [unknown, unknown]>) || new Map()
 				),
 				defaultEquipment: this.defaultEquipment || {},
 				defaultItems: this.defaultItems || [],

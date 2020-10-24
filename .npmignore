@@ -7,5 +7,5 @@
 !index.d.ts
 !types/*
 !package*
-tsconfig.json
-src
+!dist/*
+!tsconfig.json

@@ -1,8 +1,8 @@
 'use strict';
 
-import { EventEmitter } from 'events';
 import { TelnetStream } from '../types/TelnetStream';
 import { WebsocketStream } from '../types/WebsocketStream';
+import { Account } from './Account';
 import { Character, ICharacterConfig, ISerializedCharacter } from './Character';
 import { CommandQueue, ICommandExecutable } from './CommandQueue';
 import { Config } from './Config';
@@ -17,6 +17,7 @@ import { Room } from './Room';
 
 export interface IPlayerDef extends ICharacterConfig {
 	account: Account;
+	description?: string;
 	experience: number;
 	password: string;
 	prompt: string;
@@ -27,6 +28,7 @@ export interface IPlayerDef extends ICharacterConfig {
 
 export interface ISerializedPlayer extends ISerializedCharacter {
 	account: string;
+	description?: string;
 	experience: number;
 	inventory: IInventoryDef;
 	metadata: Metadata;
@@ -51,6 +53,7 @@ export interface ISerializedPlayer extends ISerializedCharacter {
 export class Player extends Character {
 	account: Account | null;
 	commandQueue: CommandQueue;
+	description?: string;
 	experience: number;
 	extraPrompts: Map<string, any>;
 	password: string;
@@ -66,6 +69,7 @@ export class Player extends Character {
 		super(data);
 
 		this.account = data.account || null;
+		this.description = data.description || '';
 		this.experience = data.experience || 0;
 		this.extraPrompts = new Map();
 		this.password = data.password;
@@ -238,8 +242,8 @@ export class Player extends Character {
 		this.inventory.hydrate(state, this);
 		// Hydrate equipment
 		// maybe refactor Equipment to be an object like Inventory?
-		if (this.equipment && !(this.equipment instanceof Map)) {
-			const eqDefs = this.equipment as Record<string, IItemDef> ;
+		if (this.equipment && this.__equipment && !this.equipment.size) {
+			const eqDefs = this.__equipment as Record<string, IItemDef> ;
 			this.equipment = new Map();
 			for (const slot in eqDefs) {
 				const itemDef = eqDefs[slot];
@@ -281,7 +285,7 @@ export class Player extends Character {
 	}
 
 	serialize(): ISerializedPlayer {
-		const account = this.account?.name || '';
+		const account = this.account?.username || '';
 		const experience = this.experience;
 		const inventory = this.inventory && this.inventory.serialize();
 		const metadata = this.metadata || {};

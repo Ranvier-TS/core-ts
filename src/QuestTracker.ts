@@ -38,7 +38,7 @@ export class QuestTracker {
 	 */
 	constructor(
 		player: Player,
-		active: Iterable<readonly [string, IQuestTrackerActiveDef]>,
+		active: Iterable<readonly [string, IQuestTrackerActiveDef | Quest]>,
 		completed: Iterable<readonly [string, IQuestTrackerCompletedDef]>
 	) {
 		this.player = player;
@@ -78,7 +78,7 @@ export class QuestTracker {
 	}
 
 	get(qid: EntityReference) {
-		return this.activeQuests.get(qid);
+		return this.activeQuests.get(qid) as Quest;
 	}
 
 	/**
