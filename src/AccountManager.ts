@@ -48,7 +48,7 @@ export class AccountManager {
 	 * @param {string} username
 	 * @param {boolean} force Force reload data from disk
 	 */
-	async loadAccount(username: string, force: boolean) {
+	async loadAccount(username: string, force?: boolean) {
 		if (this.accounts.has(username) && !force) {
 			return this.getAccount(username);
 		}

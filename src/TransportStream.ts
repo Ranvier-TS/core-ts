@@ -1,6 +1,9 @@
 import { EventEmitter } from 'events';
 import { TelnetStream } from '../types/TelnetStream';
 import { WebsocketStream } from '../types/WebsocketStream';
+
+export type SocketType = TelnetStream | WebsocketStream;
+
 /**
  * Base class for anything that should be sending or receiving data from the player
  */

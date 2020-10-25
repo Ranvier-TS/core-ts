@@ -103,7 +103,7 @@ export class Item extends GameEntity {
 	room: string | Room | null;
 	roomDesc: string;
 	script: string | null;
-	type: ItemType | string;
+	type: ItemType;
 	uuid: string;
 	closeable: boolean;
 	closed: boolean;
@@ -152,7 +152,7 @@ export class Item extends GameEntity {
 		this.script = item.script || null;
 
 		if (typeof item.type === 'string') {
-			this.type = item.type;
+			this.type = item.type as ItemType;
 		} else {
 			this.type = item.type || ItemType.OBJECT;
 		}
