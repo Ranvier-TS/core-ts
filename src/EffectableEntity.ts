@@ -63,7 +63,7 @@ export class EffectableEntity extends EventEmitter {
 	 * @param {string} attr
 	 * @return {number}
 	 */
-	getMaxAttribute(attrString: string) {
+	getMaxAttribute(attrString: string): number {
 		if (!this.hasAttribute(attrString)) {
 			throw new RangeError(`Entity does not have attribute [${attrString}]`);
 		}
@@ -104,7 +104,7 @@ export class EffectableEntity extends EventEmitter {
 	 * @param {string} attrString
 	 * @return {number}
 	 */
-	getAttribute(attrName: string) {
+	getAttribute(attrName: string): number {
 		const attr = this.attributes.get(attrName);
 		if (!attr || !this.hasAttribute(attrName)) {
 			throw new RangeError(`Entity does not have attribute [${attrName}]`);
@@ -145,9 +145,9 @@ export class EffectableEntity extends EventEmitter {
 	 * @param {string} attrName Attribute name
 	 * @return {number}
 	 */
-	getBaseAttribute(attrName: string) {
+	getBaseAttribute(attrName: string): number {
 		const attr = this.attributes.get(attrName);
-		return attr && attr.base;
+		return attr && attr.base || 0;
 	}
 
 	/**
@@ -257,7 +257,7 @@ export class EffectableEntity extends EventEmitter {
 	/**
 	 * @see EffectList.evaluateIncomingDamage
 	 * @param {Damage} damage
-   * @param {number} currentAmount
+	 * @param {number} currentAmount
 	 * @param {?Character} attacker
 	 * @return {number}
 	 */

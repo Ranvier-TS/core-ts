@@ -9,7 +9,7 @@ import { CommandQueue, ICommandExecutable } from './CommandQueue';
 import { Config } from './Config';
 import { IGameState } from './GameState';
 import { IInventoryDef } from './Inventory';
-import { IItemDef } from './Item';
+import { IItemDef, ISerializedItem } from './Item';
 import { Logger } from './Logger';
 import { Metadata } from './Metadatable';
 import { PlayerRoles } from './PlayerRoles';
@@ -316,8 +316,8 @@ export class Player extends Character {
 		});
 
 		if (this.equipment instanceof Map) {
-			let eq: Record<string, IItemDef> = {};
-			for (let [slot, item] of this.equipment) {
+			const eq: Record<string, ISerializedItem> = {};
+			for (const [slot, item] of this.equipment) {
 				eq[slot] = item.serialize();
 			}
 			data.equipment = eq;

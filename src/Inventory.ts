@@ -9,7 +9,7 @@ export interface IInventoryDef {
 }
 
 export interface ISerializedInventory {
-	items?: [string, IItemDef][];
+	items?: [string, ISerializedItem][];
 	max?: number;
 }
 
