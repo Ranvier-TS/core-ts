@@ -28,6 +28,7 @@ export interface IRoomDef {
 	title: string;
 	description: string;
 	id: string;
+	area?: string;
 	items?: IRoomItemDef[];
 	npcs?: IRoomNpcDef[] | string[];
 	script?: string;
@@ -94,10 +95,10 @@ export class Room extends GameEntity {
 	players: Set<Player>;
 	spawnedNpcs: Set<Npc>;
 
+	static validate: string[] = ['title', 'description', 'id'];
 	constructor(area: Area, def: IRoomDef) {
 		super(def);
-		const required = ['title', 'description', 'id'];
-		for (const prop of required) {
+		for (const prop of Room.validate) {
 			if (!(prop in def)) {
 				throw new Error(
 					`ERROR: AREA[${area.name}] Room does not have required property ${prop}`

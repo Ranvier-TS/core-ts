@@ -1,4 +1,3 @@
-import { Character } from './Character';
 import { IGameState } from './GameState';
 import { Item, IItemDef, ISerializedItem } from './Item';
 import { Npc } from './Npc';
@@ -82,9 +81,6 @@ export class Inventory extends Map<string, Item> {
 	}
 
 	serialize() {
-		// Item is imported here to prevent circular dependency with Item having an Inventory
-		const Item = require('./Item');
-
 		const data: {
 			items: [string, ISerializedItem][];
 			max: number;
@@ -110,9 +106,6 @@ export class Inventory extends Map<string, Item> {
 	 * @param {Character|Item} carriedBy
 	 */
 	hydrate(state: IGameState, carriedBy: InventoryEntityType) {
-		// Item is imported here to prevent circular dependency with Item having an Inventory
-		const Item = require('./Item');
-
 		for (const [uuid, def] of this.__items) {
 			if (def instanceof Item) {
 				def.carriedBy = carriedBy;
@@ -127,7 +120,7 @@ export class Inventory extends Map<string, Item> {
 			let newItem = state.ItemFactory.create(area, def.entityReference);
 			newItem.uuid = uuid;
 			newItem.carriedBy = carriedBy;
-			newItem.initializeInventoryFromSerialized(def.inventory);
+			newItem.initializeInventoryFromSerialized(def.inventory || {});
 			newItem.hydrate(state, def);
 			this.set(uuid, newItem);
 			state.ItemManager.add(newItem);

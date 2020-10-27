@@ -18,8 +18,7 @@ export interface ICharacterConfig extends ISerializedEffectableEntity {
 	/** @property {Inventory}  inventory */
 	inventory: IInventoryDef;
 	equipment?: Record<string, IItemDef>
-		| Record<string, { entityReference: EntityReference }>
-		| Equipment
+	| Record<string, { entityReference: EntityReference }>;
 	/** @property {number}     level */
 	level: number;
 	/** @property {Room}       room       Room the character is currently in */
@@ -55,8 +54,7 @@ export class Character extends Metadatable(EffectableEntity) {
 	combatants: Set<Character>;
 	/** @property {number}     level */
 	__equipment?: Record<string, IItemDef>
-		| Record<string, { entityReference: EntityReference }>
-		| Equipment;
+		| Record<string, { entityReference: EntityReference }>;
 	equipment: Equipment;
 
 	level: number;
