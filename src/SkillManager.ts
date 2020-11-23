@@ -29,7 +29,7 @@ export class SkillManager {
 	 * @param {Skill} skill
 	 */
 	remove(skill: Skill) {
-		this.skills.delete(skill.name);
+		this.skills.delete(skill.id);
 	}
 
 	/**
