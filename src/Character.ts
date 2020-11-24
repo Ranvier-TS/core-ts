@@ -11,14 +11,16 @@ import { Party } from './Party';
 import { EquipSlotTakenError, EquipAlreadyEquippedError } from './EquipErrors';
 import { EntityReference } from './EntityReference';
 import { Equipment } from './Equipment';
+import { AnyCharacter } from './GameEntity';
 
 export interface ICharacterConfig extends ISerializedEffectableEntity {
 	/** @property {string}     name       Name shown on look/who/login */
 	name: string;
 	/** @property {Inventory}  inventory */
 	inventory: IInventoryDef;
-	equipment?: Record<string, IItemDef>
-	| Record<string, { entityReference: EntityReference }>;
+	equipment?:
+		| Record<string, IItemDef>
+		| Record<string, { entityReference: EntityReference }>;
 	/** @property {number}     level */
 	level: number;
 	/** @property {Room}       room       Room the character is currently in */
@@ -51,9 +53,10 @@ export class Character extends Metadatable(EffectableEntity) {
 	/** @property {Inventory}  inventory */
 	inventory: Inventory;
 	/** @property {Set}        combatants Enemies this character is currently in combat with */
-	combatants: Set<Character>;
+	combatants: Set<AnyCharacter>;
 	/** @property {number}     level */
-	__equipment?: Record<string, IItemDef>
+	__equipment?:
+		| Record<string, IItemDef>
 		| Record<string, { entityReference: EntityReference }>;
 	equipment: Equipment;
 
@@ -72,7 +75,7 @@ export class Character extends Metadatable(EffectableEntity) {
 
 		this.name = data.name;
 		this.inventory = new Inventory(data.inventory || {});
-		this.__equipment = data.equipment
+		this.__equipment = data.equipment;
 		this.equipment = new Map();
 		this.combatants = new Set();
 		this.combatData = {};

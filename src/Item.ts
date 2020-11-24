@@ -112,7 +112,7 @@ export class Item extends GameEntity {
 	sourceRoom: Room | null;
 
 	carriedBy: InventoryEntityType | Character | null;
-	equippedBy: InventoryEntityType | Character | string | null;
+	equippedBy: InventoryEntityType | Character | null;
 
 	keywords: string[];
 
