@@ -36,7 +36,7 @@ export interface IEffectDef {
 	/** @property {EffectModifiers} modifiers Attribute modifier functions */
 	modifiers?: Partial<EffectModifiers>;
 	state?: Partial<IEffectState>;
-	listeners?: EventListeners;
+	listeners?: EventListeners<Effect>;
 }
 
 export interface ISerializedEffect {
