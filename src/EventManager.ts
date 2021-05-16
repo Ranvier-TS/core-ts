@@ -2,9 +2,11 @@ import { EventEmitter } from 'events';
 import { IGameState } from './GameState';
 import { isIterable } from './Util';
 
-export type EventListeners =
-	| Record<string, () => void>
-	| ((state: IGameState) => Record<string, () => void>);
+type EventListenersRecord<T> = Record<string, (this: T, ...args: unknown[]) => void>;
+
+export type EventListeners<T = unknown> =
+	| EventListenersRecord<T>
+	| ((state: IGameState) => EventListenersRecord<T>);
 
 /**
  * Generic array hash table to store listener definitions `events` is a `Map`

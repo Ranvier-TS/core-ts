@@ -7,9 +7,13 @@ import { EventListeners } from './EventManager';
 import { PlayerOrNpc } from './GameEntity';
 import { Character } from './Character';
 
+export type AttributesModifier =
+	| Record<string, (this: Effect, current: number, ...args: any[]) => any>
+	| ((this: Effect, attrName: string, current: number) => any)
+
 /** @typedef EffectModifiers {{attributes: !Object<string,function>}} */
 export type EffectModifiers = {
-	attributes: Record<string, (...args: any[]) => any>;
+	attributes: AttributesModifier;
 	incomingDamage: (
 		damage: Damage,
 		currentAmount: number,
@@ -20,7 +24,7 @@ export type EffectModifiers = {
 		currentAmount: number,
 		target: PlayerOrNpc
 	) => any;
-	properties: (...args: any[]) => any | Record<string, (...args: any[]) => any>;
+	properties: AttributesModifier;
 };
 
 export interface IEffectDef {
@@ -30,9 +34,9 @@ export interface IEffectDef {
 	flags?: string[];
 	skill?: string;
 	/** @property {EffectModifiers} modifiers Attribute modifier functions */
-	modifiers?: EffectModifiers;
+	modifiers?: Partial<EffectModifiers>;
 	state?: Partial<IEffectState>;
-	listeners?: EventListeners;
+	listeners?: EventListeners<Effect>;
 }
 
 export interface ISerializedEffect {
@@ -156,9 +160,10 @@ export class Effect extends EventEmitter {
 		this.modifiers = Object.assign(
 			{
 				attributes: {},
-				incomingDamage: (damage: Damage, current: number) => current,
-				outgoingDamage: (damage: Damage, current: number) => current,
-			},
+				incomingDamage: (_damage: Damage, current: number) => current,
+				outgoingDamage: (_damage: Damage, current: number) => current,
+				properties: {},
+			} as EffectModifiers,
 			def.modifiers
 		);
 
@@ -317,12 +322,13 @@ export class Effect extends EventEmitter {
 	 */
 	modifyAttribute(attrName: string, currentValue: number) {
 		let modifier = (_?: any) => _;
-		if (typeof this.modifiers.attributes === 'function') {
+		const attributeModifiers = this.modifiers.attributes;
+		if (typeof attributeModifiers === 'function') {
 			modifier = (current) => {
-				return this.modifiers.attributes.bind(this)(attrName, current);
+				return attributeModifiers.bind(this)(attrName, current);
 			};
-		} else if (attrName in this.modifiers.attributes) {
-			modifier = this.modifiers.attributes[attrName];
+		} else if (attrName in attributeModifiers) {
+			modifier = attributeModifiers[attrName];
 		}
 		return modifier.bind(this)(currentValue);
 	}
@@ -336,12 +342,13 @@ export class Effect extends EventEmitter {
 	 */
 	modifyProperty(propertyName: string, currentValue: number) {
 		let modifier = (_: any) => _;
-		if (typeof this.modifiers.properties === 'function') {
+		const propertyModifiers = this.modifiers.properties;
+		if (typeof propertyModifiers === 'function') {
 			modifier = (current) => {
-				return this.modifiers.properties.bind(this)(propertyName, current);
+				return propertyModifiers.bind(this)(propertyName, current);
 			};
-		} else if (propertyName in this.modifiers.properties) {
-			modifier = this.modifiers.properties[propertyName];
+		} else if (propertyName in propertyModifiers) {
+			modifier = propertyModifiers[propertyName];
 		}
 		return modifier.bind(this)(currentValue);
 	}
