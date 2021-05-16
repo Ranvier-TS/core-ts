@@ -88,7 +88,7 @@ export class EntityFactory {
 	) {
 		const definition = this.getDefinition(entityRef);
 		if (!definition) {
-			throw new Error('No Entity definition found for ' + entityRef);
+			throw new Error(`[${Type}Factory] No Entity definition found for ${entityRef}`);
 		}
 		const entity = new Type(area, definition);
 

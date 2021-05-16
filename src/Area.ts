@@ -91,7 +91,7 @@ export class Area extends GameEntity {
 	 * @param {string} id Room id
 	 * @return {Room|undefined}
 	 */
-	getRoomById(id: string) {
+	getRoomById(id: string): Room | never {
 		const room = this.rooms.get(id);
 		if (!room) {
 			throw new Error(`Area did not find Room with id: [${id}]`);

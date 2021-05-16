@@ -58,7 +58,7 @@ export class Skill {
 	info: Function;
 	initiatesCombat: boolean;
 	name: string;
-	options: object;
+	options: Record<string, unknown>;
 	requiresTarget: boolean;
 	resource: ISkillResource | ISkillResource[];
 	run: Function;

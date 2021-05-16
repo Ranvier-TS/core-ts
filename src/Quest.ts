@@ -18,6 +18,7 @@ export interface IQuestDef {
 	rewards: IQuestRewardDef[];
 	goals: IQuestGoalDef[];
 	started?: number;
+	npc?: string;
 }
 
 export interface ISerializedQuestDef {

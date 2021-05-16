@@ -1,6 +1,5 @@
 'use strict';
 
-import { isString } from 'util';
 import { TelnetStream } from '../types/TelnetStream';
 import { WebsocketStream } from '../types/WebsocketStream';
 import { Account } from './Account';
