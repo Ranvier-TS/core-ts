@@ -398,9 +398,7 @@ export class BundleManager {
 		}
 		return entities.map((entity: GameEntityDefinition) => {
 			const entityRef = factory.createEntityRef(areaName, entity.id);
-			console.log('entity before ', entity);
 			entity.area = areaName;
-			console.log('entity after ', entity);
 			factory.setDefinition(entityRef, entity);
 			if (entity.script !== undefined) {
 				let scriptPath = '';

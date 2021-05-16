@@ -246,7 +246,6 @@ export class Player extends Character {
 		if (this.__equipment && !this.equipment.size) {
 			const eqDefs = this.__equipment as Record<string, IItemDef>;
 			this.equipment = new Map();
-			console.log({ eqDefs });
 			for (const slot in eqDefs) {
 				const itemDef= eqDefs[slot];
 				try {
