@@ -127,7 +127,7 @@ export class EffectList {
 				if (currentStacks < maxStacks) {
 					activeEffect.state.stacks = Math.min(
 						maxStacks,
-						activeEffect.state.stacks || 0 + 1
+						(activeEffect.state.stacks || 0) + 1
 					);
 
 					/**

@@ -1,4 +1,5 @@
 import { Area } from './Area';
+import { Character } from './Character';
 import { EffectableEntity } from './EffectableEntity';
 import { IItemDef, Item } from './Item';
 import { Metadatable } from './Metadatable';
@@ -15,6 +16,7 @@ import { Scriptable } from './Scriptable';
 export class GameEntity extends Scriptable(Metadatable(EffectableEntity)) {}
 
 export type PlayerOrNpc = Player | Npc;
+export type AnyCharacter = PlayerOrNpc | Character ;
 export type GameEntities = Item | Npc | Room;
 export type AnyGameEntity = Item | Npc | Room | Area | Player;
 export type GameEntityDefinition = IItemDef | INpcDef | IRoomDef;

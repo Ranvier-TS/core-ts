@@ -45,7 +45,7 @@ export class CommandManager {
 	 * @param {boolean} returnAlias true to also return which alias of the command was used
 	 * @return {Command}
 	 */
-	find(search: string, returnAlias: boolean) {
+	find(search: string, returnAlias?: boolean) {
 		for (const [name, command] of this.commands.entries()) {
 			if (name.indexOf(search) === 0) {
 				return returnAlias ? { command, alias: name } : command;
