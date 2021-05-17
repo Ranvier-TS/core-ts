@@ -65,7 +65,9 @@ export class Command {
 	 * @param {string} arg0   The actual command the user typed, useful when checking which alias was used for a command
 	 * @return {*}
 	 */
-	execute(args: string, player: Npc | Player, arg0: string) {
+	execute(
+		args: string, player: Npc | Player, arg0: string = this.name
+	) {
 		return this.func(args, player, arg0);
 	}
 }
