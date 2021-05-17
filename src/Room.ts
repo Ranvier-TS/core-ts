@@ -43,12 +43,15 @@ export interface IRoomDef {
 
 export interface IRoomItemDef {
 	id: string;
+	replaceOnRespawn?: boolean;
 	respawnChance?: number;
 	maxLoad?: number;
 }
 
 export interface IRoomNpcDef {
 	id: string;
+	maxLoad?: number;
+	respawnChance?: number; // percentage
 }
 
 /**
