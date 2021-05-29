@@ -71,7 +71,7 @@ export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 		 * @return {*}
 		 * @throws Error
 		 */
-		getMeta(key: string) {
+		getMeta<TMeta extends Metadata, TKey extends keyof TMeta>(key: TKey): TMeta[TKey] {
 			if (!this.metadata) {
 				throw new Error('Class does not have metadata property');
 			}
