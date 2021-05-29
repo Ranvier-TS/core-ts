@@ -77,7 +77,7 @@ export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 			}
 
 			const base = this.metadata;
-			return key.split('.').reduce((obj, index) => obj && obj[index], base);
+			return (key as string).split('.').reduce((obj: any, index) => obj && obj[index], base);
 		}
 	};
 }
