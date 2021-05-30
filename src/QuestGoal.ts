@@ -30,7 +30,7 @@ export interface IQuestGoalConfig {
 export class QuestGoal<TState = Record<string, unknown>> extends EventEmitter {
 	config: IQuestGoalConfig;
 	quest: Quest;
-	state: TState;
+	state: Partial<TState>;
 	player: Player;
 	/**
 	 * @param {Quest} quest Quest this goal is for
@@ -47,7 +47,7 @@ export class QuestGoal<TState = Record<string, unknown>> extends EventEmitter {
 			config
 		);
 		this.quest = quest;
-		this.state = {} as TState;
+		this.state = {};
 		this.player = player;
 	}
 
