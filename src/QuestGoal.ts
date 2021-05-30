@@ -9,7 +9,7 @@ export interface IQuestGoalDef {
 }
 
 export interface ISerializedQuestGoal {
-	state: object;
+	state: Record<string, unknown>;
 	progress: {
 		percent: number;
 		display: string;
@@ -30,7 +30,7 @@ export interface IQuestGoalConfig {
 export class QuestGoal extends EventEmitter {
 	config: IQuestGoalConfig;
 	quest: Quest;
-	state: object;
+	state: Record<string, unknown>;
 	player: Player;
 	/**
 	 * @param {Quest} quest Quest this goal is for
@@ -75,7 +75,7 @@ export class QuestGoal extends EventEmitter {
 		};
 	}
 
-	hydrate(state: object) {
+	hydrate(state: Record<string, unknown>) {
 		this.state = state;
 	}
 }
