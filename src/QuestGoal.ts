@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { Player } from './Player';
-import { ISerializedQuestDef, Quest } from './Quest';
+import { Quest } from './Quest';
 
 export interface IQuestGoalDef {
 	name: string;
@@ -51,10 +51,7 @@ export class QuestGoal<TState = Record<string, unknown>> extends EventEmitter {
 		this.player = player;
 	}
 
-	/**
-	 * @return {{ percent: number, display: string}}
-	 */
-	getProgress() {
+	getProgress(): { percent: number, display: string} {
 		return {
 			percent: 0,
 			display:
