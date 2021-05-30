@@ -27,7 +27,7 @@ export interface IQuestGoalConfig {
  * create new quest goals for quests
  * @extends EventEmitter
  */
-export class QuestGoal<TState = ISerializedQuestGoal[]> extends EventEmitter {
+export class QuestGoal<TState = Record<string, unknown>> extends EventEmitter {
 	config: IQuestGoalConfig;
 	quest: Quest;
 	state: TState;
