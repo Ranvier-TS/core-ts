@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { Player } from './Player';
-import { Quest } from './Quest';
+import { ISerializedQuestDef, Quest } from './Quest';
 
 export interface IQuestGoalDef {
 	name: string;
@@ -27,10 +27,10 @@ export interface IQuestGoalConfig {
  * create new quest goals for quests
  * @extends EventEmitter
  */
-export class QuestGoal extends EventEmitter {
+export class QuestGoal<TState = ISerializedQuestGoal[]> extends EventEmitter {
 	config: IQuestGoalConfig;
 	quest: Quest;
-	state: Record<string, unknown>;
+	state: TState;
 	player: Player;
 	/**
 	 * @param {Quest} quest Quest this goal is for
@@ -47,7 +47,7 @@ export class QuestGoal extends EventEmitter {
 			config
 		);
 		this.quest = quest;
-		this.state = {};
+		this.state = {} as TState;
 		this.player = player;
 	}
 
@@ -69,13 +69,13 @@ export class QuestGoal extends EventEmitter {
 
 	serialize(): ISerializedQuestGoal {
 		return {
-			state: this.state,
+			state: this.state as Record<string, unknown>,
 			progress: this.getProgress(),
 			config: this.config,
 		};
 	}
 
-	hydrate(state: Record<string, unknown>) {
+	hydrate(state: TState) {
 		this.state = state;
 	}
 }
