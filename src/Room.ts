@@ -243,8 +243,8 @@ export class Room extends GameEntity {
 	 *
 	 * @return {Array<{ id: string, direction: string, inferred: boolean, room: Room= }>}
 	 */
-	getExits() {
-		const exits = JSON.parse(JSON.stringify(this.exits)).map((exit: IExit) => {
+	getExits(): IExit[] {
+		const exits: IExit[] = JSON.parse(JSON.stringify(this.exits)).map((exit: IExit) => {
 			exit.inferred = false;
 			return exit;
 		});
