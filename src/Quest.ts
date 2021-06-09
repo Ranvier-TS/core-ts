@@ -167,7 +167,7 @@ export class Quest extends EventEmitter {
 	}
 
 	hydrate() {
-		(this.state as ISerializedQuestDef[]).forEach((goalState, i: number) => {
+		(this.state as ISerializedQuestGoal[]).forEach((goalState, i: number) => {
 			this.goals[i].hydrate(goalState.state);
 		});
 	}
