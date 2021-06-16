@@ -91,14 +91,18 @@ export class EffectList {
 				typeof effect.config.tickInterval !== 'undefined'
 			) {
 				const now = Date.now();
+				const sinceLastTick = now - effect.state.lastTick;
 				if (
-					Date.now() <
-					effect.state.ticks * effect.config.tickInterval * 1000
+					sinceLastTick <
+					effect.config.tickInterval * 1000
 				) {
 					continue;
 				}
 				effect.state.lastTick = now;
-				effect.state.ticks && effect.state.ticks++;
+				if (!effect.state.ticks) {
+					effect.state.ticks = 0;
+				}
+				effect.state.ticks++;
 			}
 			(effect as Effect).emit(event, ...args);
 		}
