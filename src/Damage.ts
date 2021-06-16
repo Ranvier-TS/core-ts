@@ -12,7 +12,7 @@ export class Damage {
 	attacker?: PlayerOrNpc | null;
 	amount: number;
 	source?: any = null;
-	metadata: object;
+	metadata: Record<string, unknown>;
 
 	/**
 	 * @param {string} attribute Attribute the damage is going to apply to
@@ -26,7 +26,7 @@ export class Damage {
 		amount: number,
 		attacker: PlayerOrNpc,
 		source: any,
-		metadata: object = {}
+		metadata: Partial<Record<string, unknown>> = {}
 	) {
 		if (!Number.isFinite(amount)) {
 			throw new TypeError(
@@ -50,7 +50,7 @@ export class Damage {
 	 * @param {Character} target
 	 * @return {number} Final damage amount
 	 */
-	evaluate(target: PlayerOrNpc) {
+	evaluate(target: PlayerOrNpc): number {
 		let amount = this.amount;
 
 		if (this.attacker) {
