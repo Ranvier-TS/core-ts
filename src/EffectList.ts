@@ -99,7 +99,7 @@ export class EffectList {
 					continue;
 				}
 				effect.state.lastTick = now;
-				if (!effect.state.ticks) {
+				if (!effect.state.ticks && effect.state.ticks !== 0) {
 					effect.state.ticks = 0;
 				}
 				effect.state.ticks++;
