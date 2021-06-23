@@ -54,12 +54,6 @@ export class Attribute {
 		formula: AttributeFormula | null,
 		metadata: Metadata
 	) {
-		if (isNaN(base)) {
-			throw new TypeError(`Base attribute must be a number, got ${base}.`);
-		}
-		if (isNaN(delta)) {
-			throw new TypeError(`Attribute delta must be a number, got ${delta}.`);
-		}
 		if (formula && !(formula instanceof AttributeFormula)) {
 			throw new TypeError(
 				'Attribute formula must be instance of AttributeFormula'
