@@ -1,6 +1,5 @@
 import { EventEmitter } from 'events';
 import { IGameState } from './GameState';
-import { isIterable } from './Util';
 
 type EventListenersRecord<T> = Record<string, (this: T, ...args: unknown[]) => void>;
 
@@ -73,9 +72,7 @@ export class EventManager {
 			events = [events];
 		} else if (!events) {
 			events = this.events.keys();
-		} else if (!isIterable(events)) {
-			throw new TypeError('events list passed to detach() is not iterable');
-		}
+		} 
 
 		for (const event of events) {
 			emitter.removeAllListeners(event);

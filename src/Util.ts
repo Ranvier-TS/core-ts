@@ -7,6 +7,6 @@ export type Constructor<T = EventEmitter> = new (...args: any[]) => T;
  * @param {Object} obj
  * @return {boolean}
  */
-export function isIterable(obj: Iterable<unknown>) {
+export function isIterable(obj: Iterable<unknown>):boolean {
 	return obj && typeof obj[Symbol.iterator] === 'function';
 }
