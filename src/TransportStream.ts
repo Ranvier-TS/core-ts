@@ -44,27 +44,27 @@ export class TransportStream extends EventEmitter {
 		}
 	}
 
-	address(...args: [any]) {
+	address(...args: any[]) {
 		return null;
 	}
 
-	end(...args: [any]) {
+	end(...args: any[]) {
 		/* noop */
 	}
 
-	setEncoding(...args: [any]) {
+	setEncoding(...args: any[]) {
 		/* noop */
 	}
 
-	pause(...args: [any]) {
+	pause(...args: any[]) {
 		/* noop */
 	}
 
-	resume(...args: [any]) {
+	resume(...args: any[]) {
 		/* noop */
 	}
 
-	destroy(...args: [any]) {
+	destroy(...args: any[]) {
 		/* noop */
 	}
 
