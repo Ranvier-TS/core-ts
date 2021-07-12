@@ -72,7 +72,7 @@ export class PlayerManager extends EventEmitter {
 
 		if (player.equipment instanceof Map && player.equipment.size) {
 			player.equipment.forEach((item: Item, slot: string) =>
-				player.unequip(slot)
+				item.__manager?.remove(item)
 			);
 		}
 
