@@ -278,6 +278,7 @@ export class Item extends GameEntity {
 		}
 
 		this.__manager = state.ItemManager;
+		super.hydrate(state, serialized);
 
 		state.ItemManager.add(this);
 
