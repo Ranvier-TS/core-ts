@@ -68,4 +68,6 @@ export class Logger {
 		const pe = require('pretty-error').start();
 		pe.skipNodeFiles(); // Ignore native node files in stacktrace.
 	}
+
+	static get _winston () { return winston; }
 }
