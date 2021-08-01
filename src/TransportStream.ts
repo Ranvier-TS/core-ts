@@ -1,14 +1,16 @@
 import { EventEmitter } from 'events';
 import { TelnetStream } from '../types/TelnetStream';
+import { TelnetSocket } from '../types/TelnetSocket';
+import { RanvierWebSocket } from '../types/RanvierWebSocket';
 import { WebsocketStream } from '../types/WebsocketStream';
 
-export type SocketType = TelnetStream | WebsocketStream;
-
+export type StreamType = TelnetStream | WebsocketStream;
+export type SocketType = TelnetSocket | RanvierWebSocket;
 /**
  * Base class for anything that should be sending or receiving data from the player
  */
 export class TransportStream extends EventEmitter {
-	socket?: TelnetStream | WebsocketStream;
+	socket?: SocketType;
 	_prompted: boolean = false;
 
 	get readable() {
@@ -37,34 +39,34 @@ export class TransportStream extends EventEmitter {
 
 		const methodName = 'execute' + command[0].toUpperCase() + command.substr(1);
 		if (typeof this[methodName as K] === 'function') {
-			const commandMethod = (this[methodName as K] as unknown) as (
+			const commandMethod = this[methodName as K] as unknown as (
 				...args: any[]
 			) => any;
 			return commandMethod.call(this, ...args);
 		}
 	}
 
-	address(...args: [any]) {
+	address(...args: any[]) {
 		return null;
 	}
 
-	end(...args: [any]) {
+	end(...args: any[]) {
 		/* noop */
 	}
 
-	setEncoding(...args: [any]) {
+	setEncoding(...args: any[]) {
 		/* noop */
 	}
 
-	pause(...args: [any]) {
+	pause(...args: any[]) {
 		/* noop */
 	}
 
-	resume(...args: [any]) {
+	resume(...args: any[]) {
 		/* noop */
 	}
 
-	destroy(...args: [any]) {
+	destroy(...args: any[]) {
 		/* noop */
 	}
 
@@ -72,7 +74,7 @@ export class TransportStream extends EventEmitter {
 	 * Attach a socket to this stream
 	 * @param {*} socket
 	 */
-	attach(socket: TelnetStream | WebsocketStream) {
+	attach(socket: SocketType) {
 		this.socket = socket;
 
 		this.socket.on('close', (_?: any) => {
