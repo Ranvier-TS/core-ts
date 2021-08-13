@@ -7,7 +7,7 @@ export type AttributeName = string;
 export interface IAttributeDef {
 	name: AttributeName;
 	base: number;
-	metadata: Metadata;
+	metadata?: Metadata;
 	formula: IAttributeFormulaDef;
 }
 
@@ -113,6 +113,7 @@ export class Attribute {
 }
 
 export type AttributeFormulaExecutable = (
+	this: Attribute,
 	character: EffectableEntity,
 	...attrs: number[]
 ) => number;
