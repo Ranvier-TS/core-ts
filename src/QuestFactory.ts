@@ -3,6 +3,7 @@ import { IGameState } from './GameState';
 import { Logger } from './Logger';
 import { Player } from './Player';
 import { IQuestDef, ISerializedQuestDef, Quest } from './Quest';
+import { ISerializedQuestGoal } from './QuestGoal';
 
 export interface IQuestFactoryDef {
 	area: string;
@@ -100,7 +101,7 @@ export class QuestFactory {
 			instance.addGoal(new goalType(instance, goal.config, player));
 		}
 
-		instance.on('progress', (progress) => {
+		instance.on('progress', (progress: ISerializedQuestGoal['progress']) => {
 			player.emit('questProgress', instance, progress);
 			player.save();
 		});
