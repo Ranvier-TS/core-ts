@@ -16,7 +16,7 @@ export class AreaFactory extends EntityFactory<IAreaDef> {
 	 * @param {string} entityRef Area name
 	 * @return {Area}
 	 */
-	create(entityRef: EntityReference) {
+	create(entityRef: EntityReference): Area {
 		const definition = this.getDefinition(entityRef);
 		if (!definition) {
 			throw new Error(
@@ -36,7 +36,7 @@ export class AreaFactory extends EntityFactory<IAreaDef> {
 	/**
 	 * @see AreaFactory#create
 	 */
-	clone(area: Area) {
+	clone(area: Area): Area {
 		return this.create(area.name);
 	}
 }

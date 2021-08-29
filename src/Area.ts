@@ -24,7 +24,6 @@ export interface IAreaManifest {
 	behaviors?: Record<string, any>;
 	attributes?: SerializedAttributes;
 	effects?: ISerializedEffect[];
-	bundle?: string;
 }
 
 /**

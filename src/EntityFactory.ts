@@ -2,7 +2,6 @@ import { Area } from './Area';
 import { AreaFactory } from './AreaFactory';
 import { BehaviorManager } from './BehaviorManager';
 import { EntityReference } from './EntityReference';
-import { GameEntityDefinition } from './GameEntity';
 import { Item } from './Item';
 import { ItemFactory } from './ItemFactory';
 import { MobFactory } from './MobFactory';
@@ -82,7 +81,7 @@ export class EntityFactory<T extends any> {
 		area: Area,
 		entityRef: EntityReference,
 		Type: T
-	) {
+	): Room | Npc | Item {
 		const definition = this.getDefinition(entityRef);
 		if (!definition) {
 			throw new Error(
