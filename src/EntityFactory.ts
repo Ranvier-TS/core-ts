@@ -89,8 +89,7 @@ export class EntityFactory<T extends any> {
 			);
 		}
 
-		// @ts-ignore
-		const entity = new Type(area, definition);
+		const entity = new Type(area, definition as any);
 
 		if (this.scripts?.has(entityRef)) {
 			this.scripts.get(entityRef)?.attach(entity as any);
