@@ -2,9 +2,8 @@ import { Area } from './Area';
 import { Character, ICharacterConfig } from './Character';
 import { CommandQueue } from './CommandQueue';
 import { EntityReference } from './EntityReference';
-import { Equipment } from './Equipment';
 import { IGameState } from './GameState';
-import { IItemDef, Item } from './Item';
+import { IItemDef } from './Item';
 import { Logger } from './Logger';
 import { Room } from './Room';
 import { Scriptable } from './Scriptable';
@@ -45,7 +44,7 @@ export class Npc extends Scriptable(Character) {
 	uuid: string;
 	commandQueue: CommandQueue;
 	keywords: string[];
-  sourceRoom: Room | null;
+  	sourceRoom: Room | null;
 	__pruned: boolean = false;
 	
 	static validate: string[] = ['name', 'id'];

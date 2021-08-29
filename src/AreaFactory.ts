@@ -1,12 +1,11 @@
-import { EventEmitter } from 'events';
-import { Area } from './Area';
+import { Area, IAreaDef } from './Area';
 import { EntityFactory } from './EntityFactory';
 import { EntityReference } from './EntityReference';
 
 /**
  * Stores definitions of items to allow for easy creation/cloning of objects
  */
-export class AreaFactory extends EntityFactory {
+export class AreaFactory extends EntityFactory<IAreaDef> {
 	/**
 	 * Create a new instance of an area by name. Resulting area will not have
 	 * any of its contained entities (items, npcs, rooms) hydrated. You will
@@ -20,7 +19,9 @@ export class AreaFactory extends EntityFactory {
 	create(entityRef: EntityReference) {
 		const definition = this.getDefinition(entityRef);
 		if (!definition) {
-			throw new Error('[AreaFactory] No Entity definition found for ' + entityRef);
+			throw new Error(
+				'[AreaFactory] No Entity definition found for ' + entityRef
+			);
 		}
 
 		const area = new Area(definition.bundle, entityRef, definition.manifest);

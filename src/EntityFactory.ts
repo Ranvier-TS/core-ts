@@ -1,13 +1,10 @@
-import { EventEmitter } from 'events';
 import { Area } from './Area';
 import { AreaFactory } from './AreaFactory';
-import { Attributes } from './Attributes';
 import { BehaviorManager } from './BehaviorManager';
 import { EntityReference } from './EntityReference';
-import { GameEntities } from './GameEntity';
+import { GameEntityDefinition } from './GameEntity';
 import { Item } from './Item';
 import { ItemFactory } from './ItemFactory';
-import { ItemType } from './ItemType';
 import { MobFactory } from './MobFactory';
 import { Npc } from './Npc';
 import { Room } from './Room';
@@ -21,8 +18,8 @@ export type EntityFactoryType =
 /**
  * Stores definitions of entities to allow for easy creation/cloning
  */
-export class EntityFactory {
-	entities: Map<EntityReference, any>;
+export class EntityFactory<T extends any> {
+	entities: Map<EntityReference, T>;
 	scripts: BehaviorManager;
 	constructor() {
 		this.entities = new Map();
@@ -35,7 +32,7 @@ export class EntityFactory {
 	 * @param {number} id
 	 * @return {string}
 	 */
-	createEntityRef(area: string, id: string | number) {
+	createEntityRef(area: string, id: string | number): string {
 		return area + ':' + id;
 	}
 
@@ -43,7 +40,7 @@ export class EntityFactory {
 	 * @param {string} entityRef
 	 * @return {Object}
 	 */
-	getDefinition(entityRef: EntityReference) {
+	getDefinition(entityRef: EntityReference): T | undefined {
 		return this.entities.get(entityRef);
 	}
 
@@ -51,7 +48,7 @@ export class EntityFactory {
 	 * @param {string} entityRef
 	 * @param {Object} def
 	 */
-	setDefinition(entityRef: EntityReference, def: any) {
+	setDefinition(entityRef: EntityReference, def: any): void {
 		def.entityReference = entityRef;
 		this.entities.set(entityRef, def);
 	}
@@ -67,7 +64,7 @@ export class EntityFactory {
 		entityRef: EntityReference,
 		event: string,
 		listener: Function
-	) {
+	): void {
 		this.scripts.addListener(entityRef, event, listener);
 	}
 
@@ -81,15 +78,19 @@ export class EntityFactory {
 	 * @param {Class}  Type      Type of entity to instantiate
 	 * @return {type}
 	 */
-	createByType(
+	createByType<T extends typeof Room | typeof Npc | typeof Item>(
 		area: Area,
 		entityRef: EntityReference,
-		Type: typeof Room | typeof Npc | typeof Item
+		Type: T
 	) {
 		const definition = this.getDefinition(entityRef);
 		if (!definition) {
-			throw new Error(`[${Type.name}Factory] No Entity definition found for ${entityRef}`);
+			throw new Error(
+				`[${Type.name}Factory] No Entity definition found for ${entityRef}`
+			);
 		}
+
+		// @ts-ignore
 		const entity = new Type(area, definition);
 
 		if (this.scripts?.has(entityRef)) {
@@ -113,8 +114,8 @@ export class EntityFactory {
 		if (
 			entity instanceof Room ||
 			entity instanceof Npc ||
-      entity instanceof Item
-      // Area type handled in AreaFactory.clone()
+			entity instanceof Item
+			// Area type handled in AreaFactory.clone()
 		) {
 			return this.create(entity.area, entity.entityReference);
 		}

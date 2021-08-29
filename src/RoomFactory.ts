@@ -1,13 +1,13 @@
 import { Area } from './Area';
 import { EntityFactory } from './EntityFactory';
 import { EntityReference } from './EntityReference';
-import { Room } from './Room';
+import { IRoomDef, Room } from './Room';
 
 /**
  * Stores definitions of rooms to allow for easy creation/cloning
  * @extends EntityFactory
  */
-export class RoomFactory extends EntityFactory {
+export class RoomFactory extends EntityFactory<IRoomDef> {
 	/**
 	 * Create a new instance of a given room. Room will not be hydrated
 	 *

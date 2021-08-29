@@ -1,12 +1,12 @@
 import { Area } from './Area';
 import { EntityFactory } from './EntityFactory';
 import { EntityReference } from './EntityReference';
-import { Item } from './Item';
+import { IItemDef, Item } from './Item';
 
 /**
  * Stores definitions of items to allow for easy creation/cloning of objects
  */
-export class ItemFactory extends EntityFactory {
+export class ItemFactory extends EntityFactory<IItemDef> {
 	/**
 	 * Create a new instance of an item by EntityReference. Resulting item will
 	 * not be held or equipped and will _not_ have its default contents. If you
