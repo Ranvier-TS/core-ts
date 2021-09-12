@@ -1,11 +1,13 @@
 import { EventEmitter } from 'events';
+import { IGameState } from './GameState';
+import { CommanderStatic } from 'commander';
 
 export class GameServer extends EventEmitter {
 	/**
 	 * @param {commander} commander
 	 * @fires GameServer#startup
 	 */
-	startup(commander: object) {
+	startup(commander: CommanderStatic) {
 		/**
 		 * @event GameServer#startup
 		 * @param {commander} commander
@@ -22,4 +24,11 @@ export class GameServer extends EventEmitter {
 		 */
 		this.emit('shutdown');
 	}
+}
+
+export interface IGameServerEvent {
+    listeners: {
+        shutdown?: (state: IGameState) => () => void;
+        startup?: (state: IGameState) => (commander: CommanderStatic) => void;
+    };
 }
