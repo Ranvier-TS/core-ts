@@ -64,8 +64,9 @@ export class Logger {
 	}
 
 	static enablePrettyErrors() {
-		const longjohn = require('longjohn');
 		const pe = require('pretty-error').start();
 		pe.skipNodeFiles(); // Ignore native node files in stacktrace.
 	}
+
+	static get _winston () { return winston; }
 }
