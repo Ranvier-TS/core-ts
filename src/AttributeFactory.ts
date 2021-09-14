@@ -72,7 +72,7 @@ export class AttributeFactory {
 			base || def.base,
 			delta,
 			def.formula,
-			def.metadata
+			def.metadata || {}
 		);
 	}
 
