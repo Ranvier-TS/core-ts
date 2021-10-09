@@ -17,7 +17,7 @@ export type EntityFactoryType =
 /**
  * Stores definitions of entities to allow for easy creation/cloning
  */
-export class EntityFactory<T extends any> {
+export class EntityFactory<T = any> {
 	entities: Map<EntityReference, T>;
 	scripts: BehaviorManager;
 	constructor() {
