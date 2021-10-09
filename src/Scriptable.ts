@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events';
 import { BehaviorManager } from './BehaviorManager';
 import { EffectableEntity } from './EffectableEntity';
 import { PruneableEntity } from './GameEntity';

@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { IAreaDef } from './Area';
+import { IAreaDef, IAreaManifest } from './Area';
 import { AttributeFormula, IAttributeDef } from './Attribute';
 import { BehaviorManager } from './BehaviorManager';
 import { Channel, IChannelLoader } from './Channel';
@@ -9,10 +9,7 @@ import { Config } from './Config';
 import { Data } from './Data';
 import { IEffectDef } from './Effect';
 import { EntityFactoryType } from './EntityFactory';
-import {
-	EntityLoaderKeys,
-	EntityLoaderRegistry,
-} from './EntityLoaderRegistry';
+import { EntityLoaderKeys, EntityLoaderRegistry } from './EntityLoaderRegistry';
 import { EntityReference } from './EntityReference';
 import { EventListeners } from './EventManager';
 import { GameEntities, GameEntityDefinition } from './GameEntity';
@@ -253,8 +250,10 @@ export class BundleManager {
 		Logger.verbose(`\tLOAD: Player Events...`);
 
 		const loader = require(eventsFile);
-		const playerListeners = this._getLoader<IListenersLoader>(loader, srcPath)
-			.listeners;
+		const playerListeners = this._getLoader<IListenersLoader>(
+			loader,
+			srcPath
+		).listeners;
 
 		for (const [eventName, listener] of Object.entries(playerListeners)) {
 			Logger.verbose(`\t\tEvent: ${eventName}`);
@@ -272,7 +271,7 @@ export class BundleManager {
 
 		const areaLoader = this.loaderRegistry.get(EntityLoaderKeys.AREAS);
 		areaLoader.setBundle(bundle);
-		let areas: IAreaDef[] = [];
+		let areas: IAreaManifest[] = [];
 
 		if (!(await areaLoader.hasData())) {
 			return areas;
@@ -294,8 +293,8 @@ export class BundleManager {
 	 * @param {string} areaName
 	 * @param {object} manifest
 	 */
-	async loadArea(bundle: string, areaName: string, manifest: IAreaDef) {
-		const definition = {
+	async loadArea(bundle: string, areaName: string, manifest: IAreaManifest) {
+		const definition: IAreaDef = {
 			bundle,
 			manifest,
 			quests: [],
@@ -347,7 +346,7 @@ export class BundleManager {
 
 		for (const npcRef of definition.npcs) {
 			const npc = this.state.MobFactory.getDefinition(npcRef);
-			if (!npc.quests) {
+			if (!npc?.quests) {
 				continue;
 			}
 
@@ -382,7 +381,7 @@ export class BundleManager {
 		areaName: string,
 		type: EntityLoaderKeys,
 		factory: EntityFactoryType
-	) {
+	): Promise<string[]> {
 		const loader = this.loaderRegistry.get(type);
 		loader.setBundle(bundle);
 		loader.setArea(areaName);
@@ -391,12 +390,12 @@ export class BundleManager {
 			return [];
 		}
 
-		const entities = await loader.fetchAll();
+		const entities = (await loader.fetchAll()) as GameEntityDefinition[];
 		if (!entities) {
 			Logger.warn(`\t\t\t${type} has an invalid value [${entities}]`);
 			return [];
 		}
-		return entities.map((entity: GameEntityDefinition) => {
+		return entities.map((entity) => {
 			const entityRef = factory.createEntityRef(areaName, entity.id);
 			entity.area = areaName;
 			factory.setDefinition(entityRef, entity);
@@ -445,8 +444,10 @@ export class BundleManager {
 		scriptPath: string
 	) {
 		const loader = require(scriptPath);
-		const scriptListeners = this._getLoader<IListenersLoader>(loader, srcPath)
-			.listeners;
+		const scriptListeners = this._getLoader<IListenersLoader>(
+			loader,
+			srcPath
+		).listeners;
 
 		for (const [eventName, listener] of Object.entries(scriptListeners)) {
 			Logger.verbose(`\t\t\t\tEvent: ${eventName}`);
@@ -729,8 +730,10 @@ export class BundleManager {
 			const eventsName = path.basename(eventsFile, path.extname(eventsFile));
 			Logger.verbose(`\t\t\tLOAD: SERVER-EVENTS ${eventsName}...`);
 			const loader = require(eventsPath);
-			const eventsListeners = this._getLoader<IListenersLoader>(loader, srcPath)
-				.listeners;
+			const eventsListeners = this._getLoader<IListenersLoader>(
+				loader,
+				srcPath
+			).listeners;
 			if (!eventsListeners) {
 				continue;
 			}
