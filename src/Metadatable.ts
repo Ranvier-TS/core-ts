@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { Constructor } from './Util';
+import { Constructor, DeepResolveType } from './Util';
 
 /**
  * @ignore
@@ -8,32 +8,6 @@ import { Constructor } from './Util';
  * @return {module:MetadatableFn~Metadatable}
  */
 export type Metadata = Record<string, any>;
-
-/**
- * From Puja's typescript-deep-path-safe repo
- * https://github.com/Pouja/typescript-deep-path-safe/blob/main/index.d.ts
- */
-export type DeepResolveType<ObjectType, Path extends string, OrElse> =
-    Path extends keyof ObjectType
-			? ObjectType[Path]
-			: Path extends `${infer LeftSide}.${infer RightSide}`
-				? LeftSide extends keyof ObjectType
-					? DeepResolveType<ObjectType[LeftSide], RightSide, OrElse>
-					: Path extends `${infer LeftSide}[${number}].${infer RightSide}`
-						? LeftSide extends keyof ObjectType
-							? ObjectType[LeftSide] extends Array<infer U>
-								? DeepResolveType<U,RightSide, OrElse>
-								: OrElse
-							: OrElse
-						: OrElse
-					: Path extends `${infer LeftSide}[${number}]`
-						? LeftSide extends keyof ObjectType
-							? ObjectType[LeftSide] extends Array<infer U>
-								? U
-								: OrElse
-								: OrElse
-								: OrElse;
-
 
 export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 	/**
