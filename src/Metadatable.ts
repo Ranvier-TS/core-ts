@@ -9,6 +9,17 @@ import { Constructor } from './Util';
  */
 export type Metadata = Record<string, any>;
 
+/**
+ * From Puja's typescript-deep-path-safe repo
+ * https://github.com/Pouja/typescript-deep-path-safe/blob/main/index.d.ts
+ */
+export type DeepResolveType<ObjectType, Path extends string, OrElse> =
+    Path extends keyof ObjectType ? ObjectType[Path] :
+    Path extends `${infer LeftSide}.${infer RightSide}` ? LeftSide extends keyof ObjectType ? DeepResolveType<ObjectType[LeftSide], RightSide, OrElse> :
+    Path extends `${infer LeftSide}[${number}].${infer RightSide}` ? LeftSide extends keyof ObjectType ? ObjectType[LeftSide] extends Array<infer U>? DeepResolveType<U,RightSide, OrElse> : OrElse : OrElse : OrElse :
+    Path extends `${infer LeftSide}[${number}]` ? LeftSide extends keyof ObjectType ? ObjectType[LeftSide] extends Array<infer U> ? U : OrElse : OrElse : OrElse;
+
+
 export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 	/**
 	 * Mixin for objects which have a `metadata` property
@@ -26,12 +37,16 @@ export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 		 * @throws RangeError
 		 * @fires Metadatable#metadataUpdate
 		 */
-		setMeta(key: string, value: any) {
+		setMeta<
+			M extends Metadata,
+			P extends string,
+			V extends DeepResolveType<M, P, never>
+		>(path: P, value: V): void {
 			if (!this.metadata) {
 				throw new Error('Class does not have metadata property');
 			}
 
-			let parts = key.split('.');
+			let parts = (path as string).split('.');
 			const property = parts.pop();
 			let base = this.metadata;
 
@@ -42,7 +57,7 @@ export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 			while (parts.length) {
 				let part = parts.shift();
 				if (!part || !(part in base)) {
-					throw new RangeError(`Metadata path invalid: ${key}`);
+					throw new RangeError(`Metadata path invalid: ${path}`);
 				}
 				base = base[part];
 			}
@@ -61,23 +76,30 @@ export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 			 * @param {*} newValue
 			 * @param {*} oldValue
 			 */
-			this.emit('metadataUpdated', key, value, oldValue);
+			this.emit('metadataUpdated', path, value, oldValue);
 		}
 
 		/**
 		 * Get metadata by dot notation
-		 * Warning: This method is _very_ permissive and will not error on a non-existent key. Rather, it will return false.
+		 * Warning: This method is _very_ permissive and will not error on a non-existent key. Rather, it will return void.
 		 * @param {string} key Key to fetch. Supports dot notation e.g., `"foo.bar"`
 		 * @return {*}
 		 * @throws Error
 		 */
-		getMeta(key: string) {
+		getMeta<
+			M extends Metadata,
+			P extends string
+		>(
+			path: P
+		): DeepResolveType<M, P, void> {
 			if (!this.metadata) {
 				throw new Error('Class does not have metadata property');
 			}
 
 			const base = this.metadata;
-			return key.split('.').reduce((obj, index) => obj && obj[index], base);
+			return (path as string)
+				.split('.')
+				.reduce((obj: any, key: string) => obj && obj[key], base);
 		}
 	};
 }
