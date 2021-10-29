@@ -17,7 +17,16 @@ export interface ISerializedQuestGoal {
 	config: IQuestGoalConfig;
 }
 
+export interface IQuestGoalProgress {
+	display: string;
+	percent: number;
+}
+
 export interface IQuestGoalConfig {
+	[key: string]: any;
+}
+
+export interface IQuestGoalState {
 	[key: string]: any;
 }
 
@@ -27,17 +36,20 @@ export interface IQuestGoalConfig {
  * create new quest goals for quests
  * @extends EventEmitter
  */
-export class QuestGoal<TState = Record<string, unknown>> extends EventEmitter {
-	config: IQuestGoalConfig;
+export class QuestGoal<
+	TConfig extends IQuestGoalConfig = Record<string, unknown>,
+	TState extends IQuestGoalState = Record<string, unknown>
+> extends EventEmitter {
+	config: TConfig;
 	quest: Quest;
-	state: Partial<TState>;
+	state: TState;
 	player: Player;
 	/**
 	 * @param {Quest} quest Quest this goal is for
 	 * @param {object} config
 	 * @param {Player} player
 	 */
-	constructor(quest: Quest, config: IQuestGoalConfig, player: Player) {
+	constructor(quest: Quest, config: TConfig, player: Player) {
 		super();
 
 		this.config = Object.assign(
@@ -47,11 +59,11 @@ export class QuestGoal<TState = Record<string, unknown>> extends EventEmitter {
 			config
 		);
 		this.quest = quest;
-		this.state = {};
+		this.state = {} as TState;
 		this.player = player;
 	}
 
-	getProgress(): { percent: number, display: string} {
+	getProgress(): IQuestGoalProgress {
 		return {
 			percent: 0,
 			display:
@@ -62,7 +74,7 @@ export class QuestGoal<TState = Record<string, unknown>> extends EventEmitter {
 	/**
 	 * Put any cleanup activities after the quest is finished here
 	 */
-	complete() {}
+	complete(): void {}
 
 	serialize(): ISerializedQuestGoal {
 		return {

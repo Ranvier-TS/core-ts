@@ -37,7 +37,7 @@ export class Npc extends Scriptable(Character) {
 	uuid: string;
 	commandQueue: CommandQueue;
 	keywords: string[];
-  sourceRoom: Room | null;
+  	sourceRoom: Room | null;
 	__pruned: boolean = false;
 	
 	static validate: (keyof Npc)[] = ['name', 'id'];

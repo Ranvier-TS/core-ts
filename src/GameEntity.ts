@@ -22,5 +22,5 @@ export type AnyGameEntity = Item | Npc | Room | Area | Player;
 export type GameEntityDefinition = IItemDef | INpcDef | IRoomDef;
 
 export interface PruneableEntity {
-  __pruned?: boolean;
+	__pruned?: boolean;
 }
