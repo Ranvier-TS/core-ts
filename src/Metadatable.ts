@@ -74,8 +74,8 @@ export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 		 * @throws Error
 		 */
 		getMeta<
-			M extends Metadata,
-			P extends string
+			M extends Metadata = Metadata,
+			P extends string = string
 		>(
 			path: P
 		): DeepResolveType<M, P, void> {
