@@ -25,7 +25,7 @@ export interface INpcDef extends ICharacterConfig {
 	uuid?: string;
 }
 
-export class Npc extends Scriptable<any>(Character) {
+export class Npc extends Scriptable(Character) {
 	area: Area;
 	script?: string;
 	behaviors?: Map<string, any>;
