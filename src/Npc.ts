@@ -7,7 +7,6 @@ import { IItemDef } from './Item';
 import { Logger } from './Logger';
 import { Room } from './Room';
 import { Scriptable } from './Scriptable';
-import { Constructor } from './Util';
 
 const uuid = require('uuid');
 
