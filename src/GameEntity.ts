@@ -16,7 +16,7 @@ import { Scriptable } from './Scriptable';
 export class GameEntity extends Scriptable(Metadatable(EffectableEntity)) {}
 
 export type PlayerOrNpc = Player | Npc;
-export type AnyCharacter = PlayerOrNpc | Character ;
+export type AnyCharacter = PlayerOrNpc | Character;
 export type GameEntities = Item | Npc | Room;
 export type AnyGameEntity = Item | Npc | Room | Area | Player;
 export type GameEntityDefinition = IItemDef | INpcDef | IRoomDef;

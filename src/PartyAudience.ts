@@ -1,3 +1,4 @@
+import { Broadcastable } from '.';
 import { ChannelAudience } from './ChannelAudience';
 
 /**
@@ -13,6 +14,6 @@ export class PartyAudience extends ChannelAudience {
 
 		return this.sender.party
 			.getBroadcastTargets()
-			.filter((player) => player !== this.sender);
+			.filter((player: Broadcastable) => player !== this.sender);
 	}
 }

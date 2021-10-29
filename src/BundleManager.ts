@@ -80,8 +80,8 @@ export class BundleManager {
 
 		try {
 			this.state.AttributeFactory.validateAttributes();
-		} catch (err) {
-			Logger.error(err.message);
+		} catch (err: any) {
+			Logger.error(err?.message);
 			process.exit(0);
 		}
 
@@ -559,8 +559,8 @@ export class BundleManager {
 				hfile.aliases = command ? command.aliases || [] : [];
 
 				this.state.HelpManager.add(hfile);
-			} catch (e) {
-				Logger.warn(`\t\t${e.message}`);
+			} catch (e: any) {
+				Logger.warn(`\t\t${e?.message}`);
 				continue;
 			}
 		}

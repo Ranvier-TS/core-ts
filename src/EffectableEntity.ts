@@ -1,10 +1,10 @@
 import { EventEmitter } from 'events';
 import { Attribute, ISerializedAttribute } from './Attribute';
 import { Attributes } from './Attributes';
+import { Character } from './Character';
 import { Damage } from './Damage';
 import { Effect, ISerializedEffect } from './Effect';
 import { EffectList } from './EffectList';
-import { PlayerOrNpc } from './GameEntity';
 import { IGameState } from './GameState';
 import { Logger } from './Logger';
 
@@ -261,10 +261,10 @@ export class EffectableEntity extends EventEmitter {
 	 * @param {?Character} attacker
 	 * @return {number}
 	 */
-	evaluateIncomingDamage(
+	evaluateIncomingDamage<TChar extends Character>(
 		damage: Damage,
 		currentAmount: number,
-		attacker?: PlayerOrNpc
+		attacker?: TChar
 	) {
 		const amount = this.effects.evaluateIncomingDamage(
 			damage,
@@ -284,7 +284,7 @@ export class EffectableEntity extends EventEmitter {
 	evaluateOutgoingDamage(
 		damage: Damage,
 		currentAmount: number,
-		target: PlayerOrNpc
+		target: Character
 	) {
 		return this.effects.evaluateOutgoingDamage(damage, currentAmount, target);
 	}
