@@ -1,7 +1,3 @@
-'use strict';
-
-import { TelnetStream } from '../types/TelnetStream';
-import { WebsocketStream } from '../types/WebsocketStream';
 import { Account } from './Account';
 import { Character, ICharacterConfig, ISerializedCharacter } from './Character';
 import { CommandQueue, ICommandExecutable } from './CommandQueue';
@@ -14,6 +10,7 @@ import { Metadata } from './Metadatable';
 import { PlayerRoles } from './PlayerRoles';
 import { QuestTracker, SerializedQuestTracker } from './QuestTracker';
 import { Room } from './Room';
+import { StreamType } from './TransportStream';
 
 export interface IPlayerDef extends ICharacterConfig {
 	account: Account;
@@ -21,7 +18,7 @@ export interface IPlayerDef extends ICharacterConfig {
 	experience: number;
 	password: string;
 	prompt: string;
-	socket: TelnetStream | WebsocketStream | null;
+	socket: StreamType | null;
 	quests: SerializedQuestTracker;
 	role: PlayerRoles | number;
 }
@@ -59,7 +56,7 @@ export class Player extends Character {
 	password: string;
 	prompt: string;
 	questTracker: QuestTracker;
-	socket: TelnetStream | WebsocketStream | null;
+	socket: StreamType | null;
 	role: PlayerRoles | number;
 
 	__hydrated: boolean = false;
@@ -246,7 +243,7 @@ export class Player extends Character {
 			const eqDefs = this.__equipment as Record<string, IItemDef>;
 			this.equipment = new Map();
 			for (const slot in eqDefs) {
-				const itemDef= eqDefs[slot];
+				const itemDef = eqDefs[slot];
 				try {
 					const entityReference = itemDef.entityReference;
 					const area = itemDef.area ?? itemDef.entityReference.split(':')[0];
@@ -254,12 +251,12 @@ export class Player extends Character {
 						state.AreaManager.getArea(area),
 						entityReference
 					);
-					
+
 					const inventory = itemDef.inventory;
 					if (inventory) {
 						newItem.initializeInventoryFromSerialized(itemDef.inventory);
 					}
-					
+
 					newItem.hydrate(state, itemDef);
 					state.ItemManager.add(newItem);
 					this.equip(newItem, slot);
@@ -287,6 +284,7 @@ export class Player extends Character {
 				Logger.error(
 					`ERROR: Player ${this.name} was saved to invalid room ${this.room}.`
 				);
+
 
 				room = state.AreaManager.getPlaceholderArea().getRoomById(
 					'placeholder'

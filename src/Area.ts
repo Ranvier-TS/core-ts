@@ -1,5 +1,4 @@
 import { AreaFloor } from './AreaFloor';
-import { IBehavior } from './BehaviorManager';
 import { ISerializedEffect } from './Effect';
 import { SerializedAttributes } from './EffectableEntity';
 import { GameEntity } from './GameEntity';
@@ -10,12 +9,21 @@ import { Player } from './Player';
 import { Room } from './Room';
 
 export interface IAreaDef {
+	bundle: string;
+	manifest: IAreaManifest;
+	quests: string[];
+	items: string[];
+	npcs: string[];
+	rooms: string[];
+}
+
+export interface IAreaManifest {
 	title: string;
 	metadata?: Metadata;
 	script?: string;
-  behaviors?: Record<string, any>;
-  attributes?: SerializedAttributes,
-	effects?: ISerializedEffect[],
+	behaviors?: Record<string, any>;
+	attributes?: SerializedAttributes;
+	effects?: ISerializedEffect[];
 }
 
 /**
@@ -52,9 +60,9 @@ export class Area extends GameEntity {
 	/** Active NPCs that originate from this area. Note: this is NPCs that */
 	npcs: Set<Npc>;
 	metadata: Metadata;
-  behaviors: Map<string, any>;
+	behaviors: Map<string, any>;
 
-	constructor(bundle: string | null, name: string, manifest: IAreaDef) {
+	constructor(bundle: string | null, name: string, manifest: IAreaManifest) {
 		super(manifest);
 		this.bundle = bundle;
 		this.name = name;
@@ -230,7 +238,7 @@ export class Area extends GameEntity {
 
 	hydrate(state: IGameState) {
 		this.setupBehaviors(state.AreaBehaviorManager);
-		const { rooms } = state.AreaFactory.getDefinition(this.name);
+		const rooms = state.AreaFactory.getDefinition(this.name)?.rooms || [];
 		for (const roomRef of rooms) {
 			const room = state.RoomFactory.create(this, roomRef);
 			this.addRoom(room);

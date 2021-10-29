@@ -1,15 +1,14 @@
 {
-  "compilerOptions": {
-    "module": "commonjs",
-    "target": "es2017",
-    "declaration": true,
-    "outDir": "./dist/cjs",
-    "noImplicitAny": true,
-    "strict": true,
-    "esModuleInterop": true,
-    "sourceMap": true,
-  },
-  "include": [
-    "src/**/*"
-  ]
+	"compilerOptions": {
+		"module": "es2020",
+		"target": "es2017",
+		"declaration": true,
+		"outDir": "./dist/esm",
+		"noImplicitAny": true,
+		"strict": true,
+		"esModuleInterop": true,
+		"sourceMap": true,
+		"moduleResolution": "node"
+	},
+	"include": ["src/**/*"]
 }
