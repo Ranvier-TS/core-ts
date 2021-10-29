@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events';
 import { Constructor, DeepResolveType } from './Util';
 
 /**
@@ -28,9 +27,8 @@ export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 		 */
 		setMeta<
 			M extends Metadata,
-			P extends string,
-			V extends DeepResolveType<M, P, never>
-		>(path: P, value: V): void {
+			P extends string
+		>(path: P, value: DeepResolveType<M, P, never>): void {
 			if (!this.metadata) {
 				throw new Error('Class does not have metadata property');
 			}
@@ -76,11 +74,10 @@ export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 		 * @throws Error
 		 */
 		getMeta<
-			M extends Metadata,
-			P extends string
+			M extends Metadata
 		>(
-			path: P
-		): DeepResolveType<M, P, void> {
+			path: string
+		): DeepResolveType<M, typeof path, void> {
 			if (!this.metadata) {
 				throw new Error('Class does not have metadata property');
 			}
