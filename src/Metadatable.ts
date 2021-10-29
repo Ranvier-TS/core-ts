@@ -78,6 +78,12 @@ export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 			M extends Metadata = Metadata,
 			P extends string = string
 		>(
+			path: P
+		): DeepResolveType<M, P, void>;
+		getMeta<
+			M extends Metadata = Metadata,
+			P extends string = string
+		>(
 			path?: P
 		): M | DeepResolveType<M, P, void> {
 			if (!this.metadata) {
