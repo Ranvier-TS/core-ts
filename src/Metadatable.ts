@@ -77,10 +77,14 @@ export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 		M extends Metadata = Metadata,
 		P extends string = string
 		>(
-			path: P
-		): DeepResolveType<M, P, void> {
+			path?: P
+		): M | DeepResolveType<M, P, void> {
 			if (!this.metadata) {
 				throw new Error('Class does not have metadata property');
+			}
+
+			if (path === undefined) {
+				return this.metadata as M;
 			}
 
 			const base = this.metadata;
