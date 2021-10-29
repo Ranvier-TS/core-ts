@@ -1,4 +1,4 @@
-import { Constructor, DeepResolveType } from './Util';
+import { Constructor } from './Util';
 
 /**
  * @ignore
@@ -25,15 +25,12 @@ export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 		 * @throws RangeError
 		 * @fires Metadatable#metadataUpdate
 		 */
-		setMeta<
-			M extends Metadata = Metadata,
-			P extends string = string
-		>(path: P, value: DeepResolveType<M, P, unknown>): void {
+		setMeta(key: string, value: any) {
 			if (!this.metadata) {
 				throw new Error('Class does not have metadata property');
 			}
 
-			let parts = (path as string).split('.');
+			let parts = key.split('.');
 			const property = parts.pop();
 			let base = this.metadata;
 
@@ -44,7 +41,7 @@ export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 			while (parts.length) {
 				let part = parts.shift();
 				if (!part || !(part in base)) {
-					throw new RangeError(`Metadata path invalid: ${path}`);
+					throw new RangeError(`Metadata path invalid: ${key}`);
 				}
 				base = base[part];
 			}
@@ -63,30 +60,23 @@ export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 			 * @param {*} newValue
 			 * @param {*} oldValue
 			 */
-			this.emit('metadataUpdated', path, value, oldValue);
+			this.emit('metadataUpdated', key, value, oldValue);
 		}
 
 		/**
 		 * Get metadata by dot notation
-		 * Warning: This method is _very_ permissive and will not error on a non-existent key. Rather, it will return void.
+		 * Warning: This method is _very_ permissive and will not error on a non-existent key. Rather, it will return false.
 		 * @param {string} key Key to fetch. Supports dot notation e.g., `"foo.bar"`
 		 * @return {*}
 		 * @throws Error
 		 */
-		getMeta<
-		M extends Metadata = Metadata,
-		P extends string = string
-		>(
-			path: P
-		): DeepResolveType<M, P, void> {
+		getMeta(key: string) {
 			if (!this.metadata) {
 				throw new Error('Class does not have metadata property');
 			}
 
 			const base = this.metadata;
-			return (path as string)
-				.split('.')
-				.reduce((obj: any, key: string) => obj && obj[key], base);
+			return key.split('.').reduce((obj, index) => obj && obj[index], base);
 		}
 	};
 }
