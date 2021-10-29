@@ -2,12 +2,12 @@ import { Area } from './Area';
 import { Character, ICharacterConfig } from './Character';
 import { CommandQueue } from './CommandQueue';
 import { EntityReference } from './EntityReference';
-import { Equipment } from './Equipment';
 import { IGameState } from './GameState';
-import { IItemDef, Item } from './Item';
+import { IItemDef } from './Item';
 import { Logger } from './Logger';
 import { Room } from './Room';
 import { Scriptable } from './Scriptable';
+import { Constructor } from './Util';
 
 const uuid = require('uuid');
 
@@ -32,7 +32,7 @@ export interface INpcDef extends ICharacterConfig {
  * @extends Character
  * @mixes Scriptable
  */
-export class Npc extends Scriptable(Character) {
+export class Npc extends Scriptable<any>(Character) {
 	area: Area;
 	script?: string;
 	behaviors?: Map<string, any>;
@@ -48,7 +48,7 @@ export class Npc extends Scriptable(Character) {
   sourceRoom: Room | null;
 	__pruned: boolean = false;
 	
-	static validate: string[] = ['name', 'id'];
+	static validate: (keyof Npc)[] = ['name', 'id'];
 	constructor(area: Area, data: INpcDef) {
 		super(data);
 
