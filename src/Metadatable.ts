@@ -75,10 +75,9 @@ export function Metadatable<TBase extends Constructor>(ParentClass: TBase) {
 		 */
 		getMeta<
 			M extends Metadata,
-			P extends string = Exclude<keyof M, number | symbol>,
 		>(
-			path: P
-		): DeepResolveType<M, P, void> {
+			path: string
+		): DeepResolveType<M, typeof path, void> {
 			if (!this.metadata) {
 				throw new Error('Class does not have metadata property');
 			}
