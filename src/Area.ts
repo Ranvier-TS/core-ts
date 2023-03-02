@@ -237,6 +237,7 @@ export class Area extends GameEntity {
 	}
 
 	hydrate(state: IGameState) {
+		super.hydrate(state);
 		this.setupBehaviors(state.AreaBehaviorManager);
 		const rooms = state.AreaFactory.getDefinition(this.name)?.rooms || [];
 		for (const roomRef of rooms) {
