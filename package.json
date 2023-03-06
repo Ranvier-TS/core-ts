@@ -5,7 +5,7 @@
   "bugs": "https://github.com/Ranvier-TS/core-ts/issues",
   "license": "MIT",
   "author": "Shawn Biddle (http://shawnbiddle.com), Sean O'Donohue, Brian Nelson",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "repository": "github:ranvier-ts/core-ts",
   "engines": {
     "node": ">= 12.18.2"
