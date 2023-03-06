@@ -377,10 +377,10 @@ export class Effect extends EventEmitter {
 	modifyOutgoingDamage(
 		damage: Damage,
 		currentAmount: number,
-		target: PlayerOrNpc
+		target: Character
 	) {
 		const modifier = this.modifiers.outgoingDamage.bind(this);
-		return modifier(damage, currentAmount, target);
+		return modifier(damage, currentAmount, target as PlayerOrNpc);
 	}
 
 	/**

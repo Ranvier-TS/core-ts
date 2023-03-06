@@ -53,7 +53,7 @@ export class Character extends Metadatable(EffectableEntity) {
 	/** @property {Inventory}  inventory */
 	inventory: Inventory;
 	/** @property {Set}        combatants Enemies this character is currently in combat with */
-	combatants: Set<AnyCharacter>;
+	combatants: Set<Character>;
 	/** @property {number}     level */
 	__equipment?:
 		| Record<string, IItemDef>

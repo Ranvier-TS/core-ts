@@ -24,13 +24,6 @@ export interface INpcDef extends ICharacterConfig {
 	uuid?: string;
 }
 
-/**
- * @property {number} id   Area-relative id (vnum)
- * @property {Area}   area Area npc belongs to (not necessarily the area they're currently in)
- * @property {Map} behaviors
- * @extends Character
- * @mixes Scriptable
- */
 export class Npc extends Scriptable(Character) {
 	area: Area;
 	script?: string;
@@ -47,7 +40,7 @@ export class Npc extends Scriptable(Character) {
   	sourceRoom: Room | null;
 	__pruned: boolean = false;
 	
-	static validate: string[] = ['name', 'id'];
+	static validate: (keyof Npc)[] = ['name', 'id'];
 	constructor(area: Area, data: INpcDef) {
 		super(data);
 

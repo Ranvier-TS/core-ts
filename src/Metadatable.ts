@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events';
 import { Constructor } from './Util';
 
 /**

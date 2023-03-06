@@ -2,11 +2,11 @@
   "name": "ranvier",
   "description": "MUD game engine",
   "homepage": "https://ranviermud.com",
-  "bugs": "https://github.com/ranviermud/core/issues",
+  "bugs": "https://github.com/Ranvier-TS/core-ts/issues",
   "license": "MIT",
-  "author": "Shawn Biddle (http://shawnbiddle.com)",
-  "version": "3.0.6",
-  "repository": "github:ranviermud/core",
+  "author": "Shawn Biddle (http://shawnbiddle.com), Sean O'Donohue, Brian Nelson",
+  "version": "3.1.0",
+  "repository": "github:ranvier-ts/core-ts",
   "engines": {
     "node": ">= 12.18.2"
   },
@@ -46,6 +46,6 @@
     "coveralls": "^3.0.2",
     "mocha": "^5.2.0",
     "nyc": "^13.1.0",
-    "typescript": "^4.0.3"
+    "typescript": "^4.4.4"
   }
 }

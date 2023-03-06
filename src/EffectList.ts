@@ -258,7 +258,7 @@ export class EffectList {
 	evaluateIncomingDamage(
 		damage: Damage,
 		currentAmount: number,
-		attacker?: PlayerOrNpc
+		_attacker?: Character
 	) {
 		this.validateEffects();
 
@@ -280,7 +280,7 @@ export class EffectList {
 	evaluateOutgoingDamage(
 		damage: Damage,
 		currentAmount: number,
-		target: PlayerOrNpc
+		target: Character
 	) {
 		this.validateEffects();
 
