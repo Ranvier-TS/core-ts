@@ -3,7 +3,7 @@ import { Character } from './Character';
 import { Damage } from './Damage';
 import { Effect, ISerializedEffect } from './Effect';
 import { EffectableEntity } from './EffectableEntity';
-import { PlayerOrNpc } from './GameEntity';
+import { AnyCharacter, PlayerOrNpc } from './GameEntity';
 import { IGameState } from './GameState';
 
 /**
@@ -258,7 +258,7 @@ export class EffectList {
 	evaluateIncomingDamage(
 		damage: Damage,
 		currentAmount: number,
-		_attacker?: Character
+		_attacker?: AnyCharacter
 	) {
 		this.validateEffects();
 
@@ -280,7 +280,7 @@ export class EffectList {
 	evaluateOutgoingDamage(
 		damage: Damage,
 		currentAmount: number,
-		target: Character
+		target: AnyCharacter
 	) {
 		this.validateEffects();
 

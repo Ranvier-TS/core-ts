@@ -11,7 +11,7 @@ import { Party } from './Party';
 import { EquipSlotTakenError, EquipAlreadyEquippedError } from './EquipErrors';
 import { EntityReference } from './EntityReference';
 import { Equipment } from './Equipment';
-import { AnyCharacter } from './GameEntity';
+import { AnyCharacter, GameEntity } from './GameEntity';
 
 export interface ICharacterConfig extends ISerializedEffectableEntity {
 	/** @property {string}     name       Name shown on look/who/login */
@@ -47,7 +47,7 @@ export interface ISerializedCharacter extends ISerializedEffectableEntity {
  * @extends EffectableEntity
  * @mixes Metadatable
  */
-export class Character extends Metadatable(EffectableEntity) {
+export class Character extends GameEntity {
 	/** @property {string}     name       Name shown on look/who/login */
 	name: string;
 	/** @property {Inventory}  inventory */

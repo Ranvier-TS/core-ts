@@ -4,7 +4,7 @@ import { EffectableEntity } from './EffectableEntity';
 import { IGameState } from './GameState';
 import { Skill } from './Skill';
 import { EventListeners } from './EventManager';
-import { PlayerOrNpc } from './GameEntity';
+import { AnyCharacter, PlayerOrNpc } from './GameEntity';
 import { Character } from './Character';
 
 export type AttributesModifier =
@@ -377,7 +377,7 @@ export class Effect extends EventEmitter {
 	modifyOutgoingDamage(
 		damage: Damage,
 		currentAmount: number,
-		target: Character
+		target: AnyCharacter
 	) {
 		const modifier = this.modifiers.outgoingDamage.bind(this);
 		return modifier(damage, currentAmount, target as PlayerOrNpc);
