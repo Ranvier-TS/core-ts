@@ -1,8 +1,8 @@
 import { Area } from './Area';
-import { IBehavior } from './BehaviorManager';
 import { Config } from './Config';
 import { ISerializedEffect } from './Effect';
 import { SerializedAttributes } from './EffectableEntity';
+import { EntityDefinitionBase } from './EntityFactory';
 import { EntityReference } from './EntityReference';
 import { GameEntity } from './GameEntity';
 import { IGameState } from './GameState';
@@ -24,14 +24,11 @@ export interface IExit {
 	leaveMessage?: string;
 }
 
-export interface IRoomDef {
+export interface IRoomDef extends EntityDefinitionBase {
 	title: string;
 	description: string;
-	id: string;
-	area?: string;
 	items?: IRoomItemDef[];
 	npcs?: IRoomNpcDef[] | string[];
-	script?: string;
 	behaviors?: Record<string, any>;
 	attributes?: SerializedAttributes;
 	effects?: ISerializedEffect[];
@@ -244,10 +241,12 @@ export class Room extends GameEntity {
 	 * @return {Array<{ id: string, direction: string, inferred: boolean, room: Room= }>}
 	 */
 	getExits(): IExit[] {
-		const exits: IExit[] = JSON.parse(JSON.stringify(this.exits)).map((exit: IExit) => {
-			exit.inferred = false;
-			return exit;
-		});
+		const exits: IExit[] = JSON.parse(JSON.stringify(this.exits)).map(
+			(exit: IExit) => {
+				exit.inferred = false;
+				return exit;
+			}
+		);
 
 		if (!this.area || !this.coordinates) {
 			return exits;
@@ -510,11 +509,12 @@ export class Room extends GameEntity {
 			// Support composing Npcs in room using an object.
 		} else {
 			Object.keys(this.defaultNpcs).forEach((defaultNpc: EntityReference) => {
-				const npc: Partial<IRoomNpcDef> | boolean = (this
-					.defaultNpcs as ComposableDef<IRoomNpcDef>)[defaultNpc];
-        if (npc === false) return;
-        try {
-          this.spawnNpc(state, defaultNpc.replace(/%.*$/g, ''));
+				const npc: Partial<IRoomNpcDef> | boolean = (
+					this.defaultNpcs as ComposableDef<IRoomNpcDef>
+				)[defaultNpc];
+				if (npc === false) return;
+				try {
+					this.spawnNpc(state, defaultNpc.replace(/%.*$/g, ''));
 				} catch (err) {
 					Logger.error(err);
 				}

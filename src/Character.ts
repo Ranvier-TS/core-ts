@@ -1,17 +1,14 @@
-import {
-	EffectableEntity,
-	ISerializedEffectableEntity,
-} from './EffectableEntity';
+import { ISerializedEffectableEntity } from './EffectableEntity';
 import { IItemDef, Item } from './Item';
 import { IInventoryDef, Inventory, InventoryFullError } from './Inventory';
-import { Metadatable } from './Metadatable';
 import { Room } from './Room';
 import { Config } from './Config';
 import { Party } from './Party';
 import { EquipSlotTakenError, EquipAlreadyEquippedError } from './EquipErrors';
 import { EntityReference } from './EntityReference';
 import { Equipment } from './Equipment';
-import { AnyCharacter } from './GameEntity';
+import { GameEntity } from './GameEntity';
+import { EntityDefinitionBase } from './EntityFactory';
 
 export interface ICharacterConfig extends ISerializedEffectableEntity {
 	/** @property {string}     name       Name shown on look/who/login */
@@ -47,7 +44,7 @@ export interface ISerializedCharacter extends ISerializedEffectableEntity {
  * @extends EffectableEntity
  * @mixes Metadatable
  */
-export class Character extends Metadatable(EffectableEntity) {
+export class Character extends GameEntity {
 	/** @property {string}     name       Name shown on look/who/login */
 	name: string;
 	/** @property {Inventory}  inventory */

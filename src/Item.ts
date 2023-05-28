@@ -16,13 +16,12 @@ import { Character } from './Character';
 import { ISerializedEffect } from './Effect';
 import { SerializedAttributes } from './EffectableEntity';
 import { ItemManager } from './ItemManager';
+import { EntityDefinitionBase } from './EntityFactory';
 
 const uuid = require('uuid/v4');
 
-export declare interface IItemDef {
+export declare interface IItemDef extends EntityDefinitionBase {
 	name: string;
-	id: string;
-
 	attributes?: SerializedAttributes;
 	effects?: ISerializedEffect[];
 	description?: string;
@@ -35,7 +34,6 @@ export declare interface IItemDef {
 	entityReference: string;
 	room?: string | Room | null;
 	roomDesc?: string;
-	script?: string;
 	type?: ItemType | string;
 	uuid?: string;
 	closeable?: boolean;
@@ -118,9 +116,9 @@ export class Item extends GameEntity {
 
 	__manager?: ItemManager;
 	__pruned: boolean = false;
-	
+
 	static validate = ['keywords', 'name', 'id'];
-  
+
 	constructor(area: Area, item: IItemDef) {
 		super(item);
 

@@ -5,7 +5,7 @@ import { EntityReference } from './EntityReference';
 /**
  * Stores definitions of items to allow for easy creation/cloning of objects
  */
-export class AreaFactory extends EntityFactory<IAreaDef> {
+export class AreaFactory extends EntityFactory<Area, IAreaDef> {
 	/**
 	 * Create a new instance of an area by name. Resulting area will not have
 	 * any of its contained entities (items, npcs, rooms) hydrated. You will
@@ -27,7 +27,7 @@ export class AreaFactory extends EntityFactory<IAreaDef> {
 		const area = new Area(definition.bundle, entityRef, definition.manifest);
 
 		if (this.scripts.has(entityRef)) {
-			this.scripts?.get(entityRef)?.attach(area as any);
+			this.scripts?.get(entityRef)?.attach(area);
 		}
 
 		return area;

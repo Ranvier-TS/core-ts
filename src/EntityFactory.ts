@@ -1,24 +1,32 @@
+import { EffectableEntity } from '.';
 import { Area } from './Area';
-import { AreaFactory } from './AreaFactory';
 import { BehaviorManager } from './BehaviorManager';
 import { EntityReference } from './EntityReference';
 import { Item } from './Item';
-import { ItemFactory } from './ItemFactory';
-import { MobFactory } from './MobFactory';
 import { Npc } from './Npc';
 import { Room } from './Room';
-import { RoomFactory } from './RoomFactory';
 
-export type EntityFactoryType =
-	| ItemFactory
-	| MobFactory
-	| RoomFactory
-	| AreaFactory;
+export type EntityDefinitionBase = {
+	entityReference: string;
+	id: string;
+	script?: string;
+	area?: string;
+};
+
+type EntityConstructor<TEntity, TDef extends EntityDefinitionBase> = new (
+	area: Area,
+	def: TDef,
+	...args: any[]
+) => TEntity;
+
 /**
  * Stores definitions of entities to allow for easy creation/cloning
  */
-export class EntityFactory<T = any> {
-	entities: Map<EntityReference, T>;
+export class EntityFactory<
+	TEntity extends EffectableEntity,
+	TDef extends EntityDefinitionBase
+> {
+	entities: Map<EntityReference, TDef>;
 	scripts: BehaviorManager;
 	constructor() {
 		this.entities = new Map();
@@ -39,7 +47,7 @@ export class EntityFactory<T = any> {
 	 * @param {string} entityRef
 	 * @return {Object}
 	 */
-	getDefinition(entityRef: EntityReference): T | undefined {
+	getDefinition(entityRef: EntityReference): TDef | undefined {
 		return this.entities.get(entityRef);
 	}
 
@@ -47,7 +55,7 @@ export class EntityFactory<T = any> {
 	 * @param {string} entityRef
 	 * @param {Object} def
 	 */
-	setDefinition(entityRef: EntityReference, def: any): void {
+	setDefinition(entityRef: EntityReference, def: TDef): void {
 		def.entityReference = entityRef;
 		this.entities.set(entityRef, def);
 	}
@@ -74,22 +82,22 @@ export class EntityFactory<T = any> {
 	 *
 	 * @param {Area}   area
 	 * @param {string} entityRef
-	 * @param {Class}  Type      Type of entity to instantiate
+	 * @param {Class}  Constructor      Type of entity to instantiate
 	 * @return {type}
 	 */
-	createByType<T extends typeof Room | typeof Npc | typeof Item>(
+	createByType(
 		area: Area,
 		entityRef: EntityReference,
-		Type: T
-	): Room | Npc | Item {
+		Constructor: EntityConstructor<TEntity, TDef>
+	): TEntity {
 		const definition = this.getDefinition(entityRef);
 		if (!definition) {
 			throw new Error(
-				`[${Type.name}Factory] No Entity definition found for ${entityRef}`
+				`[${Constructor.name}Factory] No Entity definition found for ${entityRef}`
 			);
 		}
 
-		const entity = new Type(area, definition as any);
+		const entity = new Constructor(area, definition);
 
 		if (this.scripts?.has(entityRef)) {
 			this.scripts.get(entityRef)?.attach(entity as any);
@@ -98,7 +106,7 @@ export class EntityFactory<T = any> {
 		return entity;
 	}
 
-	create(...args: any[]) {
+	create(...args: any[]): TEntity {
 		throw new Error('No type specified for Entity.create');
 	}
 
@@ -108,7 +116,7 @@ export class EntityFactory<T = any> {
 	 * @param {Item|Npc|Room|Area} entity
 	 * @return {Item|Npc|Room|Area}
 	 */
-	clone(entity: Room | Npc | Item | Area) {
+	clone(entity: TEntity): TEntity | undefined {
 		if (
 			entity instanceof Room ||
 			entity instanceof Npc ||

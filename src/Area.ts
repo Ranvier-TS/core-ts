@@ -1,6 +1,7 @@
 import { AreaFloor } from './AreaFloor';
 import { ISerializedEffect } from './Effect';
 import { SerializedAttributes } from './EffectableEntity';
+import { EntityDefinitionBase } from './EntityFactory';
 import { GameEntity } from './GameEntity';
 import { IGameState } from './GameState';
 import { Metadata } from './Metadatable';
@@ -8,7 +9,7 @@ import { Npc } from './Npc';
 import { Player } from './Player';
 import { Room } from './Room';
 
-export interface IAreaDef {
+export interface IAreaDef extends EntityDefinitionBase {
 	bundle: string;
 	manifest: IAreaManifest;
 	quests: string[];

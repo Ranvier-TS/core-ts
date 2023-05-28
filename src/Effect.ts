@@ -4,12 +4,11 @@ import { EffectableEntity } from './EffectableEntity';
 import { IGameState } from './GameState';
 import { Skill } from './Skill';
 import { EventListeners } from './EventManager';
-import { PlayerOrNpc } from './GameEntity';
-import { Character } from './Character';
+import { AnyCharacter, PlayerOrNpc } from './GameEntity';
 
 export type AttributesModifier =
 	| Record<string, (this: Effect, current: number, ...args: any[]) => any>
-	| ((this: Effect, attrName: string, current: number) => any)
+	| ((this: Effect, attrName: string, current: number) => any);
 
 /** @typedef EffectModifiers {{attributes: !Object<string,function>}} */
 export type EffectModifiers = {
@@ -377,7 +376,7 @@ export class Effect extends EventEmitter {
 	modifyOutgoingDamage(
 		damage: Damage,
 		currentAmount: number,
-		target: Character
+		target: AnyCharacter
 	) {
 		const modifier = this.modifiers.outgoingDamage.bind(this);
 		return modifier(damage, currentAmount, target as PlayerOrNpc);

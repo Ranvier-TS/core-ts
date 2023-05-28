@@ -1,30 +1,29 @@
 import { Area } from './Area';
 import { Character, ICharacterConfig } from './Character';
 import { CommandQueue } from './CommandQueue';
+import { EntityDefinitionBase } from './EntityFactory';
 import { EntityReference } from './EntityReference';
 import { IGameState } from './GameState';
 import { IItemDef } from './Item';
 import { Logger } from './Logger';
 import { Room } from './Room';
-import { Scriptable } from './Scriptable';
 
 const uuid = require('uuid');
 
-export interface INpcDef extends ICharacterConfig {
-	area?: string;
-	script?: string;
+export interface INpcDef extends ICharacterConfig, EntityDefinitionBase {
 	behaviors?: Record<string, any>;
-	equipment?: Record<string, IItemDef> | Record<string, { entityReference: string; }>;
+	equipment?:
+		| Record<string, IItemDef>
+		| Record<string, { entityReference: string }>;
 	items?: EntityReference[];
 	description: string;
 	entityReference: EntityReference;
-	id: string | number;
 	keywords: string[];
 	quests?: EntityReference[];
 	uuid?: string;
 }
 
-export class Npc extends Scriptable(Character) {
+export class Npc extends Character {
 	area: Area;
 	script?: string;
 	behaviors?: Map<string, any>;
@@ -37,9 +36,9 @@ export class Npc extends Scriptable(Character) {
 	uuid: string;
 	commandQueue: CommandQueue;
 	keywords: string[];
-  	sourceRoom: Room | null;
+	sourceRoom: Room | null;
 	__pruned: boolean = false;
-	
+
 	static validate: (keyof Npc)[] = ['name', 'id'];
 	constructor(area: Area, data: INpcDef) {
 		super(data);
