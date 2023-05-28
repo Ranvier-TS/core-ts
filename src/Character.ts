@@ -10,9 +10,7 @@ import { Equipment } from './Equipment';
 import { GameEntity } from './GameEntity';
 import { EntityDefinitionBase } from './EntityFactory';
 
-export interface ICharacterConfig
-	extends ISerializedEffectableEntity,
-		EntityDefinitionBase {
+export interface ICharacterConfig extends ISerializedEffectableEntity {
 	/** @property {string}     name       Name shown on look/who/login */
 	name: string;
 	/** @property {Inventory}  inventory */

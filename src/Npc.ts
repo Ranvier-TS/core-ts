@@ -1,6 +1,7 @@
 import { Area } from './Area';
 import { Character, ICharacterConfig } from './Character';
 import { CommandQueue } from './CommandQueue';
+import { EntityDefinitionBase } from './EntityFactory';
 import { EntityReference } from './EntityReference';
 import { IGameState } from './GameState';
 import { IItemDef } from './Item';
@@ -9,9 +10,7 @@ import { Room } from './Room';
 
 const uuid = require('uuid');
 
-export interface INpcDef extends ICharacterConfig {
-	area?: string;
-	script?: string;
+export interface INpcDef extends ICharacterConfig, EntityDefinitionBase {
 	behaviors?: Record<string, any>;
 	equipment?:
 		| Record<string, IItemDef>
@@ -19,7 +18,6 @@ export interface INpcDef extends ICharacterConfig {
 	items?: EntityReference[];
 	description: string;
 	entityReference: EntityReference;
-	id: string;
 	keywords: string[];
 	quests?: EntityReference[];
 	uuid?: string;

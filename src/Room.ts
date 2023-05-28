@@ -2,6 +2,7 @@ import { Area } from './Area';
 import { Config } from './Config';
 import { ISerializedEffect } from './Effect';
 import { SerializedAttributes } from './EffectableEntity';
+import { EntityDefinitionBase } from './EntityFactory';
 import { EntityReference } from './EntityReference';
 import { GameEntity } from './GameEntity';
 import { IGameState } from './GameState';
@@ -23,15 +24,11 @@ export interface IExit {
 	leaveMessage?: string;
 }
 
-export interface IRoomDef {
+export interface IRoomDef extends EntityDefinitionBase {
 	title: string;
 	description: string;
-	entityReference: string;
-	id: string;
-	area?: string;
 	items?: IRoomItemDef[];
 	npcs?: IRoomNpcDef[] | string[];
-	script?: string;
 	behaviors?: Record<string, any>;
 	attributes?: SerializedAttributes;
 	effects?: ISerializedEffect[];
