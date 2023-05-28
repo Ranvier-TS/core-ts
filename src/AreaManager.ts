@@ -95,6 +95,7 @@ export class AreaManager {
 			title: 'Placeholder',
 			description:
 				'You are not in a valid room. Please contact an administrator.',
+			entityReference: 'placeholder',
 		});
 
 		this.placeholder.addRoom(placeholderRoom);

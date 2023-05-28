@@ -1,9 +1,8 @@
 import { Attribute } from './Attribute';
-import { Character } from './Character';
 import { Damage } from './Damage';
 import { Effect, ISerializedEffect } from './Effect';
 import { EffectableEntity } from './EffectableEntity';
-import { PlayerOrNpc } from './GameEntity';
+import { AnyCharacter } from './GameEntity';
 import { IGameState } from './GameState';
 
 /**
@@ -92,10 +91,7 @@ export class EffectList {
 			) {
 				const now = Date.now();
 				const sinceLastTick = now - effect.state.lastTick;
-				if (
-					sinceLastTick <
-					effect.config.tickInterval * 1000
-				) {
+				if (sinceLastTick < effect.config.tickInterval * 1000) {
 					continue;
 				}
 				effect.state.lastTick = now;
@@ -258,7 +254,7 @@ export class EffectList {
 	evaluateIncomingDamage(
 		damage: Damage,
 		currentAmount: number,
-		_attacker?: Character
+		_attacker?: AnyCharacter
 	) {
 		this.validateEffects();
 
@@ -280,7 +276,7 @@ export class EffectList {
 	evaluateOutgoingDamage(
 		damage: Damage,
 		currentAmount: number,
-		target: Character
+		target: AnyCharacter
 	) {
 		this.validateEffects();
 

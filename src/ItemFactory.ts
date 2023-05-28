@@ -6,7 +6,7 @@ import { IItemDef, Item } from './Item';
 /**
  * Stores definitions of items to allow for easy creation/cloning of objects
  */
-export class ItemFactory extends EntityFactory<IItemDef> {
+export class ItemFactory extends EntityFactory<Item, IItemDef> {
 	/**
 	 * Create a new instance of an item by EntityReference. Resulting item will
 	 * not be held or equipped and will _not_ have its default contents. If you
@@ -20,6 +20,6 @@ export class ItemFactory extends EntityFactory<IItemDef> {
 	create(area: Area, entityRef: EntityReference): Item {
 		const item = this.createByType(area, entityRef, Item);
 		item.area = area;
-		return item as Item;
+		return item;
 	}
 }

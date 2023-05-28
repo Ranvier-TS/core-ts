@@ -7,7 +7,7 @@ import { IRoomDef, Room } from './Room';
  * Stores definitions of rooms to allow for easy creation/cloning
  * @extends EntityFactory
  */
-export class RoomFactory extends EntityFactory<IRoomDef> {
+export class RoomFactory extends EntityFactory<Room, IRoomDef> {
 	/**
 	 * Create a new instance of a given room. Room will not be hydrated
 	 *
@@ -18,6 +18,6 @@ export class RoomFactory extends EntityFactory<IRoomDef> {
 	create(area: Area, entityRef: EntityReference): Room {
 		const room = this.createByType(area, entityRef, Room);
 		room.area = area;
-		return room as Room;
+		return room;
 	}
 }

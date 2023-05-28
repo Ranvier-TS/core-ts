@@ -147,7 +147,7 @@ export class EffectableEntity extends EventEmitter {
 	 */
 	getBaseAttribute(attrName: string): number {
 		const attr = this.attributes.get(attrName);
-		return attr && attr.base || 0;
+		return (attr && attr.base) || 0;
 	}
 
 	/**

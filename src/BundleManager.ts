@@ -8,11 +8,10 @@ import { Command, ICommandDef } from './Command';
 import { Config } from './Config';
 import { Data } from './Data';
 import { IEffectDef } from './Effect';
-import { EntityFactoryType } from './EntityFactory';
+import { EntityDefinitionBase, EntityFactory } from './EntityFactory';
 import { EntityLoaderKeys, EntityLoaderRegistry } from './EntityLoaderRegistry';
 import { EntityReference } from './EntityReference';
 import { EventListeners } from './EventManager';
-import { GameEntities, GameEntityDefinition } from './GameEntity';
 import { IGameState } from './GameState';
 import { Helpfile } from './Helpfile';
 import { Logger } from './Logger';
@@ -21,6 +20,7 @@ import { QuestGoal } from './QuestGoal';
 import { QuestReward } from './QuestReward';
 import { ISkillOptions, Skill } from './Skill';
 import { SkillType } from './SkillType';
+import { EffectableEntity } from './EffectableEntity';
 
 export interface IListenersLoader {
 	listeners: EventListeners;
@@ -301,6 +301,8 @@ export class BundleManager {
 			items: [],
 			npcs: [],
 			rooms: [],
+			entityReference: areaName,
+			id: areaName,
 		};
 
 		const scriptPath = this._getAreaScriptPath(bundle, 'area');
@@ -376,11 +378,14 @@ export class BundleManager {
 	 * @param {EntityFactory} factory
 	 * @return {Array<string>}
 	 */
-	async loadEntities(
+	async loadEntities<
+		TEntity extends EffectableEntity,
+		TDef extends EntityDefinitionBase
+	>(
 		bundle: string,
 		areaName: string,
 		type: EntityLoaderKeys,
-		factory: EntityFactoryType
+		factory: EntityFactory<TEntity, TDef>
 	): Promise<string[]> {
 		const loader = this.loaderRegistry.get(type);
 		loader.setBundle(bundle);
@@ -390,7 +395,7 @@ export class BundleManager {
 			return [];
 		}
 
-		const entities = (await loader.fetchAll()) as GameEntityDefinition[];
+		const entities: TDef[] = await loader.fetchAll();
 		if (!entities) {
 			Logger.warn(`\t\t\t${type} has an invalid value [${entities}]`);
 			return [];
@@ -438,8 +443,11 @@ export class BundleManager {
 	 * @param {string} entityRef
 	 * @param {string} scriptPath
 	 */
-	loadEntityScript(
-		factory: EntityFactoryType,
+	loadEntityScript<
+		TEntity extends EffectableEntity,
+		TDef extends EntityDefinitionBase
+	>(
+		factory: EntityFactory<TEntity, TDef>,
 		entityRef: EntityReference,
 		scriptPath: string
 	) {

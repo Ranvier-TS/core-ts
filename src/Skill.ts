@@ -1,7 +1,7 @@
 import { Broadcast } from './Broadcast';
 import { Damage } from './Damage';
 import { Effect, IEffectDef } from './Effect';
-import { PlayerOrNpc } from './GameEntity';
+import { AnyCharacter, PlayerOrNpc } from './GameEntity';
 import { IGameState } from './GameState';
 import { Logger } from './Logger';
 import {
@@ -176,7 +176,7 @@ export class Skill {
 		damage.commit(player);
 	}
 
-	activate(player: PlayerOrNpc) {
+	activate(player: AnyCharacter) {
 		if (!this.flags.includes(SkillFlag.PASSIVE)) {
 			return;
 		}
@@ -245,9 +245,10 @@ export class Skill {
 			);
 		}
 
-		const duration = typeof this.cooldownLength === 'number'
-			? this.cooldownLength
-			: this.cooldownLength?.length || 0;
+		const duration =
+			typeof this.cooldownLength === 'number'
+				? this.cooldownLength
+				: this.cooldownLength?.length || 0;
 
 		const effect = this.state.EffectFactory.create(
 			'cooldown',
@@ -279,7 +280,10 @@ export class Skill {
 						Logger.error('Cooldown effect has no target.');
 						return;
 					}
-					const skillName = typeof this.skill === 'string' ? this.skill : this.skill?.name || 'unnamed skill';
+					const skillName =
+						typeof this.skill === 'string'
+							? this.skill
+							: this.skill?.name || 'unnamed skill';
 					Broadcast.sayAt(
 						this.target as PlayerOrNpc,
 						`You may now use <bold>${skillName}</bold> again.`

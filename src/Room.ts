@@ -1,5 +1,4 @@
 import { Area } from './Area';
-import { IBehavior } from './BehaviorManager';
 import { Config } from './Config';
 import { ISerializedEffect } from './Effect';
 import { SerializedAttributes } from './EffectableEntity';
@@ -27,6 +26,7 @@ export interface IExit {
 export interface IRoomDef {
 	title: string;
 	description: string;
+	entityReference: string;
 	id: string;
 	area?: string;
 	items?: IRoomItemDef[];
@@ -244,10 +244,12 @@ export class Room extends GameEntity {
 	 * @return {Array<{ id: string, direction: string, inferred: boolean, room: Room= }>}
 	 */
 	getExits(): IExit[] {
-		const exits: IExit[] = JSON.parse(JSON.stringify(this.exits)).map((exit: IExit) => {
-			exit.inferred = false;
-			return exit;
-		});
+		const exits: IExit[] = JSON.parse(JSON.stringify(this.exits)).map(
+			(exit: IExit) => {
+				exit.inferred = false;
+				return exit;
+			}
+		);
 
 		if (!this.area || !this.coordinates) {
 			return exits;
@@ -510,11 +512,12 @@ export class Room extends GameEntity {
 			// Support composing Npcs in room using an object.
 		} else {
 			Object.keys(this.defaultNpcs).forEach((defaultNpc: EntityReference) => {
-				const npc: Partial<IRoomNpcDef> | boolean = (this
-					.defaultNpcs as ComposableDef<IRoomNpcDef>)[defaultNpc];
-        if (npc === false) return;
-        try {
-          this.spawnNpc(state, defaultNpc.replace(/%.*$/g, ''));
+				const npc: Partial<IRoomNpcDef> | boolean = (
+					this.defaultNpcs as ComposableDef<IRoomNpcDef>
+				)[defaultNpc];
+				if (npc === false) return;
+				try {
+					this.spawnNpc(state, defaultNpc.replace(/%.*$/g, ''));
 				} catch (err) {
 					Logger.error(err);
 				}
