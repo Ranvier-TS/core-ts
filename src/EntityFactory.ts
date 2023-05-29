@@ -22,7 +22,7 @@ type EntityConstructor<TEntity, TDef extends EntityDefinitionBase> = new (
 /**
  * Stores definitions of entities to allow for easy creation/cloning
  */
-export class EntityFactory<
+export abstract class EntityFactory<
 	TEntity extends EffectableEntity,
 	TDef extends EntityDefinitionBase
 > {
